@@ -486,7 +486,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
           >
             {/* Hero */}
             <div className="text-center mb-8 sm:mb-12">
-              <p className="eyebrow-felt justify-center mb-3">Game Setup</p>
+              <p className="eyebrow-gold justify-center mb-3">Game Setup</p>
               <h1 className="font-display font-black leading-[0.92] tracking-tight text-4xl sm:text-6xl text-fg">
                 Wer wird zur <span className="gradient-shame">Schande</span>
                 <span className="text-fg-faint">?</span>
@@ -497,9 +497,9 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
             </div>
 
             {/* === SECTION: Spielmodus === */}
-            <section className="card-felt p-5 sm:p-6 mb-6 sm:mb-7">
+            <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4">
-                <p className="eyebrow-felt">01 · Modus</p>
+                <p className="eyebrow-gold">01 · Modus</p>
                 <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
                   Wie wird gespielt?
                 </h2>
@@ -552,10 +552,10 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
             </section>
 
             {/* === SECTION: Spieler === */}
-            <section className="card-felt p-5 sm:p-6 mb-6 sm:mb-7">
+            <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4 flex items-end justify-between gap-3">
                 <div>
-                  <p className="eyebrow-felt">02 · Spieler</p>
+                  <p className="eyebrow-gold">02 · Spieler</p>
                   <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
                     Wer ist dabei?
                   </h2>
@@ -563,9 +563,9 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 <div
                   className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tabular-nums"
                   style={{
-                    background: "var(--surface-felt-strong)",
-                    color: "var(--text-felt)",
-                    border: "1px solid var(--border-felt)",
+                    background: "var(--surface-gold)",
+                    color: "var(--text-gold)",
+                    border: "1px solid var(--border-gold)",
                   }}
                 >
                   <Users size={12} />
