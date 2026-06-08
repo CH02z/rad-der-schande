@@ -23,11 +23,12 @@ const VEL_DRAG = 0.20;
 const STOP_THRESHOLD = 0.05;
 
 // Auto-Fit-Fonts: per measureText scaliert auf Segment-Länge.
+// Wichtig: Canvas resolvet keine CSS-vars — die echte Family wird zur Runtime aufgelöst.
 const FONT_PROBE = 100;
-const FONT_FACE = 'var(--font-display), system-ui, sans-serif';
+const FONT_FALLBACK = 'system-ui, "Helvetica Neue", Arial, sans-serif';
 const FONT_WEIGHT = 800;
-const FONT_MIN = 14;
-const FONT_MAX = 64;
+const FONT_MIN = 18;
+const FONT_MAX = 100;
 
 type Mode = "classic" | "elim";
 
@@ -64,6 +65,9 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const [result, setResult] = useState<string | null>(null);
   const [winning, setWinning] = useState(false);
   const [size, setSize] = useState(380);
+  // Echte Font-Family (resolved aus CSS-Var), damit measureText korrekt ist
+  const [fontFamily, setFontFamily] = useState<string>(FONT_FALLBACK);
+  const [fontReady, setFontReady] = useState(false);
 
   // Modus + Eliminierung
   const [mode, setMode] = useState<Mode>("classic");
@@ -74,10 +78,10 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
   const inElimGame = mode === "elim" && originalRoster !== null;
 
-  // Responsives Sizing
+  // Responsives Sizing — grösseres Wheel auf grossen Screens für mehr Lesbarkeit
   useEffect(() => {
     function update() {
-      const w = Math.min(480, window.innerWidth - 40);
+      const w = Math.min(580, window.innerWidth - 40);
       setSize(Math.max(280, Math.round(w)));
     }
     update();
@@ -89,6 +93,23 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
+  }, []);
+
+  // Font-Family aus CSS-Var auflösen + auf Loader warten, sonst rendert Canvas
+  // mit system-ui-Fallback und die measureText-Werte stimmen, aber sehen schlechter aus.
+  useEffect(() => {
+    try {
+      const resolved = getComputedStyle(document.documentElement)
+        .getPropertyValue("--font-display")
+        .trim();
+      if (resolved) setFontFamily(`${resolved}, ${FONT_FALLBACK}`);
+    } catch {}
+
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(() => setFontReady(true)).catch(() => setFontReady(true));
+    } else {
+      setFontReady(true);
+    }
   }, []);
 
   const draw = useCallback(() => {
@@ -130,17 +151,28 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     if (n === 0) return;
     const seg = TWO_PI / n;
 
-    // Verfügbare Label-Box: radial vs. tangential am Mittelpunkt
-    const labelRadial = R_SEG - R_HUB - 26;
+    // Label-Box: möglichst die ganze radiale Länge nutzen, kleiner Buffer zur Nabe & zum Ring.
+    const labelRadial = R_SEG - R_HUB - 14;
     const radialMid = (R_SEG + R_HUB) / 2;
-    // 0.66 = Headroom — Schrift soll Segment nicht ganz ausfüllen
-    const labelTangential = radialMid * seg * 0.66;
+    // 0.78 = mehr Headroom, Text darf 78% der Tangential-Breite einnehmen
+    const labelTangential = radialMid * seg * 0.78;
 
+    // === UNIFORM FONT-SIZE: kleinste Grösse, die für ALLE Namen passt ===
+    // So sieht's harmonisch aus statt "Du" riesig und "Schnüsi" winzig.
+    ctx.font = `${FONT_WEIGHT} ${FONT_PROBE}px ${fontFamily}`;
+    let chosenFs = Math.min(FONT_MAX, labelTangential);
+    for (const name of names) {
+      const w = Math.max(1, ctx.measureText(name).width);
+      const fitByWidth = (labelRadial / w) * FONT_PROBE;
+      if (fitByWidth < chosenFs) chosenFs = fitByWidth;
+    }
+    chosenFs = Math.max(FONT_MIN, chosenFs);
+
+    // Segmente + Namen
     for (let i = 0; i < n; i++) {
       const a0 = i * seg + A;
       const base = PALETTE[i % PALETTE.length];
 
-      // Segment
       ctx.beginPath();
       ctx.moveTo(C, C);
       ctx.arc(C, C, R_SEG, a0, a0 + seg);
@@ -155,34 +187,25 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.strokeStyle = "rgba(0,0,0,0.22)";
       ctx.stroke();
 
-      // Name — Auto-Fit
       ctx.save();
       ctx.translate(C, C);
       ctx.rotate(a0 + seg / 2);
-
-      const name = names[i];
-      ctx.font = `${FONT_WEIGHT} ${FONT_PROBE}px ${FONT_FACE}`;
-      const measuredAt100 = Math.max(1, ctx.measureText(name).width);
-      const fitByWidth = (labelRadial / measuredAt100) * FONT_PROBE;
-      const fitByHeight = labelTangential;
-      const fs = Math.max(FONT_MIN, Math.min(FONT_MAX, Math.min(fitByWidth, fitByHeight)));
-
-      ctx.font = `${FONT_WEIGHT} ${fs}px ${FONT_FACE}`;
+      ctx.font = `${FONT_WEIGHT} ${chosenFs}px ${fontFamily}`;
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      // Schwarzer Stroke + weisser Fill für maximale Lesbarkeit
-      ctx.lineWidth = Math.max(2.5, fs * 0.12);
-      ctx.strokeStyle = "rgba(0,0,0,0.75)";
+      // Round-joined Stroke + Fill + Shadow → bleibt auch bei Vollspeed lesbar
+      ctx.lineWidth = Math.max(3, chosenFs * 0.10);
+      ctx.strokeStyle = "rgba(0,0,0,0.78)";
       ctx.lineJoin = "round";
       ctx.miterLimit = 2;
-      ctx.shadowColor = "rgba(0,0,0,0.45)";
-      ctx.shadowBlur = Math.max(4, fs * 0.18);
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = Math.max(5, chosenFs * 0.16);
       ctx.shadowOffsetY = 2;
-      ctx.strokeText(name, R_SEG - 16, 0);
+      ctx.strokeText(names[i], R_SEG - 10, 0);
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
       ctx.fillStyle = "#fff";
-      ctx.fillText(name, R_SEG - 16, 0);
+      ctx.fillText(names[i], R_SEG - 10, 0);
       ctx.restore();
     }
 
@@ -214,7 +237,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.arc(C, C, R_HUB * 0.22, 0, TWO_PI);
     ctx.fillStyle = "#FFD15C";
     ctx.fill();
-  }, [names, size]);
+  }, [names, size, fontFamily, fontReady]);
 
   useEffect(() => {
     draw();
