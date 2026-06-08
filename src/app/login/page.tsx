@@ -5,18 +5,17 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen grid place-items-center px-4">
       <div className="w-full max-w-md">
-        {/* Floating mark above the card */}
         <div className="flex justify-center mb-6">
           <div className="animate-float">
             <BrandMark size={64} />
           </div>
         </div>
 
-        <div className="glass-strong rounded-[28px] p-8 sm:p-10 text-center shadow-glass">
-          <h1 className="font-display font-extrabold text-3xl sm:text-4xl tracking-tight leading-none">
+        <div className="glass-strong rounded-[28px] p-8 sm:p-10 text-center">
+          <h1 className="font-display font-extrabold text-3xl sm:text-4xl tracking-tight leading-none text-fg">
             Rad der <span className="gradient-shame">Schande</span>
           </h1>
-          <p className="mt-3 text-white/55 text-sm sm:text-base">
+          <p className="mt-3 text-fg-soft text-sm sm:text-base">
             Melde dich an, um zu drehen und die ewige Schande-Tabelle zu sehen.
           </p>
 
@@ -44,12 +43,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-6 text-xs text-white/35">
+          <p className="mt-6 text-xs text-fg-mute">
             Nur Mitglieder der Crew. Niemand sonst sieht eure Schande.
           </p>
         </div>
 
-        <p className="text-center mt-6 text-xs text-white/30">
+        <p className="text-center mt-6 text-xs text-fg-faint">
           rad-der-schande.ch
         </p>
       </div>

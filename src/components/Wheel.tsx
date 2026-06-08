@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Volume2, VolumeX, RotateCcw } from "lucide-react";
-import { tick, winFanfare } from "@/lib/audio";
+import { Plus, X, RotateCcw } from "lucide-react";
+import { tick, winFanfare, spinStart } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
+import { useSound } from "@/lib/sound";
 
-// Lebhafte Palette — bewusst nicht zu „casino-rot", damit die Schande sich abhebt.
 const PALETTE = [
   "#FF2D55", "#FFD15C", "#5FE3C4", "#69A6FF",
   "#C589FF", "#FF8A3D", "#3DDC91", "#FF6B86",
@@ -17,11 +17,12 @@ const MAX_NAMES = 12;
 const TWO_PI = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2; // 12 Uhr
 
-// Reibungs-Modell: konstante Verzögerung + leicht geschwindigkeits-abhängige Dämpfung.
-// Werte sind „handgetuned" — fühlt sich an wie ein echtes Holzrad.
-const BASE_DECEL = 1.6;        // rad/s², konstant
-const VEL_DRAG = 0.055;        // pro rad/s zusätzlich
-const STOP_THRESHOLD = 0.04;   // rad/s
+// Physik: exponential decay mit linear-stop tail.
+// decel = BASE + DRAG·v  → mehr DRAG = mehr „exponentiell", mehr BASE = schnellerer Stop.
+// Mit BASE=1.0, DRAG=0.20 läuft das Rad ~9 s; die letzten 1.5 s sind langsam & spannend.
+const BASE_DECEL = 1.0;
+const VEL_DRAG = 0.20;
+const STOP_THRESHOLD = 0.05;
 
 function shade(hex: string, amount: number): string {
   const c = hex.replace("#", "");
@@ -43,6 +44,7 @@ function segmentAtPointer(angle: number, n: number): number {
 export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
+  const wheelStageRef = useRef<HTMLDivElement>(null);
 
   const angleRef = useRef(0);
   const velRef = useRef(0);
@@ -54,8 +56,10 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
-  const [muted, setMuted] = useState(false);
+  const [winning, setWinning] = useState(false);
   const [size, setSize] = useState(380);
+
+  const { muted } = useSound();
 
   // Responsives Sizing
   useEffect(() => {
@@ -152,7 +156,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.restore();
     }
 
-    // Glanz-Highlight (oben links) — gibt dem Rad Tiefe
+    // Glanz-Highlight (oben links)
     ctx.save();
     ctx.beginPath();
     ctx.arc(C, C, R_SEG, 0, TWO_PI);
@@ -164,7 +168,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.fillRect(0, 0, S, S);
     ctx.restore();
 
-    // Nabe (hub)
+    // Nabe
     const hubGrad = ctx.createRadialGradient(C - R_HUB * 0.35, C - R_HUB * 0.35, R_HUB * 0.1, C, C, R_HUB);
     hubGrad.addColorStop(0, "#3a3650");
     hubGrad.addColorStop(1, "#07060B");
@@ -176,7 +180,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.strokeStyle = "rgba(255,209,92,0.85)";
     ctx.stroke();
 
-    // Innerer Punkt
     ctx.beginPath();
     ctx.arc(C, C, R_HUB * 0.22, 0, TWO_PI);
     ctx.fillStyle = "#FFD15C";
@@ -190,14 +193,15 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   function kickPointer(velocity: number) {
     const el = pointerRef.current;
     if (!el) return;
-    const deg = Math.min(26, 8 + velocity * 0.55);
+    // Bei hoher Velocity ein grosser, bei niedriger ein deutlicher dramatischer Kick.
+    const deg = Math.min(28, Math.max(5, velocity * 0.7 + 4));
     el.animate(
       [
         { transform: `translateX(-50%) rotate(${deg}deg)` },
         { transform: `translateX(-50%) rotate(-${deg * 0.18}deg)` },
         { transform: `translateX(-50%) rotate(0deg)` },
       ],
-      { duration: 260, easing: "cubic-bezier(.2,.7,.3,1)" }
+      { duration: velocity < 2 ? 380 : 260, easing: "cubic-bezier(.2,.7,.3,1)" }
     );
   }
 
@@ -210,7 +214,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     let newV = v - decel * dt;
     if (newV < 0) newV = 0;
 
-    // semi-implicit Euler für stabilere Integration
     angleRef.current += newV * dt;
     velRef.current = newV;
 
@@ -218,7 +221,8 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     if (n > 0) {
       const idx = segmentAtPointer(angleRef.current, n);
       if (lastSegRef.current !== null && idx !== lastSegRef.current) {
-        const vol = Math.max(0.15, Math.min(1, v / 14));
+        // Volume folgt der Velocity, aber min 0.25 damit auch leise Ticks knallen
+        const vol = Math.max(0.25, Math.min(1, v / 14));
         if (!muted) tick(vol);
         kickPointer(v);
       }
@@ -228,12 +232,14 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     draw();
 
     if (velRef.current <= STOP_THRESHOLD) {
-      // Schluss: normalisieren + Sieger bestimmen
       angleRef.current = ((angleRef.current % TWO_PI) + TWO_PI) % TWO_PI;
       const winnerIdx = segmentAtPointer(angleRef.current, n);
       const loser = names[winnerIdx];
       setSpinning(false);
       setResult(loser);
+      setWinning(true);
+      // Win-Pulse-Ring nach 1s wieder aus
+      setTimeout(() => setWinning(false), 1400);
       if (!muted) winFanfare();
       fireConfetti();
       void logResult(loser);
@@ -241,7 +247,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     }
 
     rafRef.current = requestAnimationFrame(step);
-    // logResult ist stabil genug — closure-capture von `names` ist exakt was wir wollen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [names, muted, draw]);
 
@@ -249,10 +254,12 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     if (spinning || names.length < 2) return;
     setSpinning(true);
     setResult(null);
+    setWinning(false);
     lastSegRef.current = segmentAtPointer(angleRef.current, names.length);
-    // 22–34 rad/s ≈ 3.5–5.4 U/s → läuft ca. 6–9 s
-    velRef.current = 22 + Math.random() * 12;
+    // 26–36 rad/s ≈ 4.1–5.7 U/s → ~9 s Spin
+    velRef.current = 26 + Math.random() * 10;
     lastTimeRef.current = performance.now();
+    if (!muted) spinStart();
     rafRef.current = requestAnimationFrame(step);
   }
 
@@ -312,7 +319,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               className="chip"
               style={{ borderLeft: `3px solid ${PALETTE[i % PALETTE.length]}` }}
             >
-              <span className="text-white/90">{name}</span>
+              <span>{name}</span>
               <button
                 onClick={() => removeName(i)}
                 disabled={spinning || names.length <= 2}
@@ -348,7 +355,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       </div>
 
       {/* Wheel-Stage */}
-      <div className="relative" style={{ width: size, height: size + 40 }}>
+      <div ref={wheelStageRef} className="relative" style={{ width: size, height: size + 40 }}>
         {/* glow underneath */}
         <div
           className="absolute inset-0 -z-10 rounded-full opacity-70 blur-3xl"
@@ -356,6 +363,36 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
             background: "radial-gradient(circle, rgba(255,45,85,0.35), transparent 60%)",
           }}
         />
+
+        {/* Win Pulse Rings — Mitte des Canvas: (50%, 18 + size/2) */}
+        {winning && (
+          <>
+            <span
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: size,
+                height: size,
+                left: "50%",
+                top: 18 + size / 2,
+                transform: "translate(-50%, -50%)",
+                border: "3px solid rgba(255,209,92,0.75)",
+                animation: "pulse-ring 1.2s ease-out forwards",
+              }}
+            />
+            <span
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: size,
+                height: size,
+                left: "50%",
+                top: 18 + size / 2,
+                transform: "translate(-50%, -50%)",
+                border: "3px solid rgba(255,45,85,0.7)",
+                animation: "pulse-ring 1.2s ease-out 0.18s forwards",
+              }}
+            />
+          </>
+        )}
 
         {/* Pointer */}
         <div
@@ -402,14 +439,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
       {/* Controls */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => setMuted((m) => !m)}
-          className="btn-ghost"
-          aria-label={muted ? "Sound einschalten" : "Sound ausschalten"}
-        >
-          {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-        </button>
-        <button onClick={spin} disabled={!canSpin} className="btn-primary text-lg px-10 py-4">
+        <button onClick={spin} disabled={!canSpin} className="btn-primary text-lg px-12 py-4">
           {spinning ? "Dreht…" : "DREHEN"}
         </button>
         <button onClick={resetWheel} className="btn-ghost" aria-label="Zurücksetzen" disabled={spinning}>
@@ -421,19 +451,30 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       <AnimatePresence>
         {result && (
           <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.92 }}
+            initial={{ opacity: 0, y: 30, scale: 0.85 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 220, damping: 18 }}
-            className="glass-strong mt-2 px-7 py-5 rounded-3xl text-center shadow-pop"
+            transition={{ type: "spring", stiffness: 220, damping: 16 }}
+            className="glass-strong mt-2 px-8 py-6 sm:px-10 sm:py-7 rounded-[28px] text-center relative overflow-hidden"
+            style={{
+              boxShadow: "0 30px 80px -10px rgba(255,45,85,0.5), 0 0 0 1px rgba(255,209,92,0.18) inset",
+            }}
           >
-            <div className="text-xs uppercase tracking-[0.22em] text-white/50 mb-1">
-              Heute ist dran
+            <div
+              className="absolute inset-0 -z-10"
+              style={{
+                background: "radial-gradient(circle at 50% 0%, rgba(255,209,92,0.15), transparent 70%)",
+              }}
+            />
+            <div className="text-xs uppercase tracking-[0.28em] text-fg-mute mb-2">
+              🎰 Jackpot
             </div>
-            <div className="font-display font-black text-4xl sm:text-5xl gradient-shame leading-none">
+            <div className="font-display font-black text-5xl sm:text-6xl gradient-shame leading-none">
               {result}
             </div>
-            <div className="mt-1 text-white/60 text-sm">— Schande! 🔥</div>
+            <div className="mt-2 text-fg-soft text-sm font-medium">
+              — du zahlst. Schande! 🔥
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

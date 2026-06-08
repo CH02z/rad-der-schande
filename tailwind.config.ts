@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
+  darkMode: ["class", '[class~="dark"]'],
   theme: {
     extend: {
       fontFamily: {
@@ -9,14 +10,18 @@ const config: Config = {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       colors: {
-        ink: {
-          950: "#07060B",
-          900: "#0B0912",
-          800: "#11101A",
-          700: "#1A1825",
-          600: "#252233",
-          500: "#3A3650",
-        },
+        // theme-aware (über CSS-Vars)
+        fg: "var(--text)",
+        "fg-soft": "var(--text-soft)",
+        "fg-mute": "var(--text-mute)",
+        "fg-faint": "var(--text-faint)",
+        page: "var(--bg)",
+        surface: "var(--surface)",
+        "surface-strong": "var(--surface-strong)",
+        line: "var(--border)",
+        "line-strong": "var(--border-strong)",
+
+        // statisch (gleich in beiden Themes)
         shame: {
           DEFAULT: "#FF2D55",
           soft: "#FF6B86",
@@ -31,24 +36,16 @@ const config: Config = {
         sky: "#69A6FF",
       },
       boxShadow: {
-        glass: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 8px 32px rgba(0,0,0,0.4)",
-        wheel: "0 30px 80px -10px rgba(255,45,85,0.25), 0 0 0 1px rgba(255,255,255,0.06) inset",
-        hub: "0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08) inset",
-        pop: "0 20px 60px -10px rgba(255,45,85,0.4)",
-      },
-      backgroundImage: {
-        "noise": "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.35'/></svg>\")",
+        card: "var(--shadow-card)",
+        wheel: "var(--shadow-wheel)",
+        pop: "var(--shadow-pop)",
       },
       animation: {
-        "pulse-shame": "pulse-shame 2s ease-in-out infinite",
         "shimmer": "shimmer 2.4s linear infinite",
         "float": "float 6s ease-in-out infinite",
+        "pulse-ring": "pulse-ring 1.4s ease-out forwards",
       },
       keyframes: {
-        "pulse-shame": {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(255,45,85,0.45)" },
-          "50%": { boxShadow: "0 0 0 24px rgba(255,45,85,0)" },
-        },
         "shimmer": {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
@@ -56,6 +53,10 @@ const config: Config = {
         "float": {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-6px)" },
+        },
+        "pulse-ring": {
+          "0%": { transform: "scale(1)", opacity: "0.6" },
+          "100%": { transform: "scale(1.6)", opacity: "0" },
         },
       },
     },
