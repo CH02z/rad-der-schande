@@ -2,28 +2,34 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, RotateCcw, Target, Swords } from "lucide-react";
+import { Plus, X, RotateCcw, Target, Swords, Check } from "lucide-react";
 import { tick, winFanfare, spinStart } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
 
+/* ============================================================
+   PALETTE & CONSTANTS
+   ============================================================ */
+
 const PALETTE = [
-  "#FF2D55", "#FFD15C", "#5FE3C4", "#69A6FF",
+  "#FF2D55", "#E8C36A", "#5FE3C4", "#69A6FF",
   "#C589FF", "#FF8A3D", "#3DDC91", "#FF6B86",
 ];
 
 const STARTING_NAMES = ["Du", "Schnüsi", "Bruno", "Lea", "Tom"];
 const MAX_NAMES = 12;
 const TWO_PI = Math.PI * 2;
-const POINTER_ANGLE = -Math.PI / 2; // 12 Uhr
+const POINTER_ANGLE = -Math.PI / 2;
 
-// Physik (unverändert — ~9 s Spin, dramatischer Tail)
+// Physik: ~9 s Spin mit dramatischem Tail
 const BASE_DECEL = 1.0;
 const VEL_DRAG = 0.20;
 const STOP_THRESHOLD = 0.05;
 
-// Auto-Fit-Fonts: per measureText scaliert auf Segment-Länge.
-// Wichtig: Canvas resolvet keine CSS-vars — die echte Family wird zur Runtime aufgelöst.
+// Ruhezustand: ganz leichtes Drehen, lebendig aber unaufdringlich
+const IDLE_VELOCITY = 0.32;     // rad/s ≈ 1 U / 20 s
+
+// Auto-Fit-Fonts
 const FONT_PROBE = 100;
 const FONT_FALLBACK = 'system-ui, "Helvetica Neue", Arial, sans-serif';
 const FONT_WEIGHT = 800;
@@ -31,6 +37,28 @@ const FONT_MIN = 18;
 const FONT_MAX = 100;
 
 type Mode = "classic" | "elim";
+type Phase = "idle" | "spinning" | "stopped";
+
+const MODES = [
+  {
+    id: "classic" as Mode,
+    title: "Klassisch",
+    desc: "Ein Spin, eine Schande.",
+    accent: "#FF2D55",
+    Icon: Target,
+  },
+  {
+    id: "elim" as Mode,
+    title: "Eliminierung",
+    desc: "Letzter im Rad verliert.",
+    accent: "#E8C36A",
+    Icon: Swords,
+  },
+];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
 
 function shade(hex: string, amount: number): string {
   const c = hex.replace("#", "");
@@ -49,36 +77,53 @@ function segmentAtPointer(angle: number, n: number): number {
   return Math.floor(t / seg) % n;
 }
 
+/* ============================================================
+   COMPONENT
+   ============================================================ */
+
 export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
 
+  // Animation-Refs (immer aktueller Wert für RAF-Loop)
   const angleRef = useRef(0);
-  const velRef = useRef(0);
+  const velRef = useRef(IDLE_VELOCITY);
   const lastTimeRef = useRef(0);
   const lastSegRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
+  const phaseRef = useRef<Phase>("idle");
 
+  // Refs gespiegelt von State (damit RAF immer aktuelle Werte sieht)
+  const namesRef = useRef<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
+  const modeRef = useRef<Mode>("classic");
+  const mutedRef = useRef(false);
+  const sizeRef = useRef(380);
+  const fontFamilyRef = useRef<string>(FONT_FALLBACK);
+
+  // React State (UI)
   const [names, setNames] = useState<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [winning, setWinning] = useState(false);
   const [size, setSize] = useState(380);
-  // Echte Font-Family (resolved aus CSS-Var), damit measureText korrekt ist
-  const [fontFamily, setFontFamily] = useState<string>(FONT_FALLBACK);
-  const [fontReady, setFontReady] = useState(false);
-
-  // Modus + Eliminierung
   const [mode, setMode] = useState<Mode>("classic");
   const [originalRoster, setOriginalRoster] = useState<string[] | null>(null);
   const [eliminated, setEliminated] = useState<string | null>(null);
+  const [fontFamily, setFontFamily] = useState<string>(FONT_FALLBACK);
 
   const { muted } = useSound();
 
+  // === Sync state → refs ===
+  useEffect(() => { namesRef.current = names; }, [names]);
+  useEffect(() => { modeRef.current = mode; }, [mode]);
+  useEffect(() => { mutedRef.current = muted; }, [muted]);
+  useEffect(() => { sizeRef.current = size; }, [size]);
+  useEffect(() => { fontFamilyRef.current = fontFamily; }, [fontFamily]);
+
   const inElimGame = mode === "elim" && originalRoster !== null;
 
-  // Responsives Sizing — grösseres Wheel auf grossen Screens für mehr Lesbarkeit
+  // === Resize ===
   useEffect(() => {
     function update() {
       const w = Math.min(580, window.innerWidth - 40);
@@ -89,14 +134,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  // Font-Family aus CSS-Var auflösen + auf Loader warten, sonst rendert Canvas
-  // mit system-ui-Fallback und die measureText-Werte stimmen, aber sehen schlechter aus.
+  // === Font-Resolution ===
   useEffect(() => {
     try {
       const resolved = getComputedStyle(document.documentElement)
@@ -104,27 +142,25 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
         .trim();
       if (resolved) setFontFamily(`${resolved}, ${FONT_FALLBACK}`);
     } catch {}
-
-    if (typeof document !== "undefined" && document.fonts?.ready) {
-      document.fonts.ready.then(() => setFontReady(true)).catch(() => setFontReady(true));
-    } else {
-      setFontReady(true);
-    }
   }, []);
 
-  const draw = useCallback(() => {
+  // === Draw (nutzt Refs) ===
+  const drawWheel = useCallback(() => {
     const cvs = canvasRef.current;
     if (!cvs) return;
+    const names = namesRef.current;
+    const S = sizeRef.current;
+    const fontFamily = fontFamilyRef.current;
+
     const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
-    if (cvs.width !== Math.round(size * dpr)) {
-      cvs.width = Math.round(size * dpr);
-      cvs.height = Math.round(size * dpr);
+    if (cvs.width !== Math.round(S * dpr)) {
+      cvs.width = Math.round(S * dpr);
+      cvs.height = Math.round(S * dpr);
     }
     const ctx = cvs.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const S = size;
     const C = S / 2;
     const R_OUTER = S * 0.5 - 4;
     const R_RING = R_OUTER - Math.max(14, S * 0.045);
@@ -151,14 +187,12 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     if (n === 0) return;
     const seg = TWO_PI / n;
 
-    // Label-Box: möglichst die ganze radiale Länge nutzen, kleiner Buffer zur Nabe & zum Ring.
+    // Auto-Fit Box
     const labelRadial = R_SEG - R_HUB - 14;
     const radialMid = (R_SEG + R_HUB) / 2;
-    // 0.78 = mehr Headroom, Text darf 78% der Tangential-Breite einnehmen
     const labelTangential = radialMid * seg * 0.78;
 
-    // === UNIFORM FONT-SIZE: kleinste Grösse, die für ALLE Namen passt ===
-    // So sieht's harmonisch aus statt "Du" riesig und "Schnüsi" winzig.
+    // Uniform Font-Size — kleinste die für ALLE passt
     ctx.font = `${FONT_WEIGHT} ${FONT_PROBE}px ${fontFamily}`;
     let chosenFs = Math.min(FONT_MAX, labelTangential);
     for (const name of names) {
@@ -168,7 +202,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     }
     chosenFs = Math.max(FONT_MIN, chosenFs);
 
-    // Segmente + Namen
     for (let i = 0; i < n; i++) {
       const a0 = i * seg + A;
       const base = PALETTE[i % PALETTE.length];
@@ -193,7 +226,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.font = `${FONT_WEIGHT} ${chosenFs}px ${fontFamily}`;
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      // Round-joined Stroke + Fill + Shadow → bleibt auch bei Vollspeed lesbar
       ctx.lineWidth = Math.max(3, chosenFs * 0.10);
       ctx.strokeStyle = "rgba(0,0,0,0.78)";
       ctx.lineJoin = "round";
@@ -237,11 +269,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.arc(C, C, R_HUB * 0.22, 0, TWO_PI);
     ctx.fillStyle = "#FFD15C";
     ctx.fill();
-  }, [names, size, fontFamily, fontReady]);
-
-  useEffect(() => {
-    draw();
-  }, [draw]);
+  }, []);
 
   function kickPointer(velocity: number) {
     const el = pointerRef.current;
@@ -257,80 +285,118 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     );
   }
 
-  const step = useCallback((now: number) => {
-    const dt = Math.min(0.05, (now - lastTimeRef.current) / 1000);
-    lastTimeRef.current = now;
-
-    const v = velRef.current;
-    const decel = BASE_DECEL + VEL_DRAG * v;
-    let newV = v - decel * dt;
-    if (newV < 0) newV = 0;
-
-    angleRef.current += newV * dt;
-    velRef.current = newV;
-
-    const n = names.length;
-    if (n > 0) {
-      const idx = segmentAtPointer(angleRef.current, n);
-      if (lastSegRef.current !== null && idx !== lastSegRef.current) {
-        const vol = Math.max(0.25, Math.min(1, v / 14));
-        if (!muted) tick(vol);
-        kickPointer(v);
-      }
-      lastSegRef.current = idx;
+  async function logResult(loser: string) {
+    try {
+      await fetch("/api/spins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ loser, participants: namesRef.current }),
+      });
+      window.dispatchEvent(new Event("spin-logged"));
+    } catch (e) {
+      console.error(e);
     }
+  }
 
-    draw();
+  // === Phasen-Übergang am Ende eines Spins ===
+  const finishSpin = useCallback(() => {
+    const names = namesRef.current;
+    const mode = modeRef.current;
+    const n = names.length;
+    const winnerIdx = segmentAtPointer(angleRef.current, n);
+    const landedName = names[winnerIdx];
 
-    if (velRef.current <= STOP_THRESHOLD) {
-      angleRef.current = ((angleRef.current % TWO_PI) + TWO_PI) % TWO_PI;
-      const winnerIdx = segmentAtPointer(angleRef.current, n);
-      const landedName = names[winnerIdx];
-      setSpinning(false);
+    setSpinning(false);
 
-      if (mode === "classic") {
-        // Klassisch: lander = Loser, sofort revealen
-        setResult(landedName);
-        setWinning(true);
-        setTimeout(() => setWinning(false), 1400);
-        if (!muted) winFanfare();
-        fireConfetti();
-        void logResult(landedName);
+    if (mode === "classic") {
+      setResult(landedName);
+      setWinning(true);
+      setTimeout(() => setWinning(false), 1400);
+      if (!mutedRef.current) winFanfare();
+      fireConfetti();
+      void logResult(landedName);
+    } else {
+      if (n <= 2) {
+        const loser = names.find((_, i) => i !== winnerIdx)!;
+        setEliminated(landedName);
+        setTimeout(() => {
+          setEliminated(null);
+          setNames([loser]);
+          setResult(loser);
+          setWinning(true);
+          setTimeout(() => setWinning(false), 1400);
+          if (!mutedRef.current) winFanfare();
+          fireConfetti();
+          void logResult(loser);
+        }, 1600);
       } else {
-        // Eliminierung: lander fliegt raus
-        if (n <= 2) {
-          // Bei 2: der andere ist der Loser
-          const loser = names.find((_, i) => i !== winnerIdx)!;
-          setEliminated(landedName);
-          setTimeout(() => {
-            setEliminated(null);
-            setNames([loser]);
-            setResult(loser);
-            setWinning(true);
-            setTimeout(() => setWinning(false), 1400);
-            if (!muted) winFanfare();
-            fireConfetti();
-            void logResult(loser);
-          }, 1600);
-        } else {
-          // Mid-game: nur den landenden entfernen
-          setEliminated(landedName);
-          setTimeout(() => {
-            setNames((p) => p.filter((_, i) => i !== winnerIdx));
-            setEliminated(null);
-          }, 1600);
+        setEliminated(landedName);
+        setTimeout(() => {
+          setNames((p) => p.filter((_, i) => i !== winnerIdx));
+          setEliminated(null);
+          phaseRef.current = "idle";
+          lastSegRef.current = null;
+        }, 1600);
+      }
+    }
+  }, []);
+
+  // === RAF-Loop (läuft permanent) ===
+  const step = useCallback(
+    (now: number) => {
+      if (lastTimeRef.current === 0) lastTimeRef.current = now;
+      const dt = Math.min(0.05, (now - lastTimeRef.current) / 1000);
+      lastTimeRef.current = now;
+
+      const phase = phaseRef.current;
+      const n = namesRef.current.length;
+
+      if (phase === "idle") {
+        velRef.current = IDLE_VELOCITY;
+        angleRef.current += IDLE_VELOCITY * dt;
+        // Keine Ticks, keine Kicks
+      } else if (phase === "spinning") {
+        const v = velRef.current;
+        const decel = BASE_DECEL + VEL_DRAG * v;
+        let newV = v - decel * dt;
+        if (newV < 0) newV = 0;
+        angleRef.current += newV * dt;
+        velRef.current = newV;
+
+        if (n > 0) {
+          const idx = segmentAtPointer(angleRef.current, n);
+          if (lastSegRef.current !== null && idx !== lastSegRef.current) {
+            const vol = Math.max(0.25, Math.min(1, v / 14));
+            if (!mutedRef.current) tick(vol);
+            kickPointer(v);
+          }
+          lastSegRef.current = idx;
+        }
+
+        if (newV <= STOP_THRESHOLD) {
+          phaseRef.current = "stopped";
+          angleRef.current = ((angleRef.current % TWO_PI) + TWO_PI) % TWO_PI;
+          finishSpin();
         }
       }
-      return;
-    }
+      // "stopped" → keine Bewegung, draw zeigt den Endzustand
 
+      drawWheel();
+      rafRef.current = requestAnimationFrame(step);
+    },
+    [drawWheel, finishSpin]
+  );
+
+  // RAF einmal starten
+  useEffect(() => {
     rafRef.current = requestAnimationFrame(step);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [names, muted, draw, mode]);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [step]);
 
   function spin() {
     if (spinning || eliminated || names.length < 2) return;
-    // In elim mode: erster Spin speichert den Roster für Reset
     if (mode === "elim" && originalRoster === null) {
       setOriginalRoster([...names]);
     }
@@ -339,22 +405,8 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     setWinning(false);
     lastSegRef.current = segmentAtPointer(angleRef.current, names.length);
     velRef.current = 26 + Math.random() * 10;
-    lastTimeRef.current = performance.now();
+    phaseRef.current = "spinning";
     if (!muted) spinStart();
-    rafRef.current = requestAnimationFrame(step);
-  }
-
-  async function logResult(loser: string) {
-    try {
-      await fetch("/api/spins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loser, participants: names }),
-      });
-      window.dispatchEvent(new Event("spin-logged"));
-    } catch (e) {
-      console.error(e);
-    }
   }
 
   function addName() {
@@ -379,6 +431,8 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       setNames(originalRoster);
       setOriginalRoster(null);
     }
+    phaseRef.current = "idle";
+    lastSegRef.current = null;
   }
 
   function resetWheel() {
@@ -386,19 +440,18 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     setResult(null);
     setEliminated(null);
     angleRef.current = 0;
-    velRef.current = 0;
+    velRef.current = IDLE_VELOCITY;
     lastSegRef.current = null;
+    phaseRef.current = "idle";
     if (mode === "elim" && originalRoster) {
       setNames(originalRoster);
       setOriginalRoster(null);
     }
-    draw();
   }
 
   function changeMode(next: Mode) {
     if (spinning || eliminated) return;
     if (next === mode) return;
-    // Wenn ein Elim-Spiel läuft, zurücksetzen
     if (originalRoster) {
       setNames(originalRoster);
       setOriginalRoster(null);
@@ -408,38 +461,74 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   }
 
   const canSpin = !spinning && !eliminated && names.length >= 2;
-  const lockedForElim = inElimGame; // Input/Chip-Entfernen sperren
+  const lockedForElim = inElimGame;
 
   return (
     <div className="flex flex-col items-center gap-5 w-full">
-      {/* Mode Selector */}
-      <div className="segmented inline-flex">
-        <button
-          onClick={() => changeMode("classic")}
-          data-active={mode === "classic"}
-          disabled={spinning || eliminated !== null}
-          className="segmented-btn inline-flex items-center gap-1.5 py-1.5 px-4"
-        >
-          <Target size={13} /> Klassisch
-        </button>
-        <button
-          onClick={() => changeMode("elim")}
-          data-active={mode === "elim"}
-          disabled={spinning || eliminated !== null}
-          className="segmented-btn inline-flex items-center gap-1.5 py-1.5 px-4"
-        >
-          <Swords size={13} /> Eliminierung
-        </button>
+      {/* === MODE CARDS === */}
+      <div className="grid grid-cols-2 gap-2.5 w-full max-w-[480px]">
+        {MODES.map((m) => {
+          const active = mode === m.id;
+          const Icon = m.Icon;
+          return (
+            <button
+              key={m.id}
+              onClick={() => changeMode(m.id)}
+              disabled={spinning || eliminated !== null}
+              data-active={active}
+              className="mode-card disabled:cursor-not-allowed"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div
+                  className="grid place-items-center w-10 h-10 rounded-xl"
+                  style={{
+                    background: `color-mix(in srgb, ${m.accent} 18%, transparent)`,
+                    color: m.accent,
+                  }}
+                >
+                  <Icon size={18} strokeWidth={2.3} />
+                </div>
+                {active && (
+                  <div
+                    className="grid place-items-center w-5 h-5 rounded-full"
+                    style={{
+                      background: "linear-gradient(135deg, #FFE8A8, #E8C36A)",
+                      color: "#1a1a1a",
+                      boxShadow: "0 2px 8px rgba(232,195,106,0.5)",
+                    }}
+                  >
+                    <Check size={12} strokeWidth={3.5} />
+                  </div>
+                )}
+              </div>
+              <div className="font-display font-extrabold text-base sm:text-lg text-fg leading-tight">
+                {m.title}
+              </div>
+              <div className="text-[11px] sm:text-xs text-fg-mute mt-0.5 leading-snug">
+                {m.desc}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Mode-Beschreibung / Status */}
-      <p className="text-xs text-fg-mute -mt-2 text-center">
-        {mode === "classic"
-          ? "Ein Spin — die Schande trägt, auf wen das Rad zeigt."
-          : inElimGame
-            ? `${names.length} von ${originalRoster?.length} noch im Rennen — wer rausfliegt, ist sicher.`
-            : "Jeder Spin eliminiert einen. Wer als Letzter im Rad bleibt, trägt die Schande."}
-      </p>
+      {/* Status / Roster-Info */}
+      {inElimGame && (
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold"
+          style={{
+            background: "rgba(232,195,106,0.12)",
+            color: "#E8C36A",
+            border: "1px solid rgba(232,195,106,0.32)",
+          }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{ background: "#E8C36A", boxShadow: "0 0 8px #E8C36A" }}
+          />
+          {names.length} von {originalRoster?.length} im Rennen
+        </div>
+      )}
 
       {/* Namens-Chips */}
       <div className="flex flex-wrap gap-2 justify-center max-w-[520px]">
@@ -513,7 +602,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 width: size, height: size,
                 left: "50%", top: 18 + size / 2,
                 transform: "translate(-50%, -50%)",
-                border: "3px solid rgba(255,209,92,0.75)",
+                border: "3px solid rgba(232,195,106,0.75)",
                 animation: "pulse-ring 1.2s ease-out forwards",
               }}
             />
@@ -559,7 +648,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
           </svg>
         </div>
 
-        {/* Canvas */}
         <div
           className="absolute left-1/2 -translate-x-1/2 rounded-full shadow-wheel"
           style={{ top: 18, width: size, height: size }}
@@ -665,7 +753,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25, duration: 0.4 }}
-                className="font-bold text-gold tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
+                className="font-bold gradient-gold tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
               >
                 🎰 JACKPOT 🎰
               </motion.div>
@@ -700,7 +788,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 className="inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-semibold transition-all"
                 style={{
                   background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.18)",
+                  border: "1px solid rgba(232,195,106,0.4)",
                   color: "#fff",
                   backdropFilter: "blur(20px)",
                 }}

@@ -12,9 +12,9 @@ export default async function SettingsPage() {
   const user = session?.user;
 
   return (
-    <main className="min-h-screen px-4 pt-6 pb-24 sm:px-8">
+    <main className="min-h-screen px-4 pt-5 pb-32 sm:px-8 sm:pt-6 sm:pb-12">
       {/* Top-Bar */}
-      <header className="max-w-2xl mx-auto flex items-center justify-between mb-8">
+      <header className="max-w-2xl mx-auto flex items-center justify-between mb-6 sm:mb-8">
         <Link href="/" className="btn-ghost">
           <ArrowLeft size={16} /> Zurück
         </Link>

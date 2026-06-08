@@ -29,11 +29,20 @@ const config: Config = {
           glow: "rgba(255, 45, 85, 0.45)",
         },
         gold: {
-          DEFAULT: "#FFD15C",
+          DEFAULT: "#E8C36A",
+          bright: "#FFD15C",
           deep: "#C99320",
+          dark: "#7A5A18",
+        },
+        felt: {
+          DEFAULT: "#1A6E48",
+          dark: "#0E5C3F",
+          soft: "#3DDC91",
         },
         mint: "#5FE3C4",
         sky: "#69A6FF",
+        royal: "#C589FF",
+        coral: "#FF8A3D",
       },
       boxShadow: {
         card: "var(--shadow-card)",

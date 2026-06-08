@@ -9,17 +9,17 @@ export default async function TabellePage() {
   const user = session?.user;
 
   return (
-    <main className="min-h-screen px-4 pt-6 pb-24 sm:px-8">
+    <main className="min-h-screen px-4 pt-5 pb-32 sm:px-8 sm:pt-6 sm:pb-12">
       <TopNav user={user} />
 
-      <section className="max-w-2xl mx-auto text-center mb-8 sm:mb-10">
-        <p className="uppercase tracking-[0.32em] text-xs text-fg-mute mb-3">
+      <section className="max-w-2xl mx-auto text-center mb-6 sm:mb-10">
+        <p className="uppercase tracking-[0.32em] text-[10px] sm:text-xs text-gold/80 mb-2 sm:mb-3 font-semibold">
           Hall of Shame
         </p>
         <h1 className="font-display font-black leading-[0.92] tracking-tight text-4xl sm:text-6xl text-fg">
           Schande-<span className="gradient-shame">Tabelle</span>
         </h1>
-        <p className="mt-3 text-fg-soft text-base">
+        <p className="mt-2 sm:mt-3 text-fg-soft text-sm sm:text-base">
           Wer wie oft den Kürzeren gezogen hat.
         </p>
       </section>
@@ -27,12 +27,6 @@ export default async function TabellePage() {
       <section className="max-w-md mx-auto">
         <Leaderboard />
       </section>
-
-      <footer className="max-w-3xl mx-auto mt-20 text-center text-xs text-fg-faint">
-        <span>rad-der-schande.ch · gebaut mit </span>
-        <span className="text-shame">♥</span>
-        <span> für die 5er-Gang</span>
-      </footer>
     </main>
   );
 }

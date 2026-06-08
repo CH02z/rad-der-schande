@@ -3,49 +3,75 @@
 @tailwind utilities;
 
 /* ============================================================
-   THEME-VARIABLEN
+   THEME-VARIABLEN — Modern Casino: Emerald-Black + Gold + Multi
    ============================================================ */
 
 :root {
-  /* Dark (Default) */
-  --bg: #07060B;
-  --bg-soft: #11101A;
+  /* === DARK (Default) === */
+  --bg: #07100C;             /* tiefes Smaragd-Schwarz */
+  --bg-soft: #0E1813;
   --surface: rgba(255, 255, 255, 0.04);
   --surface-strong: rgba(255, 255, 255, 0.07);
-  --text: #F4F0FF;
-  --text-soft: rgba(244, 240, 255, 0.65);
-  --text-mute: rgba(244, 240, 255, 0.35);
-  --text-faint: rgba(244, 240, 255, 0.18);
+  --surface-gold: rgba(232, 195, 106, 0.08);
+  --surface-felt: rgba(26, 110, 72, 0.12);
+
+  --text: #F5F1E6;            /* warm cream */
+  --text-soft: rgba(245, 241, 230, 0.7);
+  --text-mute: rgba(245, 241, 230, 0.42);
+  --text-faint: rgba(245, 241, 230, 0.22);
+
   --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset, 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-wheel: 0 30px 80px -10px rgba(255, 45, 85, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-  --shadow-pop: 0 20px 60px -10px rgba(255, 45, 85, 0.45);
-  --noise-opacity: 0.025;
-  --glow-1: rgba(255, 45, 85, 0.18);
-  --glow-2: rgba(105, 166, 255, 0.10);
-  --glow-3: rgba(95, 227, 196, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-gold: rgba(232, 195, 106, 0.32);
+
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.05) inset, 0 12px 40px rgba(0,0,0,0.5);
+  --shadow-wheel: 0 30px 80px -10px rgba(255,45,85,0.32), 0 0 0 1px rgba(232,195,106,0.18) inset;
+  --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.5);
+  --shadow-gold: 0 8px 30px -6px rgba(232,195,106,0.4);
+
+  --noise-opacity: 0.022;
+
+  /* Multi-color stage-glows */
+  --glow-red:    rgba(255, 45, 85, 0.18);
+  --glow-gold:   rgba(232, 195, 106, 0.14);
+  --glow-felt:   rgba(26, 110, 72, 0.18);
+  --glow-magenta:rgba(197, 137, 255, 0.10);
+  --glow-aqua:   rgba(95, 227, 196, 0.10);
+
   color-scheme: dark;
 }
 
 :root.light {
-  --bg: #FAFAF6;
-  --bg-soft: #F0EEE5;
-  --surface: rgba(255, 255, 255, 0.7);
-  --surface-strong: rgba(255, 255, 255, 0.88);
-  --text: #0B0912;
-  --text-soft: rgba(11, 9, 18, 0.7);
-  --text-mute: rgba(11, 9, 18, 0.45);
-  --text-faint: rgba(11, 9, 18, 0.22);
-  --border: rgba(11, 9, 18, 0.08);
-  --border-strong: rgba(11, 9, 18, 0.16);
-  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.8) inset, 0 12px 40px rgba(60, 30, 30, 0.07);
-  --shadow-wheel: 0 30px 90px -10px rgba(255, 45, 85, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.05) inset;
-  --shadow-pop: 0 20px 60px -10px rgba(255, 45, 85, 0.35);
+  /* === LIGHT === */
+  --bg: #F8F4E7;              /* warm cream casino paper */
+  --bg-soft: #EEE7D2;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-gold: rgba(232, 195, 106, 0.16);
+  --surface-felt: rgba(26, 110, 72, 0.10);
+
+  --text: #0B100C;
+  --text-soft: rgba(11, 16, 12, 0.72);
+  --text-mute: rgba(11, 16, 12, 0.46);
+  --text-faint: rgba(11, 16, 12, 0.22);
+
+  --border: rgba(11, 16, 12, 0.10);
+  --border-strong: rgba(11, 16, 12, 0.18);
+  --border-gold: rgba(180, 140, 40, 0.45);
+
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.9) inset, 0 14px 44px rgba(80, 50, 20, 0.10);
+  --shadow-wheel: 0 30px 90px -10px rgba(255,45,85,0.25), 0 0 0 1px rgba(180,140,40,0.25) inset;
+  --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.36);
+  --shadow-gold: 0 8px 30px -6px rgba(180,140,40,0.45);
+
   --noise-opacity: 0.04;
-  --glow-1: rgba(255, 45, 85, 0.10);
-  --glow-2: rgba(105, 166, 255, 0.08);
-  --glow-3: rgba(95, 227, 196, 0.07);
+
+  --glow-red:    rgba(255, 45, 85, 0.10);
+  --glow-gold:   rgba(232, 195, 106, 0.24);
+  --glow-felt:   rgba(26, 110, 72, 0.12);
+  --glow-magenta:rgba(197, 137, 255, 0.08);
+  --glow-aqua:   rgba(95, 227, 196, 0.08);
+
   color-scheme: light;
 }
 
@@ -59,16 +85,18 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Stage-Glows + Noise */
+/* Multi-Color-Stage: 5 verteilte Glow-Blobs */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(900px 600px at 50% -8%, var(--glow-1), transparent 60%),
-    radial-gradient(700px 500px at 90% 110%, var(--glow-2), transparent 60%),
-    radial-gradient(600px 500px at 0% 100%, var(--glow-3), transparent 60%);
+    radial-gradient(720px 480px at 50% -6%, var(--glow-red), transparent 60%),
+    radial-gradient(540px 420px at 92% 18%, var(--glow-gold), transparent 60%),
+    radial-gradient(520px 420px at 8% 22%, var(--glow-magenta), transparent 60%),
+    radial-gradient(620px 480px at 88% 96%, var(--glow-felt), transparent 60%),
+    radial-gradient(540px 420px at 12% 92%, var(--glow-aqua), transparent 60%);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -104,6 +132,28 @@ body::after {
     box-shadow: var(--shadow-card);
   }
 
+  /* Casino-Card: glass + sehr dezente Gold-Trim oben */
+  .card-casino {
+    position: relative;
+    background: var(--surface-strong);
+    border: 1px solid var(--border-strong);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: var(--shadow-card);
+    border-radius: 28px;
+    overflow: hidden;
+  }
+  .card-casino::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(232,195,106,0.6), transparent);
+    pointer-events: none;
+  }
+
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3
            font-display font-bold text-white text-base
@@ -112,7 +162,8 @@ body::after {
     box-shadow:
       0 1px 0 rgba(255,255,255,0.25) inset,
       0 -2px 0 rgba(0,0,0,0.2) inset,
-      0 12px 32px -6px rgba(255,45,85,0.5);
+      0 0 0 1px rgba(232,195,106,0.35) inset,
+      0 12px 32px -6px rgba(255,45,85,0.55);
   }
   .btn-primary:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
   .btn-primary:active:not(:disabled) { transform: translateY(1px); filter: brightness(0.96); }
@@ -155,13 +206,20 @@ body::after {
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
-    --tw-ring-color: rgba(255,45,85,0.4);
+    --tw-ring-color: rgba(232,195,106,0.45);
   }
   .field::placeholder { color: var(--text-mute); }
-  .field:focus { border-color: rgba(255,45,85,0.5); }
+  .field:focus { border-color: rgba(232,195,106,0.5); }
 
   .gradient-shame {
     background: linear-gradient(135deg, #FFD15C 0%, #FF6B86 38%, #FF2D55 62%, #B30032 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, #FFE8A8 0%, #FFD15C 45%, #C99320 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -180,8 +238,34 @@ body::after {
   .segmented-btn[data-active="true"] {
     background: var(--surface-strong);
     color: var(--text);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
+
+  /* === Tab-Pills (Desktop-Nav) === */
+  .tab-pill {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all;
+    color: var(--text-mute);
+  }
+  .tab-pill:hover { color: var(--text-soft); }
+  .tab-pill[data-active="true"] {
+    background: var(--surface-strong);
+    color: var(--text);
+    box-shadow: 0 2px 12px rgba(232,195,106,0.18), 0 0 0 1px var(--border-gold) inset;
+  }
+
+  /* === Mode-Card (gross, Icon + Title + Description) === */
+  .mode-card {
+    @apply relative flex flex-col gap-1 p-4 rounded-2xl text-left transition-all duration-200;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+  }
+  .mode-card:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+  .mode-card[data-active="true"] {
+    background: var(--surface-strong);
+    border-color: var(--border-gold);
+    box-shadow: var(--shadow-gold);
+  }
+  .mode-card[data-active="false"] { opacity: 0.55; }
 }
 
 /* ============================================================
@@ -234,4 +318,11 @@ body::after {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-mute); }
 ::-webkit-scrollbar-track { background: transparent; }
 
-::selection { background: rgba(255,45,85,0.4); color: #fff; }
+::selection { background: rgba(232,195,106,0.45); color: var(--bg); }
+
+/* === Safe-Area-Helpers (für Bottom-Nav) === */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-top { padding-top: env(safe-area-inset-top); }
+
+/* Smooth-Scroll für Tab-Wechsel */
+html { scroll-behavior: smooth; }

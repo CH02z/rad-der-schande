@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Disc3, Trophy } from "lucide-react";
+import { Settings, Dices, Trophy } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const TABS = [
-  { href: "/", label: "Drehen", icon: Disc3 },
+  { href: "/", label: "Drehen", icon: Dices },
   { href: "/tabelle", label: "Tabelle", icon: Trophy },
 ];
 
@@ -19,18 +19,18 @@ export default function TopNav({ user }: Props) {
   const pathname = usePathname();
 
   return (
-    <header className="max-w-5xl mx-auto mb-8 sm:mb-10">
+    <header className="max-w-5xl mx-auto mb-6 sm:mb-10">
       <div className="flex items-center justify-between gap-3">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <BrandMark size={30} />
-          <span className="hidden sm:inline font-display font-extrabold tracking-tight text-lg sm:text-xl text-fg">
+          <BrandMark size={28} />
+          <span className="font-display font-extrabold tracking-tight text-base sm:text-xl text-fg">
             Rad der <span className="gradient-shame">Schande</span>
           </span>
         </Link>
 
-        {/* Tabs (Mitte auf Desktop, eigene Zeile auf Mobile siehe unten) */}
-        <nav className="hidden sm:flex segmented">
+        {/* Tab-Pills (Desktop only) */}
+        <nav className="hidden sm:flex items-center gap-1">
           {TABS.map((t) => {
             const active = pathname === t.href;
             const Icon = t.icon;
@@ -39,17 +39,17 @@ export default function TopNav({ user }: Props) {
                 key={t.href}
                 href={t.href}
                 data-active={active}
-                className="segmented-btn inline-flex items-center gap-1.5 py-1.5 px-3.5"
+                className="tab-pill"
               >
-                <Icon size={14} />
+                <Icon size={15} />
                 {t.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* User + Settings */}
-        <div className="flex items-center gap-2">
+        {/* User + Settings (Desktop) */}
+        <div className="hidden sm:flex items-center gap-2">
           {user?.image && (
             <div className="hidden md:flex items-center gap-2.5 glass rounded-full pl-1 pr-4 py-1">
               <Image
@@ -68,26 +68,20 @@ export default function TopNav({ user }: Props) {
             <Settings size={16} />
           </Link>
         </div>
-      </div>
 
-      {/* Mobile-Tabs (volle Breite, eigene Zeile) */}
-      <nav className="sm:hidden mt-4 segmented grid grid-cols-2">
-        {TABS.map((t) => {
-          const active = pathname === t.href;
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.href}
-              href={t.href}
-              data-active={active}
-              className="segmented-btn inline-flex items-center justify-center gap-1.5 py-2"
-            >
-              <Icon size={14} />
-              {t.label}
-            </Link>
-          );
-        })}
-      </nav>
+        {/* Mobile: kleines Avatar-Bild rechts (ohne Settings — das ist in der Bottom-Nav) */}
+        {user?.image && (
+          <div className="sm:hidden">
+            <Image
+              src={user.image}
+              alt={user.name ?? ""}
+              width={32}
+              height={32}
+              className="rounded-full border border-fg/10"
+            />
+          </div>
+        )}
+      </div>
     </header>
   );
 }

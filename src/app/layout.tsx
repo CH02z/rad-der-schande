@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import Providers from "@/components/Providers";
+import BottomNav from "@/components/BottomNav";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -20,25 +21,30 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   title: "Rad der Schande",
-  description: "Wer zahlt? Wer fährt? Lass das Rad entscheiden.",
+  description: "Wer wird zur Schande? Lass das Rad entscheiden.",
   metadataBase: new URL("https://rad-der-schande.ch"),
   openGraph: {
     title: "Rad der Schande",
-    description: "Wer zahlt? Wer fährt? Lass das Rad entscheiden.",
+    description: "Wer wird zur Schande? Lass das Rad entscheiden.",
     locale: "de_CH",
     type: "website",
   },
   icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }] },
+  appleWebApp: {
+    title: "Schande",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#07060B" },
-    { media: "(prefers-color-scheme: light)", color: "#FAFAF6" },
+    { media: "(prefers-color-scheme: dark)", color: "#07100C" },
+    { media: "(prefers-color-scheme: light)", color: "#F8F4E7" },
   ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -48,7 +54,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   );
