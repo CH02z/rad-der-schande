@@ -8,69 +8,81 @@
 
 :root {
   /* === DARK (Default) === */
-  --bg: #07100C;             /* tiefes Smaragd-Schwarz */
-  --bg-soft: #0E1813;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-strong: rgba(255, 255, 255, 0.07);
+  --bg: #061611;              /* tieferes Casino-Felt-Schwarz mit Smaragd */
+  --bg-soft: #0A211A;
+  --surface: rgba(63, 200, 130, 0.04);     /* leicht grün getönt */
+  --surface-strong: rgba(73, 215, 145, 0.07);
   --surface-gold: rgba(232, 195, 106, 0.08);
-  --surface-felt: rgba(26, 110, 72, 0.12);
+  --surface-felt: rgba(48, 180, 110, 0.16);
+  --surface-felt-strong: rgba(48, 180, 110, 0.22);
 
   --text: #F5F1E6;            /* warm cream */
-  --text-soft: rgba(245, 241, 230, 0.7);
-  --text-mute: rgba(245, 241, 230, 0.42);
+  --text-soft: rgba(245, 241, 230, 0.72);
+  --text-mute: rgba(245, 241, 230, 0.44);
   --text-faint: rgba(245, 241, 230, 0.22);
+  --text-felt: #5FE3C4;       /* mint-grün für Eyebrows/Labels */
+  --text-felt-soft: rgba(95, 227, 196, 0.7);
 
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.18);
   --border-gold: rgba(232, 195, 106, 0.32);
+  --border-felt: rgba(95, 227, 196, 0.28);
+  --border-felt-strong: rgba(95, 227, 196, 0.45);
 
-  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.05) inset, 0 12px 40px rgba(0,0,0,0.5);
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.05) inset, 0 12px 40px rgba(0, 30, 20, 0.55);
   --shadow-wheel: 0 30px 80px -10px rgba(255,45,85,0.32), 0 0 0 1px rgba(232,195,106,0.18) inset;
   --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.5);
   --shadow-gold: 0 8px 30px -6px rgba(232,195,106,0.4);
+  --shadow-felt: 0 10px 40px -8px rgba(48, 180, 110, 0.45);
 
-  --noise-opacity: 0.022;
+  --noise-opacity: 0.024;
 
-  /* Multi-color stage-glows */
-  --glow-red:    rgba(255, 45, 85, 0.18);
-  --glow-gold:   rgba(232, 195, 106, 0.14);
-  --glow-felt:   rgba(26, 110, 72, 0.18);
-  --glow-magenta:rgba(197, 137, 255, 0.10);
-  --glow-aqua:   rgba(95, 227, 196, 0.10);
+  /* Multi-color stage-glows — Felt dominiert jetzt */
+  --glow-red:    rgba(255, 45, 85, 0.14);
+  --glow-gold:   rgba(232, 195, 106, 0.13);
+  --glow-felt:   rgba(48, 180, 110, 0.32);
+  --glow-felt2:  rgba(95, 227, 196, 0.22);
+  --glow-magenta:rgba(197, 137, 255, 0.09);
 
   color-scheme: dark;
 }
 
 :root.light {
-  /* === LIGHT === */
-  --bg: #F8F4E7;              /* warm cream casino paper */
-  --bg-soft: #EEE7D2;
+  /* === LIGHT — wärmeres Cream mit grünlichem Cast === */
+  --bg: #F4F5EB;              /* leicht grün getönt */
+  --bg-soft: #E7EBD4;
   --surface: rgba(255, 255, 255, 0.72);
   --surface-strong: rgba(255, 255, 255, 0.92);
   --surface-gold: rgba(232, 195, 106, 0.16);
   --surface-felt: rgba(26, 110, 72, 0.10);
+  --surface-felt-strong: rgba(26, 110, 72, 0.16);
 
   --text: #0B100C;
   --text-soft: rgba(11, 16, 12, 0.72);
   --text-mute: rgba(11, 16, 12, 0.46);
   --text-faint: rgba(11, 16, 12, 0.22);
+  --text-felt: #1A6E48;
+  --text-felt-soft: rgba(26, 110, 72, 0.8);
 
   --border: rgba(11, 16, 12, 0.10);
   --border-strong: rgba(11, 16, 12, 0.18);
   --border-gold: rgba(180, 140, 40, 0.45);
+  --border-felt: rgba(26, 110, 72, 0.30);
+  --border-felt-strong: rgba(26, 110, 72, 0.50);
 
-  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.9) inset, 0 14px 44px rgba(80, 50, 20, 0.10);
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.9) inset, 0 14px 44px rgba(40, 80, 60, 0.12);
   --shadow-wheel: 0 30px 90px -10px rgba(255,45,85,0.25), 0 0 0 1px rgba(180,140,40,0.25) inset;
   --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.36);
   --shadow-gold: 0 8px 30px -6px rgba(180,140,40,0.45);
+  --shadow-felt: 0 10px 40px -8px rgba(26, 110, 72, 0.40);
 
   --noise-opacity: 0.04;
 
-  --glow-red:    rgba(255, 45, 85, 0.10);
-  --glow-gold:   rgba(232, 195, 106, 0.24);
-  --glow-felt:   rgba(26, 110, 72, 0.12);
-  --glow-magenta:rgba(197, 137, 255, 0.08);
-  --glow-aqua:   rgba(95, 227, 196, 0.08);
+  --glow-red:    rgba(255, 45, 85, 0.08);
+  --glow-gold:   rgba(232, 195, 106, 0.20);
+  --glow-felt:   rgba(26, 110, 72, 0.22);
+  --glow-felt2:  rgba(95, 227, 196, 0.14);
+  --glow-magenta:rgba(197, 137, 255, 0.06);
 
   color-scheme: light;
 }
@@ -85,18 +97,19 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Multi-Color-Stage: 5 verteilte Glow-Blobs */
+/* Multi-Color-Stage — Felt-Green dominiert, Gold + Rot als Casino-Akzente */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(720px 480px at 50% -6%, var(--glow-red), transparent 60%),
-    radial-gradient(540px 420px at 92% 18%, var(--glow-gold), transparent 60%),
-    radial-gradient(520px 420px at 8% 22%, var(--glow-magenta), transparent 60%),
-    radial-gradient(620px 480px at 88% 96%, var(--glow-felt), transparent 60%),
-    radial-gradient(540px 420px at 12% 92%, var(--glow-aqua), transparent 60%);
+    radial-gradient(900px 600px at 50% -10%, var(--glow-felt), transparent 65%),
+    radial-gradient(680px 520px at 18% 40%, var(--glow-felt2), transparent 60%),
+    radial-gradient(560px 440px at 92% 12%, var(--glow-gold), transparent 60%),
+    radial-gradient(620px 480px at 50% 110%, var(--glow-felt), transparent 60%),
+    radial-gradient(520px 420px at 88% 95%, var(--glow-red), transparent 60%),
+    radial-gradient(420px 360px at 8% 90%, var(--glow-magenta), transparent 60%);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -152,6 +165,48 @@ body::after {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(232,195,106,0.6), transparent);
     pointer-events: none;
+  }
+
+  /* Felt-Card: für Setup-Bereiche, mit grüner Tönung */
+  .card-felt {
+    position: relative;
+    background: var(--surface-felt);
+    border: 1px solid var(--border-felt);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: var(--shadow-felt);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .card-felt::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(95,227,196,0.5), transparent);
+    pointer-events: none;
+  }
+
+  /* Felt-Eyebrow: kleine Section-Labels in grün */
+  .eyebrow-felt {
+    @apply inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.28em];
+    color: var(--text-felt);
+  }
+  .eyebrow-felt::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-felt);
+    box-shadow: 0 0 8px var(--text-felt);
+  }
+
+  .gradient-felt {
+    background: linear-gradient(135deg, #5FE3C4 0%, #3DDC91 50%, #1A6E48 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .btn-primary {

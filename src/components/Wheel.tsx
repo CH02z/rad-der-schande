@@ -2,13 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, RotateCcw, Target, Swords, Check } from "lucide-react";
+import {
+  Plus, X, RotateCcw, Target, Swords, Check, ArrowLeft, ArrowRight, Users,
+} from "lucide-react";
 import { tick, winFanfare, spinStart } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
 
 /* ============================================================
-   PALETTE & CONSTANTS
+   CONSTANTS
    ============================================================ */
 
 const PALETTE = [
@@ -21,15 +23,11 @@ const MAX_NAMES = 12;
 const TWO_PI = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 
-// Physik: ~9 s Spin mit dramatischem Tail
 const BASE_DECEL = 1.0;
 const VEL_DRAG = 0.20;
 const STOP_THRESHOLD = 0.05;
+const IDLE_VELOCITY = 0.32;
 
-// Ruhezustand: ganz leichtes Drehen, lebendig aber unaufdringlich
-const IDLE_VELOCITY = 0.32;     // rad/s ≈ 1 U / 20 s
-
-// Auto-Fit-Fonts
 const FONT_PROBE = 100;
 const FONT_FALLBACK = 'system-ui, "Helvetica Neue", Arial, sans-serif';
 const FONT_WEIGHT = 800;
@@ -38,6 +36,7 @@ const FONT_MAX = 100;
 
 type Mode = "classic" | "elim";
 type Phase = "idle" | "spinning" | "stopped";
+type View = "setup" | "game";
 
 const MODES = [
   {
@@ -85,7 +84,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
 
-  // Animation-Refs (immer aktueller Wert für RAF-Loop)
+  // Animation-Refs
   const angleRef = useRef(0);
   const velRef = useRef(IDLE_VELOCITY);
   const lastTimeRef = useRef(0);
@@ -93,14 +92,15 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const rafRef = useRef<number | null>(null);
   const phaseRef = useRef<Phase>("idle");
 
-  // Refs gespiegelt von State (damit RAF immer aktuelle Werte sieht)
+  // State → Refs
   const namesRef = useRef<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
   const modeRef = useRef<Mode>("classic");
   const mutedRef = useRef(false);
   const sizeRef = useRef(380);
   const fontFamilyRef = useRef<string>(FONT_FALLBACK);
 
-  // React State (UI)
+  // UI State
+  const [view, setView] = useState<View>("setup");
   const [names, setNames] = useState<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
@@ -114,7 +114,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
   const { muted } = useSound();
 
-  // === Sync state → refs ===
   useEffect(() => { namesRef.current = names; }, [names]);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { mutedRef.current = muted; }, [muted]);
@@ -123,7 +122,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
   const inElimGame = mode === "elim" && originalRoster !== null;
 
-  // === Resize ===
   useEffect(() => {
     function update() {
       const w = Math.min(580, window.innerWidth - 40);
@@ -134,7 +132,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // === Font-Resolution ===
   useEffect(() => {
     try {
       const resolved = getComputedStyle(document.documentElement)
@@ -144,7 +141,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     } catch {}
   }, []);
 
-  // === Draw (nutzt Refs) ===
+  // === Draw (uses refs) ===
   const drawWheel = useCallback(() => {
     const cvs = canvasRef.current;
     if (!cvs) return;
@@ -171,7 +168,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
     ctx.clearRect(0, 0, S, S);
 
-    // Gold-Ring
     const ring = ctx.createRadialGradient(C, C, R_RING, C, C, R_OUTER);
     ring.addColorStop(0, "#2a1f08");
     ring.addColorStop(0.45, "#8a6a1c");
@@ -187,12 +183,10 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     if (n === 0) return;
     const seg = TWO_PI / n;
 
-    // Auto-Fit Box
     const labelRadial = R_SEG - R_HUB - 14;
     const radialMid = (R_SEG + R_HUB) / 2;
     const labelTangential = radialMid * seg * 0.78;
 
-    // Uniform Font-Size — kleinste die für ALLE passt
     ctx.font = `${FONT_WEIGHT} ${FONT_PROBE}px ${fontFamily}`;
     let chosenFs = Math.min(FONT_MAX, labelTangential);
     for (const name of names) {
@@ -241,7 +235,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.restore();
     }
 
-    // Glanz-Highlight
     ctx.save();
     ctx.beginPath();
     ctx.arc(C, C, R_SEG, 0, TWO_PI);
@@ -253,7 +246,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.fillRect(0, 0, S, S);
     ctx.restore();
 
-    // Hub
     const hubGrad = ctx.createRadialGradient(C - R_HUB * 0.35, C - R_HUB * 0.35, R_HUB * 0.1, C, C, R_HUB);
     hubGrad.addColorStop(0, "#3a3650");
     hubGrad.addColorStop(1, "#07060B");
@@ -298,7 +290,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     }
   }
 
-  // === Phasen-Übergang am Ende eines Spins ===
   const finishSpin = useCallback(() => {
     const names = namesRef.current;
     const mode = modeRef.current;
@@ -341,7 +332,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     }
   }, []);
 
-  // === RAF-Loop (läuft permanent) ===
   const step = useCallback(
     (now: number) => {
       if (lastTimeRef.current === 0) lastTimeRef.current = now;
@@ -354,7 +344,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       if (phase === "idle") {
         velRef.current = IDLE_VELOCITY;
         angleRef.current += IDLE_VELOCITY * dt;
-        // Keine Ticks, keine Kicks
       } else if (phase === "spinning") {
         const v = velRef.current;
         const decel = BASE_DECEL + VEL_DRAG * v;
@@ -379,7 +368,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
           finishSpin();
         }
       }
-      // "stopped" → keine Bewegung, draw zeigt den Endzustand
 
       drawWheel();
       rafRef.current = requestAnimationFrame(step);
@@ -387,7 +375,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     [drawWheel, finishSpin]
   );
 
-  // RAF einmal starten
   useEffect(() => {
     rafRef.current = requestAnimationFrame(step);
     return () => {
@@ -460,216 +447,349 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     setMode(next);
   }
 
+  function startGame() {
+    if (names.length < 2) return;
+    setView("game");
+  }
+
+  function backToSetup() {
+    if (spinning) return;
+    if (originalRoster) {
+      setNames(originalRoster);
+      setOriginalRoster(null);
+    }
+    setResult(null);
+    setEliminated(null);
+    phaseRef.current = "idle";
+    lastSegRef.current = null;
+    setView("setup");
+  }
+
   const canSpin = !spinning && !eliminated && names.length >= 2;
   const lockedForElim = inElimGame;
+  const activeMode = MODES.find((m) => m.id === mode)!;
 
   return (
-    <div className="flex flex-col items-center gap-5 w-full">
-      {/* === MODE CARDS === */}
-      <div className="grid grid-cols-2 gap-2.5 w-full max-w-[480px]">
-        {MODES.map((m) => {
-          const active = mode === m.id;
-          const Icon = m.Icon;
-          return (
-            <button
-              key={m.id}
-              onClick={() => changeMode(m.id)}
-              disabled={spinning || eliminated !== null}
-              data-active={active}
-              className="mode-card disabled:cursor-not-allowed"
-            >
-              <div className="flex items-start justify-between mb-2">
+    <div className="w-full">
+      <AnimatePresence mode="wait">
+        {view === "setup" ? (
+          /* =========================================================
+             SETUP VIEW
+             ========================================================= */
+          <motion.div
+            key="setup"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.32, ease: [0.2, 0.7, 0.2, 1] }}
+            className="max-w-2xl mx-auto"
+          >
+            {/* Hero */}
+            <div className="text-center mb-8 sm:mb-12">
+              <p className="eyebrow-felt justify-center mb-3">Game Setup</p>
+              <h1 className="font-display font-black leading-[0.92] tracking-tight text-4xl sm:text-6xl text-fg">
+                Wer wird zur <span className="gradient-shame">Schande</span>
+                <span className="text-fg-faint">?</span>
+              </h1>
+              <p className="mt-3 text-fg-soft text-sm sm:text-base max-w-md mx-auto">
+                Wähle den Modus und füge die Spieler hinzu.
+              </p>
+            </div>
+
+            {/* === SECTION: Spielmodus === */}
+            <section className="card-felt p-5 sm:p-6 mb-6 sm:mb-7">
+              <header className="mb-4">
+                <p className="eyebrow-felt">01 · Modus</p>
+                <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
+                  Wie wird gespielt?
+                </h2>
+              </header>
+
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {MODES.map((m) => {
+                  const active = mode === m.id;
+                  const Icon = m.Icon;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => changeMode(m.id)}
+                      data-active={active}
+                      className="mode-card disabled:cursor-not-allowed"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div
+                          className="grid place-items-center w-10 h-10 rounded-xl"
+                          style={{
+                            background: `color-mix(in srgb, ${m.accent} 18%, transparent)`,
+                            color: m.accent,
+                          }}
+                        >
+                          <Icon size={18} strokeWidth={2.3} />
+                        </div>
+                        {active && (
+                          <div
+                            className="grid place-items-center w-5 h-5 rounded-full"
+                            style={{
+                              background: "linear-gradient(135deg, #FFE8A8, #E8C36A)",
+                              color: "#1a1a1a",
+                              boxShadow: "0 2px 8px rgba(232,195,106,0.5)",
+                            }}
+                          >
+                            <Check size={12} strokeWidth={3.5} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="font-display font-extrabold text-base sm:text-lg text-fg leading-tight">
+                        {m.title}
+                      </div>
+                      <div className="text-[11px] sm:text-xs text-fg-mute mt-0.5 leading-snug">
+                        {m.desc}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* === SECTION: Spieler === */}
+            <section className="card-felt p-5 sm:p-6 mb-6 sm:mb-7">
+              <header className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="eyebrow-felt">02 · Spieler</p>
+                  <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
+                    Wer ist dabei?
+                  </h2>
+                </div>
                 <div
-                  className="grid place-items-center w-10 h-10 rounded-xl"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tabular-nums"
                   style={{
-                    background: `color-mix(in srgb, ${m.accent} 18%, transparent)`,
-                    color: m.accent,
+                    background: "var(--surface-felt-strong)",
+                    color: "var(--text-felt)",
+                    border: "1px solid var(--border-felt)",
                   }}
                 >
-                  <Icon size={18} strokeWidth={2.3} />
+                  <Users size={12} />
+                  {names.length}/{MAX_NAMES}
                 </div>
-                {active && (
-                  <div
-                    className="grid place-items-center w-5 h-5 rounded-full"
-                    style={{
-                      background: "linear-gradient(135deg, #FFE8A8, #E8C36A)",
-                      color: "#1a1a1a",
-                      boxShadow: "0 2px 8px rgba(232,195,106,0.5)",
-                    }}
-                  >
-                    <Check size={12} strokeWidth={3.5} />
-                  </div>
+              </header>
+
+              {/* Chips */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                <AnimatePresence initial={false}>
+                  {names.map((name, i) => (
+                    <motion.span
+                      key={name + "-" + i}
+                      layout
+                      initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.5, x: -20, transition: { duration: 0.4 } }}
+                      transition={{ duration: 0.18 }}
+                      className="chip"
+                      style={{ borderLeft: `3px solid ${PALETTE[i % PALETTE.length]}` }}
+                    >
+                      <span>{name}</span>
+                      <button
+                        onClick={() => removeName(i)}
+                        disabled={names.length <= 2}
+                        aria-label={`${name} entfernen`}
+                        className="chip-x disabled:opacity-30"
+                      >
+                        <X size={14} strokeWidth={2.5} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {/* Input */}
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addName())}
+                  placeholder={
+                    names.length >= MAX_NAMES ? "Maximum erreicht" : "Name hinzufügen…"
+                  }
+                  maxLength={14}
+                  disabled={names.length >= MAX_NAMES}
+                  className="field"
+                />
+                <button
+                  onClick={addName}
+                  disabled={!input.trim() || names.length >= MAX_NAMES}
+                  className="btn-ghost !rounded-2xl !px-4 !py-3 disabled:opacity-40"
+                  aria-label="Hinzufügen"
+                >
+                  <Plus size={18} strokeWidth={2.5} />
+                </button>
+              </div>
+              {names.length < 2 && (
+                <p className="text-xs text-shame mt-3 text-center">
+                  Mindestens 2 Spieler nötig.
+                </p>
+              )}
+            </section>
+
+            {/* === START BUTTON === */}
+            <button
+              onClick={startGame}
+              disabled={names.length < 2}
+              className="btn-primary w-full text-lg py-5 disabled:opacity-50"
+            >
+              Spiel starten
+              <ArrowRight size={20} strokeWidth={2.5} />
+            </button>
+          </motion.div>
+        ) : (
+          /* =========================================================
+             GAME VIEW
+             ========================================================= */
+          <motion.div
+            key="game"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.32, ease: [0.2, 0.7, 0.2, 1] }}
+            className="max-w-3xl mx-auto"
+          >
+            {/* Game-Header: Back + Mode-Chip */}
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <button
+                onClick={backToSetup}
+                disabled={spinning}
+                className="btn-ghost"
+                aria-label="Zurück zum Setup"
+              >
+                <ArrowLeft size={16} />
+                <span className="hidden sm:inline">Setup</span>
+              </button>
+
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold"
+                style={{
+                  background: `color-mix(in srgb, ${activeMode.accent} 14%, transparent)`,
+                  color: activeMode.accent,
+                  border: `1px solid color-mix(in srgb, ${activeMode.accent} 38%, transparent)`,
+                }}
+              >
+                <activeMode.Icon size={13} strokeWidth={2.4} />
+                {activeMode.title}
+                {inElimGame && (
+                  <>
+                    <span className="opacity-50">·</span>
+                    <span className="tabular-nums">
+                      {names.length}/{originalRoster?.length}
+                    </span>
+                  </>
+                )}
+                {!inElimGame && (
+                  <>
+                    <span className="opacity-50">·</span>
+                    <span className="tabular-nums">{names.length}</span>
+                  </>
                 )}
               </div>
-              <div className="font-display font-extrabold text-base sm:text-lg text-fg leading-tight">
-                {m.title}
-              </div>
-              <div className="text-[11px] sm:text-xs text-fg-mute mt-0.5 leading-snug">
-                {m.desc}
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
-      {/* Status / Roster-Info */}
-      {inElimGame && (
-        <div
-          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold"
-          style={{
-            background: "rgba(232,195,106,0.12)",
-            color: "#E8C36A",
-            border: "1px solid rgba(232,195,106,0.32)",
-          }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: "#E8C36A", boxShadow: "0 0 8px #E8C36A" }}
-          />
-          {names.length} von {originalRoster?.length} im Rennen
-        </div>
-      )}
-
-      {/* Namens-Chips */}
-      <div className="flex flex-wrap gap-2 justify-center max-w-[520px]">
-        <AnimatePresence initial={false}>
-          {names.map((name, i) => (
-            <motion.span
-              key={name + "-" + i}
-              layout
-              initial={{ opacity: 0, scale: 0.7, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, x: -20, transition: { duration: 0.4 } }}
-              transition={{ duration: 0.18 }}
-              className="chip"
-              style={{ borderLeft: `3px solid ${PALETTE[i % PALETTE.length]}` }}
-            >
-              <span>{name}</span>
               <button
-                onClick={() => removeName(i)}
-                disabled={spinning || names.length <= 2 || lockedForElim}
-                aria-label={`${name} entfernen`}
-                className="chip-x disabled:opacity-30"
+                onClick={resetWheel}
+                disabled={spinning}
+                className="btn-ghost"
+                aria-label="Rad zurücksetzen"
               >
-                <X size={14} strokeWidth={2.5} />
+                <RotateCcw size={16} />
               </button>
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </div>
+            </div>
 
-      {/* Input */}
-      <div className="flex gap-2 w-full max-w-[420px]">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addName())}
-          placeholder={
-            lockedForElim
-              ? "Spiel läuft — keine Änderungen möglich"
-              : names.length >= MAX_NAMES
-                ? "Maximum erreicht"
-                : "Name hinzufügen…"
-          }
-          maxLength={14}
-          disabled={spinning || names.length >= MAX_NAMES || lockedForElim}
-          className="field"
-        />
-        <button
-          onClick={addName}
-          disabled={!input.trim() || spinning || names.length >= MAX_NAMES || lockedForElim}
-          className="btn-ghost !rounded-2xl !px-4 !py-3 disabled:opacity-40"
-          aria-label="Hinzufügen"
-        >
-          <Plus size={18} strokeWidth={2.5} />
-        </button>
-      </div>
+            {/* Wheel-Stage — zentriert */}
+            <div className="flex flex-col items-center gap-7 sm:gap-9">
+              <div className="relative" style={{ width: size, height: size + 40 }}>
+                <div
+                  className="absolute inset-0 -z-10 rounded-full opacity-70 blur-3xl"
+                  style={{
+                    background:
+                      "radial-gradient(circle, rgba(255,45,85,0.35), transparent 60%)",
+                  }}
+                />
 
-      {/* Wheel-Stage */}
-      <div className="relative" style={{ width: size, height: size + 40 }}>
-        <div
-          className="absolute inset-0 -z-10 rounded-full opacity-70 blur-3xl"
-          style={{
-            background: "radial-gradient(circle, rgba(255,45,85,0.35), transparent 60%)",
-          }}
-        />
+                {winning && (
+                  <>
+                    <span
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width: size, height: size,
+                        left: "50%", top: 18 + size / 2,
+                        transform: "translate(-50%, -50%)",
+                        border: "3px solid rgba(232,195,106,0.75)",
+                        animation: "pulse-ring 1.2s ease-out forwards",
+                      }}
+                    />
+                    <span
+                      className="absolute rounded-full pointer-events-none"
+                      style={{
+                        width: size, height: size,
+                        left: "50%", top: 18 + size / 2,
+                        transform: "translate(-50%, -50%)",
+                        border: "3px solid rgba(255,45,85,0.7)",
+                        animation: "pulse-ring 1.2s ease-out 0.18s forwards",
+                      }}
+                    />
+                  </>
+                )}
 
-        {winning && (
-          <>
-            <span
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: size, height: size,
-                left: "50%", top: 18 + size / 2,
-                transform: "translate(-50%, -50%)",
-                border: "3px solid rgba(232,195,106,0.75)",
-                animation: "pulse-ring 1.2s ease-out forwards",
-              }}
-            />
-            <span
-              className="absolute rounded-full pointer-events-none"
-              style={{
-                width: size, height: size,
-                left: "50%", top: 18 + size / 2,
-                transform: "translate(-50%, -50%)",
-                border: "3px solid rgba(255,45,85,0.7)",
-                animation: "pulse-ring 1.2s ease-out 0.18s forwards",
-              }}
-            />
-          </>
+                <div
+                  ref={pointerRef}
+                  className="absolute left-1/2 -translate-x-1/2 z-20"
+                  style={{ top: 0, transformOrigin: "50% 92%" }}
+                  aria-hidden
+                >
+                  <svg width="46" height="56" viewBox="0 0 46 56" fill="none">
+                    <defs>
+                      <linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#FFE8A8" />
+                        <stop offset="45%" stopColor="#FFD15C" />
+                        <stop offset="100%" stopColor="#A07820" />
+                      </linearGradient>
+                      <linearGradient id="ptr-edge" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#7a5a18" />
+                        <stop offset="100%" stopColor="#2a1f08" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M23 54 L4 14 Q4 4 14 4 L32 4 Q42 4 42 14 Z"
+                      fill="url(#ptr)"
+                      stroke="url(#ptr-edge)"
+                      strokeWidth="1.5"
+                    />
+                    <circle cx="23" cy="14" r="3" fill="#2a1f08" />
+                  </svg>
+                </div>
+
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 rounded-full shadow-wheel"
+                  style={{ top: 18, width: size, height: size }}
+                >
+                  <canvas
+                    ref={canvasRef}
+                    width={size}
+                    height={size}
+                    style={{ width: size, height: size, display: "block", borderRadius: "50%" }}
+                  />
+                </div>
+              </div>
+
+              {/* DREHEN-Button — riesig + Casino-Glow */}
+              <button
+                onClick={spin}
+                disabled={!canSpin}
+                className="btn-primary text-xl sm:text-2xl px-14 py-5 sm:px-16 sm:py-6"
+                style={{ minWidth: 220 }}
+              >
+                {spinning ? "Dreht…" : "DREHEN"}
+              </button>
+            </div>
+          </motion.div>
         )}
-
-        {/* Pointer */}
-        <div
-          ref={pointerRef}
-          className="absolute left-1/2 -translate-x-1/2 z-20"
-          style={{ top: 0, transformOrigin: "50% 92%" }}
-          aria-hidden
-        >
-          <svg width="46" height="56" viewBox="0 0 46 56" fill="none">
-            <defs>
-              <linearGradient id="ptr" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#FFE8A8" />
-                <stop offset="45%" stopColor="#FFD15C" />
-                <stop offset="100%" stopColor="#A07820" />
-              </linearGradient>
-              <linearGradient id="ptr-edge" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7a5a18" />
-                <stop offset="100%" stopColor="#2a1f08" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M23 54 L4 14 Q4 4 14 4 L32 4 Q42 4 42 14 Z"
-              fill="url(#ptr)"
-              stroke="url(#ptr-edge)"
-              strokeWidth="1.5"
-            />
-            <circle cx="23" cy="14" r="3" fill="#2a1f08" />
-          </svg>
-        </div>
-
-        <div
-          className="absolute left-1/2 -translate-x-1/2 rounded-full shadow-wheel"
-          style={{ top: 18, width: size, height: size }}
-        >
-          <canvas
-            ref={canvasRef}
-            width={size}
-            height={size}
-            style={{ width: size, height: size, display: "block", borderRadius: "50%" }}
-          />
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center gap-3">
-        <button onClick={spin} disabled={!canSpin} className="btn-primary text-lg px-12 py-4">
-          {spinning ? "Dreht…" : "DREHEN"}
-        </button>
-        <button onClick={resetWheel} className="btn-ghost" aria-label="Zurücksetzen" disabled={spinning}>
-          <RotateCcw size={16} />
-        </button>
-      </div>
+      </AnimatePresence>
 
       {/* Eliminations-Banner */}
       <AnimatePresence>
