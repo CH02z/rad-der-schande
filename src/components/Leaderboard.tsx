@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flame, Trash2, AlertTriangle } from "lucide-react";
+import { Flame, Trash2, AlertTriangle, Dices } from "lucide-react";
 
 type Row = { name: string; count: number };
 type Range = "week" | "month" | "year" | "all";
@@ -61,18 +61,34 @@ export default function Leaderboard() {
   }
 
   const max = rows[0]?.count ?? 1;
+  const totalSpins = useMemo(() => rows.reduce((acc, r) => acc + r.count, 0), [rows]);
+  const losers = rows.length;
 
   return (
     <>
       <section className="glass-strong rounded-3xl p-6 sm:p-7">
-        <header className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Trophy size={18} className="text-gold" />
-            <h2 className="font-display font-bold text-lg tracking-tight text-fg">
-              Schande-Tabelle
-            </h2>
+        {/* Stats Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-baseline gap-2">
+            <Dices size={18} className="text-fg-mute self-center" />
+            <span className="font-display font-black text-3xl text-fg tabular-nums">
+              {totalSpins}
+            </span>
+            <span className="text-fg-mute text-sm">
+              {totalSpins === 1 ? "Spin" : "Spins"}
+            </span>
           </div>
-        </header>
+          {losers > 0 && (
+            <div className="text-right">
+              <div className="text-fg-mute text-xs uppercase tracking-wider">
+                Verlierer
+              </div>
+              <div className="font-display font-bold text-lg text-fg tabular-nums">
+                {losers}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Range Segmented Control */}
         <div className="segmented w-full mb-5 grid grid-cols-4">

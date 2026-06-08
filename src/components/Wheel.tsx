@@ -139,19 +139,28 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.strokeStyle = "rgba(0,0,0,0.22)";
       ctx.stroke();
 
-      // Name
+      // Name — Font skaliert mit Rad-Grösse UND mit der Anzahl Segmente,
+      // damit's auch bei 12 Namen nicht aus den Segmenten heraustritt.
       ctx.save();
       ctx.translate(C, C);
       ctx.rotate(a0 + seg / 2);
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#fff";
-      ctx.shadowColor = "rgba(0,0,0,0.45)";
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetY = 1;
-      const fs = Math.max(13, Math.min(20, S / 22));
-      ctx.font = `700 ${fs}px var(--font-display), system-ui, sans-serif`;
-      const label = names[i].length > 12 ? names[i].slice(0, 11) + "…" : names[i];
+      ctx.shadowColor = "rgba(0,0,0,0.55)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+      const fs = Math.max(16, Math.min(34, S / Math.max(13, n * 2.1)));
+      ctx.font = `800 ${fs}px var(--font-display), system-ui, sans-serif`;
+      // Bei kleinerer Schrift mehr Zeichen, bei grosser weniger.
+      const maxChars = fs > 26 ? 8 : fs > 20 ? 10 : 12;
+      const label = names[i].length > maxChars
+        ? names[i].slice(0, maxChars - 1) + "…"
+        : names[i];
+      // Stroke + Fill für extra Kontrast während dem Spin
+      ctx.lineWidth = Math.max(2, fs * 0.12);
+      ctx.strokeStyle = "rgba(0,0,0,0.55)";
+      ctx.strokeText(label, R_SEG - 18, 0);
       ctx.fillText(label, R_SEG - 18, 0);
       ctx.restore();
     }
@@ -447,34 +456,102 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
         </button>
       </div>
 
-      {/* Result */}
+      {/* Fullscreen-Result-Overlay */}
       <AnimatePresence>
         {result && (
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 220, damping: 16 }}
-            className="glass-strong mt-2 px-8 py-6 sm:px-10 sm:py-7 rounded-[28px] text-center relative overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-50 grid place-items-center px-6"
+            onClick={() => setResult(null)}
             style={{
-              boxShadow: "0 30px 80px -10px rgba(255,45,85,0.5), 0 0 0 1px rgba(255,209,92,0.18) inset",
+              background:
+                "radial-gradient(circle at 50% 25%, rgba(60,0,20,0.78), rgba(0,0,0,0.95))",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
             }}
           >
+            {/* Verlaufender Glow hinter dem Text */}
             <div
-              className="absolute inset-0 -z-10"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                background: "radial-gradient(circle at 50% 0%, rgba(255,209,92,0.15), transparent 70%)",
+                background:
+                  "radial-gradient(circle at 50% 45%, rgba(255,45,85,0.35), transparent 55%)",
               }}
             />
-            <div className="text-xs uppercase tracking-[0.28em] text-fg-mute mb-2">
-              🎰 Jackpot
-            </div>
-            <div className="font-display font-black text-5xl sm:text-6xl gradient-shame leading-none">
-              {result}
-            </div>
-            <div className="mt-2 text-fg-soft text-sm font-medium">
-              — du zahlst. Schande! 🔥
-            </div>
+
+            <motion.div
+              initial={{ scale: 0.7, y: 30, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.08 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative text-center max-w-3xl mx-auto"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, duration: 0.4 }}
+                className="font-bold text-gold tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
+              >
+                🎰 JACKPOT 🎰
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.15,
+                  duration: 0.8,
+                  type: "spring",
+                  stiffness: 140,
+                  damping: 14,
+                }}
+                className="font-display font-black gradient-shame leading-[0.82] mb-6 break-words"
+                style={{
+                  fontSize: "clamp(4rem, 18vw, 11rem)",
+                  filter: "drop-shadow(0 8px 40px rgba(255,45,85,0.5))",
+                }}
+              >
+                {result}
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-10"
+              >
+                trägt die <span className="gradient-shame">Schande</span>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85, duration: 0.4 }}
+                onClick={() => setResult(null)}
+                className="inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-semibold transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  color: "#fff",
+                  backdropFilter: "blur(20px)",
+                }}
+              >
+                Weiter
+              </motion.button>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+                className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/40 whitespace-nowrap"
+              >
+                Tippe irgendwo, um zu schliessen
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
