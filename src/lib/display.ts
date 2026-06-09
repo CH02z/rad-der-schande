@@ -22,19 +22,33 @@ export async function resolveDisplayNames(
 
   const dedup = Array.from(new Map(userIds.map((u) => [String(u), u])).values());
 
-  // 1) Nicknames aus crewMembers (nur wenn wir eine Crew haben)
+  // 1) Nicknames aus crewMembers (auch von ehemaligen Mitgliedern, damit
+  //    historische Spins ihren Spitznamen behalten).
+  //    Wenn ein User mehrere Memberships hat (left + rejoined), nimm die
+  //    neueste mit gesetztem Nickname.
   const nicknameMap = new Map<string, string>();
   if (crewId) {
-    const members = await CrewMember.find({
-      crewId,
-      userId: { $in: dedup },
-      leftAt: null,
-      nickname: { $ne: null },
-    })
-      .select("userId nickname")
-      .lean<{ userId: Types.ObjectId; nickname: string | null }[]>();
-    for (const m of members) {
-      if (m.nickname) nicknameMap.set(String(m.userId), m.nickname);
+    const aggregated = await CrewMember.aggregate<{
+      _id: Types.ObjectId;
+      nickname: string;
+    }>([
+      {
+        $match: {
+          crewId,
+          userId: { $in: dedup },
+          nickname: { $ne: null },
+        },
+      },
+      { $sort: { joinedAt: -1 } },
+      {
+        $group: {
+          _id: "$userId",
+          nickname: { $first: "$nickname" },
+        },
+      },
+    ]);
+    for (const m of aggregated) {
+      nicknameMap.set(String(m._id), m.nickname);
     }
   }
 

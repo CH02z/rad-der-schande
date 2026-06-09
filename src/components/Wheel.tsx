@@ -594,7 +594,7 @@ export default function Wheel() {
             <div className="text-center mb-8 sm:mb-12">
               <p className="eyebrow-gold justify-center mb-3">Game Setup</p>
               <h1 className="font-display font-black leading-[0.92] tracking-tight text-4xl sm:text-6xl text-fg">
-                Wer wird zur <span className="gradient-shame">Schande</span>
+                Wer trägt die <span className="gradient-shame">Schande</span>
                 <span className="text-fg-faint">?</span>
               </h1>
               <p className="mt-3 text-fg-soft text-sm sm:text-base max-w-md mx-auto">

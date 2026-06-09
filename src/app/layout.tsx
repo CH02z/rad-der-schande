@@ -21,11 +21,11 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   title: "Rad der Schande",
-  description: "Wer wird zur Schande? Lass das Rad entscheiden.",
+  description: "Wer trägt die Schande? Lass das Rad entscheiden.",
   metadataBase: new URL("https://rad-der-schande.ch"),
   openGraph: {
     title: "Rad der Schande",
-    description: "Wer wird zur Schande? Lass das Rad entscheiden.",
+    description: "Wer trägt die Schande? Lass das Rad entscheiden.",
     locale: "de_CH",
     type: "website",
   },
