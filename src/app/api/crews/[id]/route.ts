@@ -37,6 +37,8 @@ export async function GET(_req: Request, { params }: RouteCtx) {
     name: string;
     emoji: string;
     accentColor: string;
+    defaultMode: "classic" | "elim";
+    consequences: string[];
     ownerId: Types.ObjectId;
     createdAt: Date;
   }>();
@@ -81,6 +83,8 @@ export async function GET(_req: Request, { params }: RouteCtx) {
     name: crew.name,
     emoji: crew.emoji ?? "🎰",
     accentColor: crew.accentColor ?? "#E8C36A",
+    defaultMode: crew.defaultMode ?? "classic",
+    consequences: crew.consequences ?? [],
     ownerId: String(crew.ownerId),
     createdAt: crew.createdAt,
     members,
@@ -103,7 +107,13 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Nur der Owner darf das" }, { status: 403 });
   }
 
-  let body: { name?: unknown; emoji?: unknown; accentColor?: unknown };
+  let body: {
+    name?: unknown;
+    emoji?: unknown;
+    accentColor?: unknown;
+    defaultMode?: unknown;
+    consequences?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -128,6 +138,17 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
   }
   if (typeof body.accentColor === "string" && isValidColor(body.accentColor)) {
     update.accentColor = body.accentColor;
+  }
+  if (body.defaultMode === "classic" || body.defaultMode === "elim") {
+    update.defaultMode = body.defaultMode;
+  }
+  if (Array.isArray(body.consequences)) {
+    const clean = body.consequences
+      .filter((c): c is string => typeof c === "string")
+      .map((c) => c.trim())
+      .filter((c) => c.length > 0 && c.length <= 80)
+      .slice(0, 20);
+    update.consequences = clean;
   }
 
   if (Object.keys(update).length === 1) {

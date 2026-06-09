@@ -11,7 +11,10 @@ export default {
   providers: [Google],
   pages: { signIn: "/login" },
   callbacks: {
-    authorized({ auth }) {
+    authorized({ auth, request }) {
+      // Landing-Page und Join-Deep-Link sind public
+      const path = request.nextUrl.pathname;
+      if (path === "/" || path.startsWith("/join/")) return true;
       return !!auth?.user;
     },
     // JWT enthält `sub` = users._id (vom Adapter beim ersten Sign-In gesetzt).

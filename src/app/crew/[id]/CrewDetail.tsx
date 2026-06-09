@@ -22,6 +22,10 @@ import {
   Mail,
   Sparkles,
   X,
+  Target,
+  Swords,
+  SlidersHorizontal,
+  Plus,
 } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
 import CrewAvatar from "@/components/CrewAvatar";
@@ -54,6 +58,8 @@ interface CrewDetailData {
   name: string;
   emoji: string;
   accentColor: string;
+  defaultMode: "classic" | "elim";
+  consequences: string[];
   ownerId: string;
   createdAt: string;
   members: Member[];
@@ -84,6 +90,9 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
   // Inline-Editor für Nicknames
   const [editingNickFor, setEditingNickFor] = useState<string | null>(null);
   const [nickValue, setNickValue] = useState("");
+
+  // Crew-Settings (Owner-only)
+  const [consequenceInput, setConsequenceInput] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -213,6 +222,40 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function updateCrew(patch: Partial<{ defaultMode: "classic" | "elim"; consequences: string[] }>) {
+    if (!data) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/crews/${data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (res.ok) await load();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addConsequence() {
+    if (!data) return;
+    const v = consequenceInput.trim();
+    if (!v || data.consequences.length >= 20) return;
+    if (data.consequences.includes(v)) {
+      setConsequenceInput("");
+      return;
+    }
+    const next = [...data.consequences, v];
+    await updateCrew({ consequences: next });
+    setConsequenceInput("");
+  }
+
+  async function removeConsequence(idx: number) {
+    if (!data) return;
+    const next = data.consequences.filter((_, i) => i !== idx);
+    await updateCrew({ consequences: next });
   }
 
   async function handleSaveNick() {
@@ -608,6 +651,123 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           })}
         </ul>
       </div>
+
+      {/* === Crew-Einstellungen (Owner-only) === */}
+      {isOwner && (
+        <div className="card-casino p-5 sm:p-6 space-y-5">
+          <header className="flex items-center gap-2">
+            <SlidersHorizontal size={15} className="text-fg-mute" />
+            <h2 className="font-display font-bold text-fg">Crew-Einstellungen</h2>
+          </header>
+
+          {/* Default-Mode */}
+          <div>
+            <p className="eyebrow-gold mb-2">Standard-Modus</p>
+            <p className="text-xs text-fg-mute mb-3">
+              Wird beim Öffnen des Rads automatisch vorausgewählt.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { id: "classic" as const, title: "Klassisch", Icon: Target, accent: "#FF2D55" },
+                { id: "elim" as const, title: "Eliminierung", Icon: Swords, accent: "#E8C36A" },
+              ]).map((m) => {
+                const active = data.defaultMode === m.id;
+                const Icon = m.Icon;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => !busy && updateCrew({ defaultMode: m.id })}
+                    disabled={busy}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all disabled:opacity-60"
+                    style={{
+                      background: active
+                        ? `color-mix(in srgb, ${m.accent} 18%, transparent)`
+                        : "var(--surface)",
+                      color: active ? m.accent : "var(--text-soft)",
+                      border: `1.5px solid ${active ? m.accent : "var(--border)"}`,
+                    }}
+                  >
+                    <Icon size={14} strokeWidth={2.4} />
+                    {m.title}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Konsequenzen */}
+          <div>
+            <div className="flex items-end justify-between mb-2">
+              <div>
+                <p className="eyebrow-gold mb-0.5">Konsequenzen-Vorlagen</p>
+                <p className="text-xs text-fg-mute">
+                  Wird zufällig beim Spin-Resultat angezeigt.
+                </p>
+              </div>
+              <span className="text-[10px] uppercase tracking-widest text-fg-mute tabular-nums">
+                {data.consequences.length}/20
+              </span>
+            </div>
+
+            {data.consequences.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                <AnimatePresence initial={false}>
+                  {data.consequences.map((c, i) => (
+                    <motion.span
+                      key={c + i}
+                      layout
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                      transition={{ duration: 0.18 }}
+                      className="inline-flex items-center gap-1.5 rounded-full pl-3 pr-1 py-1 text-sm font-medium"
+                      style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        color: "var(--text)",
+                      }}
+                    >
+                      <span>{c}</span>
+                      <button
+                        onClick={() => removeConsequence(i)}
+                        disabled={busy}
+                        className="grid place-items-center w-6 h-6 rounded-full transition disabled:opacity-30 text-fg-mute hover:text-shame hover:bg-shame/10"
+                        aria-label="Entfernen"
+                      >
+                        <X size={13} strokeWidth={2.6} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <input
+                value={consequenceInput}
+                onChange={(e) => setConsequenceInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addConsequence())}
+                placeholder="z.B. zahlt eine Runde Bier"
+                maxLength={80}
+                disabled={busy || data.consequences.length >= 20}
+                className="field text-sm"
+              />
+              <button
+                onClick={addConsequence}
+                disabled={
+                  busy ||
+                  !consequenceInput.trim() ||
+                  data.consequences.length >= 20
+                }
+                className="btn-ghost !rounded-2xl !px-4 !py-2.5 disabled:opacity-40"
+                aria-label="Hinzufügen"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Danger Zone */}
       <div className="card-casino p-5 sm:p-6">

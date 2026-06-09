@@ -122,13 +122,18 @@ export default function Wheel() {
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState<RosterEntry | null>(null);
+  const [resultConsequence, setResultConsequence] = useState<string | null>(null);
   const [winning, setWinning] = useState(false);
   const [size, setSize] = useState(380);
   const [mode, setMode] = useState<Mode>("classic");
+  const [consequences, setConsequences] = useState<string[]>([]);
   // Während Elim-Spiel: Snapshot des Rosters (gefilterte Included) für „Neue Runde"
   const [originalRoster, setOriginalRoster] = useState<RosterEntry[] | null>(null);
   const [eliminated, setEliminated] = useState<RosterEntry | null>(null);
   const [fontFamily, setFontFamily] = useState<string>(FONT_FALLBACK);
+
+  const consequencesRef = useRef<string[]>([]);
+  const lastCrewIdRef = useRef<string | null>(null);
 
   const { muted } = useSound();
 
@@ -138,6 +143,7 @@ export default function Wheel() {
   useEffect(() => { mutedRef.current = muted; }, [muted]);
   useEffect(() => { sizeRef.current = size; }, [size]);
   useEffect(() => { fontFamilyRef.current = fontFamily; }, [fontFamily]);
+  useEffect(() => { consequencesRef.current = consequences; }, [consequences]);
 
   const inElimGame = mode === "elim" && originalRoster !== null;
   const includedRoster = roster.filter((r) => r.included);
@@ -172,7 +178,9 @@ export default function Wheel() {
   const loadCrewRoster = useCallback(async () => {
     if (!activeCrewId) {
       setRoster(defaultSoloRoster());
+      setConsequences([]);
       setOriginalRoster(null);
+      lastCrewIdRef.current = null;
       return;
     }
     setLoadingRoster(true);
@@ -180,9 +188,12 @@ export default function Wheel() {
       const res = await fetch(`/api/crews/${activeCrewId}`);
       if (!res.ok) {
         setRoster(defaultSoloRoster());
+        setConsequences([]);
         return;
       }
       const data = (await res.json()) as {
+        defaultMode: "classic" | "elim";
+        consequences: string[];
         members: Array<{
           userId: string;
           displayName: string;
@@ -197,7 +208,13 @@ export default function Wheel() {
         included: true,
       }));
       setRoster(entries);
+      setConsequences(data.consequences ?? []);
       setOriginalRoster(null);
+      // Default-Modus nur bei echtem Crew-Wechsel anwenden, nicht jeden Refresh
+      if (lastCrewIdRef.current !== activeCrewId) {
+        setMode(data.defaultMode ?? "classic");
+        lastCrewIdRef.current = activeCrewId;
+      }
     } finally {
       setLoadingRoster(false);
     }
@@ -375,6 +392,10 @@ export default function Wheel() {
 
     if (mode === "classic") {
       setResult(landed);
+      const list = consequencesRef.current;
+      setResultConsequence(
+        list.length > 0 ? list[Math.floor(Math.random() * list.length)] : null
+      );
       setWinning(true);
       setTimeout(() => setWinning(false), 1400);
       if (!mutedRef.current) winFanfare();
@@ -398,6 +419,10 @@ export default function Wheel() {
           )
         );
         setResult(loser);
+        const list = consequencesRef.current;
+        setResultConsequence(
+          list.length > 0 ? list[Math.floor(Math.random() * list.length)] : null
+        );
         setWinning(true);
         setTimeout(() => setWinning(false), 1400);
         if (!mutedRef.current) winFanfare();
@@ -514,6 +539,7 @@ export default function Wheel() {
 
   function dismissResult() {
     setResult(null);
+    setResultConsequence(null);
     if (mode === "elim" && originalRoster) {
       setRoster((prev) => {
         const inSet = new Set(originalRoster.map(makeKey));
@@ -1083,10 +1109,28 @@ export default function Wheel() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-10"
+                className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-4"
               >
                 trägt die <span className="gradient-shame">Schande</span>
               </motion.div>
+
+              {resultConsequence && (
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.85, duration: 0.5 }}
+                  className="font-display font-bold text-base sm:text-2xl mb-10"
+                  style={{
+                    color: "#FFD15C",
+                    textShadow: "0 2px 12px rgba(232,195,106,0.4)",
+                  }}
+                >
+                  … und {resultConsequence}
+                </motion.div>
+              )}
+
+              {!resultConsequence && <div className="mb-10" />}
+
               <motion.button
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}

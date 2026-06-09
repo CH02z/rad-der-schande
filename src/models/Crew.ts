@@ -40,6 +40,18 @@ const CrewSchema = new Schema(
     emoji: { type: String, default: "🎰", maxlength: 8 },
     accentColor: { type: String, default: "#E8C36A" },
 
+    // Crew-Einstellungen (Owner-only)
+    defaultMode: {
+      type: String,
+      enum: ["classic", "elim"],
+      default: "classic",
+    },
+    consequences: {
+      type: [{ type: String, trim: true, maxlength: 80 }],
+      default: [],
+      validate: [(arr: string[]) => arr.length <= 20, "Maximal 20 Konsequenzen"],
+    },
+
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     deletedAt: { type: Date, default: null, index: true },
