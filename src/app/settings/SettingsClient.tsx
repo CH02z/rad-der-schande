@@ -1,9 +1,16 @@
 "use client";
 
-import { Moon, Sun, Volume2, VolumeX, Globe, Check } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Moon, Sun, Volume2, VolumeX, Globe, Check, Bell, BellOff, AlertCircle } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useSound } from "@/lib/sound";
 import { useT, LOCALES, type Locale } from "@/lib/i18n";
+import {
+  getPushStatus,
+  subscribeToPush,
+  unsubscribeFromPush,
+  type PushStatus,
+} from "@/lib/push-client";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -83,6 +90,90 @@ export function LocaleSelector() {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+export function PushToggle() {
+  const { t } = useT();
+  const [status, setStatus] = useState<PushStatus>("default");
+  const [busy, setBusy] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setStatus(await getPushStatus());
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  async function handleEnable() {
+    setBusy(true);
+    const ok = await subscribeToPush();
+    if (!ok) await refresh();
+    else setStatus("granted");
+    setBusy(false);
+  }
+
+  async function handleDisable() {
+    setBusy(true);
+    await unsubscribeFromPush();
+    setStatus("unsubscribed");
+    setBusy(false);
+  }
+
+  if (status === "unsupported") {
+    return (
+      <div
+        className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"
+        style={{
+          background: "var(--surface)",
+          color: "var(--text-mute)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <AlertCircle size={13} />
+        {t("settings.pushUnsupported")}
+      </div>
+    );
+  }
+
+  if (status === "denied") {
+    return (
+      <div
+        className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"
+        style={{
+          background: "rgba(255,45,85,0.10)",
+          color: "#FF6B86",
+          border: "1px solid rgba(255,45,85,0.25)",
+        }}
+      >
+        <AlertCircle size={13} />
+        {t("settings.pushDenied")}
+      </div>
+    );
+  }
+
+  const enabled = status === "granted";
+
+  return (
+    <div className="segmented grid grid-cols-2 w-full max-w-[260px]">
+      <button
+        onClick={handleEnable}
+        disabled={busy || enabled}
+        data-active={enabled}
+        className="segmented-btn inline-flex items-center justify-center gap-2 py-2"
+      >
+        <Bell size={14} /> {t("settings.pushOn")}
+      </button>
+      <button
+        onClick={handleDisable}
+        disabled={busy || !enabled}
+        data-active={!enabled}
+        className="segmented-btn inline-flex items-center justify-center gap-2 py-2"
+      >
+        <BellOff size={14} /> {t("settings.pushOff")}
+      </button>
     </div>
   );
 }

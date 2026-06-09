@@ -8,10 +8,11 @@ import {
   Palette,
   Volume2 as Vol2,
   Globe,
+  Bell,
   User,
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
-import { ThemeToggle, SoundToggle, LocaleSelector } from "./SettingsClient";
+import { ThemeToggle, SoundToggle, LocaleSelector, PushToggle } from "./SettingsClient";
 import { useT } from "@/lib/i18n";
 
 interface Props {
@@ -91,6 +92,20 @@ export default function SettingsBody({ user, signOutAction }: Props) {
           </div>
           <p className="text-sm text-fg-soft mb-4">{t("settings.soundHint")}</p>
           <SoundToggle />
+        </section>
+
+        {/* Push */}
+        <section className="glass-strong rounded-3xl p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Bell size={16} className="text-fg-mute" />
+            <h3 className="font-display font-bold text-fg">
+              {t("settings.push")}
+            </h3>
+          </div>
+          <p className="text-sm text-fg-soft mb-4">
+            {t("settings.pushHint")}
+          </p>
+          <PushToggle />
         </section>
 
         {/* Language */}

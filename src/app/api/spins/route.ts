@@ -4,8 +4,11 @@ import { dbConnect } from "@/lib/mongoose";
 import { getCurrentUserId } from "@/lib/user";
 import { isCrewMember, isCrewOwner } from "@/lib/crew";
 import { resolveDisplayNames } from "@/lib/display";
+import { sendPushToUsers } from "@/lib/push";
 import Spin from "@/models/Spin";
 import UserProfile from "@/models/UserProfile";
+import CrewMember from "@/models/CrewMember";
+import Crew from "@/models/Crew";
 
 export const dynamic = "force-dynamic";
 
@@ -101,10 +104,57 @@ export async function POST(req: Request) {
     mode,
   });
 
+  // Push-Notifications an alle anderen aktiven Crew-Mitglieder (fire-and-forget)
+  if (crewId) {
+    void notifyCrewSpin({
+      crewId,
+      spunByUserId: userId,
+      loserName: loser.name,
+    });
+  }
+
   return NextResponse.json(
     { id: String(doc._id), crewId: crewId ? String(crewId) : null },
     { status: 201 }
   );
+}
+
+async function notifyCrewSpin({
+  crewId,
+  spunByUserId,
+  loserName,
+}: {
+  crewId: Types.ObjectId;
+  spunByUserId: Types.ObjectId;
+  loserName: string;
+}) {
+  try {
+    const [others, crew, spunByName] = await Promise.all([
+      CrewMember.find({
+        crewId,
+        userId: { $ne: spunByUserId },
+        leftAt: null,
+      })
+        .select("userId")
+        .lean<{ userId: Types.ObjectId }[]>(),
+      Crew.findById(crewId).lean<{ name: string; emoji?: string }>(),
+      resolveDisplayNames([spunByUserId], crewId).then((m) =>
+        m.get(String(spunByUserId)) ?? "Jemand"
+      ),
+    ]);
+
+    if (others.length === 0 || !crew) return;
+    const userIds = others.map((o) => o.userId);
+    const emoji = crew.emoji ?? "🎰";
+    await sendPushToUsers(userIds, {
+      title: `${emoji} ${crew.name}`,
+      body: `${spunByName} hat gedreht — ${loserName} trägt die Schande.`,
+      url: "/tabelle",
+      tag: `crew-${String(crewId)}`,
+    });
+  } catch (err) {
+    console.error("[notifyCrewSpin]", err);
+  }
 }
 
 /**
