@@ -24,7 +24,7 @@ export async function generateUniqueCrewCode(): Promise<string> {
   throw new Error("Code-Generation fehlgeschlagen nach " + MAX_ATTEMPTS + " Versuchen");
 }
 
-/** Liefert die Crews in denen der User aktiv ist (mit Rolle + Member-Count). */
+/** Liefert die Crews in denen der User aktiv ist (mit Rolle + Member-Count + Avatar). */
 export async function getMyCrews(userId: Types.ObjectId) {
   const memberships = await CrewMember.find({
     userId,
@@ -50,6 +50,8 @@ export async function getMyCrews(userId: Types.ObjectId) {
     id: String(c._id),
     code: c.code,
     name: c.name,
+    emoji: c.emoji ?? "🎰",
+    accentColor: c.accentColor ?? "#E8C36A",
     ownerId: String(c.ownerId),
     role: roleMap.get(String(c._id)) ?? "member",
     memberCount: countMap.get(String(c._id)) ?? 0,

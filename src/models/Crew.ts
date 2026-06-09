@@ -36,8 +36,9 @@ const CrewSchema = new Schema(
       required: true,
       index: true,
     },
-    // Optional: visuelles Branding pro Crew (Phase 2)
-    accentColor: { type: String, default: null },
+    // Visuelles Branding pro Crew
+    emoji: { type: String, default: "🎰", maxlength: 8 },
+    accentColor: { type: String, default: "#E8C36A" },
 
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

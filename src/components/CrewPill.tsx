@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, User, Check, Plus, KeyRound, Settings as Gear } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
+import CrewAvatar from "@/components/CrewAvatar";
 
 /**
  * Pill im TopNav (Desktop): zeigt aktive Crew (oder Solo) + Dropdown
@@ -46,7 +47,7 @@ export default function CrewPill() {
     <div ref={wrapRef} className="relative hidden sm:block">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition-all"
+        className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3 py-1 text-sm font-semibold transition-all"
         style={{
           background: activeCrew ? "var(--surface-gold)" : "var(--surface)",
           color: activeCrew ? "var(--text-gold)" : "var(--text-soft)",
@@ -54,15 +55,18 @@ export default function CrewPill() {
         }}
       >
         {activeCrew ? (
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{
-              background: "var(--text-gold)",
-              boxShadow: "0 0 8px var(--text-gold)",
-            }}
+          <CrewAvatar
+            emoji={activeCrew.emoji}
+            color={activeCrew.accentColor}
+            size={24}
           />
         ) : (
-          <User size={13} strokeWidth={2.4} />
+          <span
+            className="grid place-items-center w-6 h-6 rounded-full"
+            style={{ background: "var(--surface)", color: "var(--text-mute)" }}
+          >
+            <User size={13} strokeWidth={2.4} />
+          </span>
         )}
         <span className="max-w-[160px] truncate">{label}</span>
         <ChevronDown
@@ -125,15 +129,7 @@ export default function CrewPill() {
                     }}
                     className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-fg/5 text-left transition"
                   >
-                    <div
-                      className="grid place-items-center w-8 h-8 rounded-lg text-xs font-bold"
-                      style={{
-                        background: "var(--surface-gold)",
-                        color: "var(--text-gold)",
-                      }}
-                    >
-                      {c.name.slice(0, 1).toUpperCase()}
-                    </div>
+                    <CrewAvatar emoji={c.emoji} color={c.accentColor} size={32} />
                     <div className="flex-1 min-w-0">
                       <div className="text-fg truncate">{c.name}</div>
                       <div className="text-[11px] text-fg-mute">

@@ -17,8 +17,23 @@ import {
   UserMinus,
   AlertTriangle,
   Share2,
+  MessageCircle,
+  MessageSquare,
+  Mail,
+  Sparkles,
 } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
+import CrewAvatar from "@/components/CrewAvatar";
+import AvatarPicker from "@/components/AvatarPicker";
+import StatsPanel from "@/components/StatsPanel";
+import {
+  buildInviteText,
+  buildWhatsAppUrl,
+  buildSmsUrl,
+  buildMailtoUrl,
+  copyToClipboard,
+  nativeShare,
+} from "@/lib/share";
 
 interface Member {
   userId: string;
@@ -34,6 +49,8 @@ interface CrewDetailData {
   id: string;
   code: string;
   name: string;
+  emoji: string;
+  accentColor: string;
   ownerId: string;
   createdAt: string;
   members: Member[];
@@ -53,8 +70,13 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
 
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [previewEmoji, setPreviewEmoji] = useState("🎰");
+  const [previewColor, setPreviewColor] = useState("#E8C36A");
+
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [transferTarget, setTransferTarget] = useState<Member | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -69,6 +91,8 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
       const d = (await res.json()) as CrewDetailData;
       setData(d);
       setRenameValue(d.name);
+      setPreviewEmoji(d.emoji);
+      setPreviewColor(d.accentColor);
     } finally {
       setLoading(false);
     }
@@ -80,23 +104,20 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
 
   async function handleCopyCode() {
     if (!data) return;
-    try {
-      await navigator.clipboard.writeText(data.code);
+    if (await copyToClipboard(data.code)) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
-    } catch {}
+    }
   }
 
-  async function handleShare() {
+  async function handleShareNative() {
     if (!data) return;
-    const text = `Tritt meiner Crew "${data.name}" bei: Code ${data.code}\nhttps://rad-der-schande.ch`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Rad der Schande", text });
-        return;
-      } catch {}
-    }
-    await handleCopyCode();
+    if (await nativeShare({ crewName: data.name, code: data.code })) return;
+    // Fallback Copy
+    const text = buildInviteText({ crewName: data.name, code: data.code });
+    await copyToClipboard(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   async function handleSetActive() {
@@ -121,6 +142,24 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
       if (res.ok) {
         await Promise.all([load(), refresh()]);
         setRenameOpen(false);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSaveAvatar(emoji: string, color: string) {
+    if (!data) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/crews/${data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emoji, accentColor: color }),
+      });
+      if (res.ok) {
+        await Promise.all([load(), refresh()]);
+        setAvatarOpen(false);
       }
     } finally {
       setBusy(false);
@@ -169,6 +208,24 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
     }
   }
 
+  async function handleTransfer() {
+    if (!data || !transferTarget) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/crews/${data.id}/transfer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId: transferTarget.userId }),
+      });
+      if (res.ok) {
+        await Promise.all([load(), refresh()]);
+        setTransferTarget(null);
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto space-y-4">
@@ -196,10 +253,11 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
 
   const isOwner = data.yourRole === "owner";
   const isActive = activeCrewId === data.id;
+  const inviteText = buildInviteText({ crewName: data.name, code: data.code });
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
-      {/* Header: Back + Active-State */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <Link href="/crew" className="btn-ghost">
           <ArrowLeft size={16} /> <span className="hidden sm:inline">Crews</span>
@@ -220,10 +278,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
             Aktive Crew
           </div>
         ) : (
-          <button
-            onClick={handleSetActive}
-            className="btn-ghost text-xs"
-          >
+          <button onClick={handleSetActive} className="btn-ghost text-xs">
             Als aktiv setzen
           </button>
         )}
@@ -231,15 +286,32 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
 
       {/* Crew Header */}
       <div className="card-casino p-6 sm:p-7 text-center">
-        <div
-          className="mx-auto grid place-items-center w-16 h-16 rounded-2xl mb-4 font-display font-black text-3xl"
-          style={{
-            background: "var(--surface-gold)",
-            color: "var(--text-gold)",
-          }}
-        >
-          {data.name.slice(0, 1).toUpperCase()}
+        <div className="mx-auto relative inline-block mb-4">
+          <CrewAvatar
+            emoji={data.emoji}
+            color={data.accentColor}
+            size={72}
+          />
+          {isOwner && (
+            <button
+              onClick={() => {
+                setPreviewEmoji(data.emoji);
+                setPreviewColor(data.accentColor);
+                setAvatarOpen(true);
+              }}
+              className="absolute -bottom-1 -right-1 grid place-items-center w-7 h-7 rounded-full transition"
+              style={{
+                background: "var(--surface-strong)",
+                border: "1px solid var(--border-strong)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              }}
+              aria-label="Avatar ändern"
+            >
+              <Sparkles size={13} className="text-gold-bright" />
+            </button>
+          )}
         </div>
+
         <div className="flex items-center justify-center gap-2 mb-1">
           <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-fg">
             {data.name}
@@ -258,7 +330,6 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           {data.members.length === 1 ? "Mitglied" : "Mitglieder"}
         </p>
 
-        {/* Rename Input */}
         <AnimatePresence>
           {renameOpen && isOwner && (
             <motion.div
@@ -296,27 +367,63 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           >
             {data.code}
           </div>
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <button
-              onClick={handleCopyCode}
-              className="btn-ghost text-sm"
-            >
-              {copied ? (
-                <>
-                  <Check size={14} className="text-gold-bright" /> Kopiert
-                </>
-              ) : (
-                <>
-                  <Copy size={14} /> Code kopieren
-                </>
-              )}
-            </button>
-            <button onClick={handleShare} className="btn-ghost text-sm">
-              <Share2 size={14} /> Teilen
-            </button>
-          </div>
+          <p className="text-[10px] uppercase tracking-widest text-fg-mute mt-2">
+            Direkt-Link: /join/{data.code}
+          </p>
         </div>
+
+        {/* Share-Buttons Row */}
+        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <a
+            href={buildWhatsAppUrl(inviteText)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-ghost text-xs py-2.5"
+          >
+            <MessageCircle size={14} className="text-felt-soft" />
+            WhatsApp
+          </a>
+          <a
+            href={buildSmsUrl(inviteText)}
+            className="btn-ghost text-xs py-2.5"
+          >
+            <MessageSquare size={14} className="text-sky" />
+            SMS
+          </a>
+          <a
+            href={buildMailtoUrl(inviteText, data.name)}
+            className="btn-ghost text-xs py-2.5"
+          >
+            <Mail size={14} className="text-fg-soft" />
+            E-Mail
+          </a>
+          <button onClick={handleCopyCode} className="btn-ghost text-xs py-2.5">
+            {copied ? (
+              <>
+                <Check size={14} className="text-gold-bright" />
+                Kopiert
+              </>
+            ) : (
+              <>
+                <Copy size={14} />
+                Kopieren
+              </>
+            )}
+          </button>
+        </div>
+
+        {typeof navigator !== "undefined" && "share" in navigator && (
+          <button
+            onClick={handleShareNative}
+            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-fg-soft hover:text-fg transition"
+          >
+            <Share2 size={12} /> Mehr Optionen
+          </button>
+        )}
       </div>
+
+      {/* Stats Panel */}
+      <StatsPanel crewId={data.id} />
 
       {/* Members */}
       <div className="card-casino p-5 sm:p-6">
@@ -371,15 +478,26 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                   <div className="text-xs text-fg-mute truncate">{m.email}</div>
                 )}
               </div>
-              {isOwner && !m.isYou && (
-                <button
-                  onClick={() => handleKick(m.userId)}
-                  disabled={busy}
-                  aria-label="Kicken"
-                  className="p-2 rounded-lg text-fg-mute hover:text-shame hover:bg-shame/10 transition"
-                >
-                  <UserMinus size={14} />
-                </button>
+              {isOwner && !m.isYou && m.role !== "owner" && (
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <button
+                    onClick={() => setTransferTarget(m)}
+                    disabled={busy}
+                    aria-label="Owner machen"
+                    className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
+                    title="Owner übergeben"
+                  >
+                    <Crown size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleKick(m.userId)}
+                    disabled={busy}
+                    aria-label="Kicken"
+                    className="p-2 rounded-lg text-fg-mute hover:text-shame hover:bg-shame/10 transition"
+                  >
+                    <UserMinus size={14} />
+                  </button>
+                </div>
               )}
             </li>
           ))}
@@ -397,8 +515,8 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
         {isOwner ? (
           <>
             <p className="text-sm text-fg-soft mb-4">
-              Als Owner kannst du die Crew nur löschen. Alle Spin-Einträge
-              werden unwiderruflich entfernt.
+              Als Owner kannst du die Crew löschen, oder die Ownership an
+              ein Mitglied übergeben (Kronen-Icon in der Liste).
             </p>
             <button
               onClick={() => setConfirmDelete(true)}
@@ -423,6 +541,20 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           </>
         )}
       </div>
+
+      {/* Avatar-Picker */}
+      <AvatarPicker
+        open={avatarOpen}
+        emoji={previewEmoji}
+        color={previewColor}
+        busy={busy}
+        onClose={() => setAvatarOpen(false)}
+        onPreviewChange={(e, c) => {
+          setPreviewEmoji(e);
+          setPreviewColor(c);
+        }}
+        onSave={handleSaveAvatar}
+      />
 
       {/* Confirm-Modals */}
       <AnimatePresence>
@@ -490,6 +622,65 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                     : confirmDelete
                       ? "Endgültig löschen"
                       : "Verlassen"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Transfer Confirm-Modal */}
+      <AnimatePresence>
+        {transferTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 grid place-items-center px-4"
+            style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)" }}
+            onClick={() => !busy && setTransferTarget(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 12, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-strong rounded-3xl p-7 max-w-sm w-full text-center"
+            >
+              <div
+                className="grid place-items-center w-14 h-14 mx-auto mb-3 rounded-full"
+                style={{
+                  background: "var(--surface-gold)",
+                  border: "1px solid var(--border-gold)",
+                }}
+              >
+                <Crown size={24} className="text-gold-bright" />
+              </div>
+              <h3 className="font-display font-bold text-2xl text-fg mb-1">
+                Owner übergeben?
+              </h3>
+              <p className="text-sm text-fg-soft mb-6">
+                <span className="font-semibold text-fg">
+                  {transferTarget.name ?? "Dieses Mitglied"}
+                </span>{" "}
+                wird neuer Owner und übernimmt alle Privilegien. Du wirst
+                normales Mitglied.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setTransferTarget(null)}
+                  disabled={busy}
+                  className="btn-ghost flex-1"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={handleTransfer}
+                  disabled={busy}
+                  className="btn-primary flex-1"
+                >
+                  {busy ? "Übergebe…" : "Übergeben"}
                 </button>
               </div>
             </motion.div>

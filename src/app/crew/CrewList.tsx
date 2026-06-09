@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useCrew, type CrewSummary } from "@/lib/crew-context";
+import CrewAvatar from "@/components/CrewAvatar";
 
 export default function CrewList() {
   const { crews, activeCrewId, setActiveCrewId, loading, refresh } = useCrew();
@@ -212,15 +213,7 @@ export default function CrewList() {
                   boxShadow: active ? "var(--shadow-gold)" : undefined,
                 }}
               >
-                <div
-                  className="grid place-items-center w-11 h-11 rounded-xl shrink-0 font-display font-extrabold text-lg"
-                  style={{
-                    background: "var(--surface-gold)",
-                    color: "var(--text-gold)",
-                  }}
-                >
-                  {c.name.slice(0, 1).toUpperCase()}
-                </div>
+                <CrewAvatar emoji={c.emoji} color={c.accentColor} size={44} />
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="font-display font-bold text-fg truncate">{c.name}</span>

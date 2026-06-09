@@ -13,6 +13,8 @@ export interface CrewSummary {
   id: string;
   code: string;
   name: string;
+  emoji: string;
+  accentColor: string;
   ownerId: string;
   role: "owner" | "admin" | "member";
   memberCount: number;

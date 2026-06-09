@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongoose";
 import { getCurrentUserId } from "@/lib/user";
 import { generateUniqueCrewCode, getMyCrews, setActiveCrew } from "@/lib/crew";
+import { pickRandomAvatar } from "@/lib/avatars";
 import Crew from "@/models/Crew";
 import CrewMember from "@/models/CrewMember";
 
@@ -42,10 +43,13 @@ export async function POST(req: Request) {
 
   await dbConnect();
   const code = await generateUniqueCrewCode();
+  const avatar = pickRandomAvatar();
   const crew = await Crew.create({
     code,
     name,
     ownerId: userId,
+    emoji: avatar.emoji,
+    accentColor: avatar.accentColor,
   });
   await CrewMember.create({
     crewId: crew._id,
@@ -60,6 +64,8 @@ export async function POST(req: Request) {
       id: String(crew._id),
       code: crew.code,
       name: crew.name,
+      emoji: crew.emoji,
+      accentColor: crew.accentColor,
       ownerId: String(crew.ownerId),
       role: "owner",
       memberCount: 1,

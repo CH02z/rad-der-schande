@@ -67,6 +67,8 @@ export async function POST(req: Request) {
     id: String(crew._id),
     code: crew.code,
     name: crew.name,
+    emoji: crew.emoji,
+    accentColor: crew.accentColor,
     ownerId: String(crew.ownerId),
     role: existing?.role ?? "member",
     memberCount,

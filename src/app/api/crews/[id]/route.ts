@@ -35,6 +35,8 @@ export async function GET(_req: Request, { params }: RouteCtx) {
     _id: Types.ObjectId;
     code: string;
     name: string;
+    emoji: string;
+    accentColor: string;
     ownerId: Types.ObjectId;
     createdAt: Date;
   }>();
@@ -72,6 +74,8 @@ export async function GET(_req: Request, { params }: RouteCtx) {
     id: String(crew._id),
     code: crew.code,
     name: crew.name,
+    emoji: crew.emoji ?? "🎰",
+    accentColor: crew.accentColor ?? "#E8C36A",
     ownerId: String(crew.ownerId),
     createdAt: crew.createdAt,
     members,
@@ -94,26 +98,38 @@ export async function PATCH(req: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Nur der Owner darf das" }, { status: 403 });
   }
 
-  let body: { name?: unknown };
+  let body: { name?: unknown; emoji?: unknown; accentColor?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  if (name.length < 2 || name.length > 40) {
-    return NextResponse.json(
-      { error: "Name muss 2 bis 40 Zeichen lang sein" },
-      { status: 400 }
-    );
+  const { isValidEmoji, isValidColor } = await import("@/lib/avatars");
+  const update: Record<string, unknown> = { updatedAt: new Date() };
+
+  if (typeof body.name === "string") {
+    const name = body.name.trim();
+    if (name.length < 2 || name.length > 40) {
+      return NextResponse.json(
+        { error: "Name muss 2 bis 40 Zeichen lang sein" },
+        { status: 400 }
+      );
+    }
+    update.name = name;
+  }
+  if (typeof body.emoji === "string" && isValidEmoji(body.emoji)) {
+    update.emoji = body.emoji;
+  }
+  if (typeof body.accentColor === "string" && isValidColor(body.accentColor)) {
+    update.accentColor = body.accentColor;
   }
 
-  await Crew.updateOne(
-    { _id: crewId },
-    { $set: { name, updatedAt: new Date() } }
-  );
+  if (Object.keys(update).length === 1) {
+    return NextResponse.json({ error: "Nichts zu updaten" }, { status: 400 });
+  }
 
+  await Crew.updateOne({ _id: crewId }, { $set: update });
   return NextResponse.json({ ok: true });
 }
 
