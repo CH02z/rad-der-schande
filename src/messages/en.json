@@ -28,15 +28,16 @@
     "share": "Share",
     "copy": "Copy",
     "copied": "Copied",
-    "moreOptions": "More options"
+    "moreOptions": "More options",
+    "remove": "Remove"
   },
   "landing": {
     "signIn": "Sign in",
     "hero": {
       "eyebrow": "Casino-style for friends",
-      "titlePre": "Who wears the",
+      "titlePre": "Who carries the",
       "titleAccent": "Shame",
-      "subtitle": "Spin the wheel. Build crews. The shame table never forgets — whoever loses most often wears the crown.",
+      "subtitle": "Spin the wheel. Build your crew. The shame table never forgets — whoever loses most often wears the crown.",
       "ctaPrimary": "Get started",
       "ctaSecondary": "How it works",
       "note": "Free · Sign in with Google · Only your crew sees your shame"
@@ -45,11 +46,11 @@
       "eyebrow": "Features",
       "titlePre": "More than just a",
       "titleAccent": "Wheel of Fortune",
-      "subtitle": "Casino physics, crew system, stats. Everything your 5-friend gang needs to finally decide, fair and square, who pays.",
+      "subtitle": "Casino physics, crew system, stats. Everything your 5-person crew needs to finally settle, once and for all, who pays.",
       "physicsTitle": "Real Casino Physics",
       "physicsText": "No pre-computed winner. The wheel spins with real angular velocity and friction and can stop anywhere — Vegas feeling.",
       "crewsTitle": "Crews via Code",
-      "crewsText": "Create your gang in 5 seconds, share the 6-character code via WhatsApp. Multiple crews simultaneously — Slack-style switcher.",
+      "crewsText": "Start your crew in 5 seconds, share the 6-character code via WhatsApp. Multiple crews at once — Slack-style switcher.",
       "tableTitle": "Shame Table",
       "tableText": "Each crew has its own table. Who loses how often? Weekly, monthly, yearly, all-time filters. Owner can reset — or not.",
       "modesTitle": "2 Game Modes",
@@ -65,7 +66,7 @@
       "step1Title": "Sign in with Google",
       "step1Text": "One click and you're in. We use Google OAuth.",
       "step2Title": "Create a crew",
-      "step2Text": "You become owner and get a 6-character code. Share it with your gang.",
+      "step2Text": "You become the owner and get a 6-character code. Share it with your crew.",
       "step3Title": "Spin and suffer",
       "step3Text": "Spins go into your shared shame table. Whoever loses wears it."
     },
@@ -79,12 +80,12 @@
     },
     "cta": {
       "eyebrow": "Ready for the shame?",
-      "titlePre": "Gather your gang.",
+      "titlePre": "Round up your crew.",
       "titleAccent": "Spin the wheel.",
       "subtitle": "Sign in with Google. Create a crew. Share the code. 2 minutes and you're in.",
       "button": "Sign in with Google"
     },
-    "footer": "rad-der-schande.ch · built with ♥ for 5-friend crews"
+    "footer": "rad-der-schande.ch · built with ♥ for 5-person crews"
   },
   "login": {
     "title": "Sign in",
@@ -95,7 +96,7 @@
   "wheel": {
     "setup": {
       "eyebrow": "Game Setup",
-      "titlePre": "Who wears the",
+      "titlePre": "Who carries the",
       "titleAccent": "Shame",
       "soloSubtitle": "Choose the mode and add players.",
       "crewSubtitle": "Tap members to include or exclude them for this round.",
@@ -125,7 +126,7 @@
     },
     "result": {
       "jackpot": "JACKPOT",
-      "bears": "wears the",
+      "bears": "carries the",
       "shame": "Shame",
       "consequencePrefix": "… and",
       "tapToClose": "Tap anywhere to close"
@@ -217,7 +218,15 @@
       "transfer": "Transfer",
       "transferring": "Transferring…",
       "nick": "Nick",
-      "nickPlaceholder": "Nickname"
+      "nickPlaceholder": "Nickname",
+      "email": "Email",
+      "avatarChange": "Change avatar",
+      "directLink": "Direct link",
+      "makeOwner": "Transfer ownership",
+      "kick": "Remove member",
+      "setNickname": "Set nickname",
+      "changeNickname": "Change nickname",
+      "thisMember": "This member"
     },
     "pill": {
       "soloLabel": "Solo",
@@ -266,6 +275,11 @@
     "pushOff": "Off",
     "pushUnsupported": "Push is not supported on this device.",
     "pushDenied": "Permission denied. Enable it in your browser settings.",
+    "pushIosTitle": "On iPhone: install the app",
+    "pushIosText": "Web push only works on iOS in the installed app. Add it to your Home Screen in 3 steps:",
+    "pushIosStep1": "Tap the share icon in Safari",
+    "pushIosStep2": "Choose ‘Add to Home Screen’",
+    "pushIosStep3": "Open the app from there, then turn push on here",
     "language": "Language",
     "languageHint": "Synced with your account.",
     "account": "Account",

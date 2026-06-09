@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Moon, Sun, Volume2, VolumeX, Globe, Check, Bell, BellOff, AlertCircle } from "lucide-react";
+import { Moon, Sun, Volume2, VolumeX, Globe, Check, Bell, BellOff, AlertCircle, Share, Plus } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useSound } from "@/lib/sound";
 import { useT, LOCALES, type Locale } from "@/lib/i18n";
@@ -94,10 +94,29 @@ export function LocaleSelector() {
   );
 }
 
+/** Detects iOS Safari that's NOT in standalone mode (PWA install needed). */
+function useIosStandaloneCheck() {
+  const [needsPwaInstall, setNeedsPwaInstall] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ua = navigator.userAgent;
+    const isIos = /iPad|iPhone|iPod/.test(ua);
+    if (!isIos) return;
+    // navigator.standalone is iOS-Safari-only legacy API
+    const navWithStandalone = navigator as Navigator & { standalone?: boolean };
+    const isStandalone =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      navWithStandalone.standalone === true;
+    if (!isStandalone) setNeedsPwaInstall(true);
+  }, []);
+  return needsPwaInstall;
+}
+
 export function PushToggle() {
   const { t } = useT();
   const [status, setStatus] = useState<PushStatus>("default");
   const [busy, setBusy] = useState(false);
+  const needsPwaInstall = useIosStandaloneCheck();
 
   const refresh = useCallback(async () => {
     setStatus(await getPushStatus());
@@ -120,6 +139,70 @@ export function PushToggle() {
     await unsubscribeFromPush();
     setStatus("unsubscribed");
     setBusy(false);
+  }
+
+  // iPhone Safari ohne PWA-Installation → spezielle Anleitung
+  if (needsPwaInstall) {
+    return (
+      <div className="space-y-3 max-w-md">
+        <div
+          className="flex items-start gap-3 rounded-2xl p-4 text-sm"
+          style={{
+            background: "var(--surface-gold)",
+            color: "var(--text)",
+            border: "1px solid var(--border-gold)",
+          }}
+        >
+          <div
+            className="grid place-items-center w-9 h-9 rounded-xl shrink-0 mt-0.5"
+            style={{ background: "rgba(232,195,106,0.18)", color: "var(--text-gold)" }}
+          >
+            <Bell size={16} />
+          </div>
+          <div className="min-w-0">
+            <div className="font-display font-bold text-fg mb-1">
+              {t("settings.pushIosTitle")}
+            </div>
+            <p className="text-xs text-fg-soft">{t("settings.pushIosText")}</p>
+            <ol className="mt-3 space-y-1.5 text-xs text-fg-soft">
+              <li className="flex items-start gap-2">
+                <span
+                  className="grid place-items-center w-5 h-5 rounded-md font-mono text-[10px] shrink-0 mt-0.5"
+                  style={{ background: "var(--surface)", color: "var(--text-gold)" }}
+                >
+                  1
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {t("settings.pushIosStep1")}
+                  <Share size={12} className="inline text-text-gold" />
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span
+                  className="grid place-items-center w-5 h-5 rounded-md font-mono text-[10px] shrink-0 mt-0.5"
+                  style={{ background: "var(--surface)", color: "var(--text-gold)" }}
+                >
+                  2
+                </span>
+                <span className="flex items-center gap-1.5">
+                  {t("settings.pushIosStep2")}
+                  <Plus size={12} className="inline text-text-gold" />
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span
+                  className="grid place-items-center w-5 h-5 rounded-md font-mono text-[10px] shrink-0 mt-0.5"
+                  style={{ background: "var(--surface)", color: "var(--text-gold)" }}
+                >
+                  3
+                </span>
+                <span>{t("settings.pushIosStep3")}</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (status === "unsupported") {

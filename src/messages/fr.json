@@ -28,7 +28,8 @@
     "share": "Partager",
     "copy": "Copier",
     "copied": "Copié",
-    "moreOptions": "Plus d'options"
+    "moreOptions": "Plus d'options",
+    "remove": "Retirer"
   },
   "landing": {
     "signIn": "Se connecter",
@@ -217,7 +218,15 @@
       "transfer": "Transférer",
       "transferring": "Transfert…",
       "nick": "Surnom",
-      "nickPlaceholder": "Surnom"
+      "nickPlaceholder": "Surnom",
+      "email": "E-mail",
+      "avatarChange": "Changer l'avatar",
+      "directLink": "Lien direct",
+      "makeOwner": "Transférer la propriété",
+      "kick": "Retirer le membre",
+      "setNickname": "Définir un surnom",
+      "changeNickname": "Changer le surnom",
+      "thisMember": "Ce membre"
     },
     "pill": {
       "soloLabel": "Solo",
@@ -266,6 +275,11 @@
     "pushOff": "Coupé",
     "pushUnsupported": "Push non supporté sur cet appareil.",
     "pushDenied": "Autorisation refusée. Active-la dans les réglages du navigateur.",
+    "pushIosTitle": "Sur iPhone : installer l'app",
+    "pushIosText": "Le push web sur iOS ne fonctionne que dans l'app installée. Ajoute-la à l'écran d'accueil en 3 étapes :",
+    "pushIosStep1": "Touche l'icône Partager dans Safari",
+    "pushIosStep2": "Choisis « Sur l'écran d'accueil »",
+    "pushIosStep3": "Ouvre l'app depuis là, puis active push ici",
     "language": "Langue",
     "languageHint": "Synchronisé avec ton compte.",
     "account": "Compte",

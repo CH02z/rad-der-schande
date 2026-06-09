@@ -28,6 +28,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
+import { useT } from "@/lib/i18n";
 import CrewAvatar from "@/components/CrewAvatar";
 import AvatarPicker from "@/components/AvatarPicker";
 import StatsPanel from "@/components/StatsPanel";
@@ -69,6 +70,7 @@ interface CrewDetailData {
 export default function CrewDetail({ crewId }: { crewId: string }) {
   const router = useRouter();
   const { activeCrewId, setActiveCrewId, refresh } = useCrew();
+  const { t } = useT();
 
   const [data, setData] = useState<CrewDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -333,7 +335,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <Link href="/crew" className="btn-ghost">
-          <ArrowLeft size={16} /> <span className="hidden sm:inline">Crews</span>
+          <ArrowLeft size={16} /> <span className="hidden sm:inline">{t("crew.detail.back")}</span>
         </Link>
         {isActive ? (
           <div
@@ -348,11 +350,11 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "var(--text-gold)", boxShadow: "0 0 8px var(--text-gold)" }}
             />
-            Aktive Crew
+            {t("crew.detail.activeCrew")}
           </div>
         ) : (
           <button onClick={handleSetActive} className="btn-ghost text-xs">
-            Als aktiv setzen
+            {t("crew.detail.setActive")}
           </button>
         )}
       </div>
@@ -378,7 +380,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                 border: "1px solid var(--border-strong)",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
               }}
-              aria-label="Avatar ändern"
+              aria-label={t("crew.detail.avatarChange")}
             >
               <Sparkles size={13} className="text-gold-bright" />
             </button>
@@ -400,7 +402,9 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
         </div>
         <p className="text-xs text-fg-mute">
           {data.members.length}{" "}
-          {data.members.length === 1 ? "Mitglied" : "Mitglieder"}
+          {data.members.length === 1
+            ? t("crew.list.membersOne")
+            : t("crew.list.membersMany")}
         </p>
 
         <AnimatePresence>
@@ -424,7 +428,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                   disabled={busy}
                   className="btn-primary text-sm px-4"
                 >
-                  Speichern
+                  {t("common.save")}
                 </button>
               </div>
             </motion.div>
@@ -433,7 +437,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
 
         {/* Code-Display */}
         <div className="mt-5">
-          <p className="eyebrow-gold justify-center mb-2">Crew-Code</p>
+          <p className="eyebrow-gold justify-center mb-2">{t("crew.detail.code")}</p>
           <div
             className="font-mono font-extrabold text-3xl sm:text-4xl tracking-[0.25em]"
             style={{ color: "var(--text-gold)" }}
@@ -441,7 +445,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
             {data.code}
           </div>
           <p className="text-[10px] uppercase tracking-widest text-fg-mute mt-2">
-            Direkt-Link: /join/{data.code}
+            {t("crew.detail.directLink")}: /join/{data.code}
           </p>
         </div>
 
@@ -468,18 +472,18 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
             className="btn-ghost text-xs py-2.5"
           >
             <Mail size={14} className="text-fg-soft" />
-            E-Mail
+            {t("crew.detail.email")}
           </a>
           <button onClick={handleCopyCode} className="btn-ghost text-xs py-2.5">
             {copied ? (
               <>
                 <Check size={14} className="text-gold-bright" />
-                Kopiert
+                {t("common.copied")}
               </>
             ) : (
               <>
                 <Copy size={14} />
-                Kopieren
+                {t("common.copy")}
               </>
             )}
           </button>
@@ -490,7 +494,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
             onClick={handleShareNative}
             className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-fg-soft hover:text-fg transition"
           >
-            <Share2 size={12} /> Mehr Optionen
+            <Share2 size={12} /> {t("common.moreOptions")}
           </button>
         )}
       </div>
@@ -502,7 +506,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
       <div className="card-casino p-5 sm:p-6">
         <header className="mb-3 flex items-center gap-2">
           <UsersIcon size={15} className="text-fg-mute" />
-          <h2 className="font-display font-bold text-fg">Mitglieder</h2>
+          <h2 className="font-display font-bold text-fg">{t("crew.detail.members")}</h2>
           <span className="text-xs text-fg-mute font-mono">
             ({data.members.length})
           </span>
@@ -544,7 +548,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                             setNickValue("");
                           }
                         }}
-                        placeholder={m.name ?? "Spitzname"}
+                        placeholder={m.name ?? t("crew.detail.nickPlaceholder")}
                         maxLength={30}
                         autoFocus
                         disabled={busy}
@@ -564,7 +568,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                         }}
                         disabled={busy}
                         className="btn-ghost text-xs px-2 py-2"
-                        aria-label="Abbrechen"
+                        aria-label={t("common.cancel")}
                       >
                         <X size={14} />
                       </button>
@@ -588,7 +592,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                         )}
                         {m.isYou && (
                           <span className="text-[10px] uppercase font-bold tracking-widest text-fg-mute">
-                            Du
+                            {t("common.you")}
                           </span>
                         )}
                         {m.role === "owner" && (
@@ -616,9 +620,9 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                           setNickValue(m.nickname ?? "");
                         }}
                         disabled={busy}
-                        aria-label="Spitzname vergeben"
+                        aria-label={t("crew.detail.setNickname")}
                         className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
-                        title={m.nickname ? "Spitzname ändern" : "Spitzname vergeben"}
+                        title={m.nickname ? t("crew.detail.changeNickname") : t("crew.detail.setNickname")}
                       >
                         <Pencil size={13} />
                       </button>
@@ -628,16 +632,16 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                         <button
                           onClick={() => setTransferTarget(m)}
                           disabled={busy}
-                          aria-label="Owner machen"
+                          aria-label={t("crew.detail.makeOwner")}
                           className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
-                          title="Owner übergeben"
+                          title={t("crew.detail.makeOwner")}
                         >
                           <Crown size={14} />
                         </button>
                         <button
                           onClick={() => handleKick(m.userId)}
                           disabled={busy}
-                          aria-label="Kicken"
+                          aria-label={t("crew.detail.kick")}
                           className="p-2 rounded-lg text-fg-mute hover:text-shame hover:bg-shame/10 transition"
                         >
                           <UserMinus size={14} />
@@ -657,19 +661,19 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
         <div className="card-casino p-5 sm:p-6 space-y-5">
           <header className="flex items-center gap-2">
             <SlidersHorizontal size={15} className="text-fg-mute" />
-            <h2 className="font-display font-bold text-fg">Crew-Einstellungen</h2>
+            <h2 className="font-display font-bold text-fg">{t("crew.detail.settings")}</h2>
           </header>
 
           {/* Default-Mode */}
           <div>
-            <p className="eyebrow-gold mb-2">Standard-Modus</p>
+            <p className="eyebrow-gold mb-2">{t("crew.detail.defaultMode")}</p>
             <p className="text-xs text-fg-mute mb-3">
-              Wird beim Öffnen des Rads automatisch vorausgewählt.
+              {t("crew.detail.defaultModeHint")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {([
-                { id: "classic" as const, title: "Klassisch", Icon: Target, accent: "#FF2D55" },
-                { id: "elim" as const, title: "Eliminierung", Icon: Swords, accent: "#E8C36A" },
+                { id: "classic" as const, title: t("wheel.modes.classic"), Icon: Target, accent: "#FF2D55" },
+                { id: "elim" as const, title: t("wheel.modes.elim"), Icon: Swords, accent: "#E8C36A" },
               ]).map((m) => {
                 const active = data.defaultMode === m.id;
                 const Icon = m.Icon;
@@ -699,9 +703,9 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           <div>
             <div className="flex items-end justify-between mb-2">
               <div>
-                <p className="eyebrow-gold mb-0.5">Konsequenzen-Vorlagen</p>
+                <p className="eyebrow-gold mb-0.5">{t("crew.detail.consequences")}</p>
                 <p className="text-xs text-fg-mute">
-                  Wird zufällig beim Spin-Resultat angezeigt.
+                  {t("crew.detail.consequencesHint")}
                 </p>
               </div>
               <span className="text-[10px] uppercase tracking-widest text-fg-mute tabular-nums">
@@ -732,7 +736,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                         onClick={() => removeConsequence(i)}
                         disabled={busy}
                         className="grid place-items-center w-6 h-6 rounded-full transition disabled:opacity-30 text-fg-mute hover:text-shame hover:bg-shame/10"
-                        aria-label="Entfernen"
+                        aria-label={t("common.remove")}
                       >
                         <X size={13} strokeWidth={2.6} />
                       </button>
@@ -747,7 +751,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                 value={consequenceInput}
                 onChange={(e) => setConsequenceInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addConsequence())}
-                placeholder="z.B. zahlt eine Runde Bier"
+                placeholder={t("crew.detail.consequencePlaceholder")}
                 maxLength={80}
                 disabled={busy || data.consequences.length >= 20}
                 className="field text-sm"
@@ -773,35 +777,34 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
       <div className="card-casino p-5 sm:p-6">
         <header className="mb-3">
           <p className="eyebrow-gold" style={{ color: "#FF6B86" }}>
-            Achtung
+            {t("crew.detail.dangerZone")}
           </p>
-          <h2 className="font-display font-bold text-fg mt-1">Crew verlassen</h2>
+          <h2 className="font-display font-bold text-fg mt-1">{t("crew.detail.dangerTitle")}</h2>
         </header>
         {isOwner ? (
           <>
             <p className="text-sm text-fg-soft mb-4">
-              Als Owner kannst du die Crew löschen, oder die Ownership an
-              ein Mitglied übergeben (Kronen-Icon in der Liste).
+              {t("crew.detail.ownerDangerText")}
             </p>
             <button
               onClick={() => setConfirmDelete(true)}
               className="btn-danger"
             >
               <Trash2 size={14} />
-              Crew löschen
+              {t("crew.detail.deleteCrew")}
             </button>
           </>
         ) : (
           <>
             <p className="text-sm text-fg-soft mb-4">
-              Du verlässt die Crew. Deine Spin-Einträge bleiben in der Crew-Tabelle.
+              {t("crew.detail.memberDangerText")}
             </p>
             <button
               onClick={() => setConfirmLeave(true)}
               className="btn-danger"
             >
               <LogOut size={14} />
-              Crew verlassen
+              {t("crew.detail.leaveCrew")}
             </button>
           </>
         )}
@@ -855,12 +858,14 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                 <AlertTriangle size={24} className="text-shame" />
               </div>
               <h3 className="font-display font-bold text-2xl text-fg mb-1">
-                {confirmDelete ? "Crew löschen?" : "Crew verlassen?"}
+                {confirmDelete
+                  ? t("crew.detail.deleteConfirmTitle")
+                  : t("crew.detail.leaveConfirmTitle")}
               </h3>
               <p className="text-sm text-fg-soft mb-6">
                 {confirmDelete
-                  ? "Alle Mitglieder fliegen raus, alle Spin-Einträge werden gelöscht. Unwiderruflich."
-                  : "Du verlässt die Crew. Du kannst über den Code wieder beitreten."}
+                  ? t("crew.detail.deleteConfirmText")
+                  : t("crew.detail.leaveConfirmText")}
               </p>
               <div className="flex gap-2">
                 <button
@@ -871,7 +876,7 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                   disabled={busy}
                   className="btn-ghost flex-1"
                 >
-                  Abbrechen
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={() => (confirmDelete ? handleDelete() : handleLeave())}
@@ -885,8 +890,8 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                   {busy
                     ? "…"
                     : confirmDelete
-                      ? "Endgültig löschen"
-                      : "Verlassen"}
+                      ? t("tabelle.deleteFinal")
+                      : t("common.leave")}
                 </button>
               </div>
             </motion.div>
@@ -923,14 +928,13 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                 <Crown size={24} className="text-gold-bright" />
               </div>
               <h3 className="font-display font-bold text-2xl text-fg mb-1">
-                Owner übergeben?
+                {t("crew.detail.transferConfirmTitle")}
               </h3>
               <p className="text-sm text-fg-soft mb-6">
                 <span className="font-semibold text-fg">
-                  {transferTarget.name ?? "Dieses Mitglied"}
+                  {transferTarget.name ?? t("crew.detail.thisMember")}
                 </span>{" "}
-                wird neuer Owner und übernimmt alle Privilegien. Du wirst
-                normales Mitglied.
+                {t("crew.detail.transferConfirmText")}
               </p>
               <div className="flex gap-2">
                 <button
@@ -938,14 +942,14 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
                   disabled={busy}
                   className="btn-ghost flex-1"
                 >
-                  Abbrechen
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={handleTransfer}
                   disabled={busy}
                   className="btn-primary flex-1"
                 >
-                  {busy ? "Übergebe…" : "Übergeben"}
+                  {busy ? t("crew.detail.transferring") : t("crew.detail.transfer")}
                 </button>
               </div>
             </motion.div>

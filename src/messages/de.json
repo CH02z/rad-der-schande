@@ -28,7 +28,8 @@
     "share": "Teilen",
     "copy": "Kopieren",
     "copied": "Kopiert",
-    "moreOptions": "Mehr Optionen"
+    "moreOptions": "Mehr Optionen",
+    "remove": "Entfernen"
   },
   "landing": {
     "signIn": "Anmelden",
@@ -45,11 +46,11 @@
       "eyebrow": "Features",
       "titlePre": "Mehr als nur ein",
       "titleAccent": "Glücksrad",
-      "subtitle": "Casino-Physik, Crew-System, Stats. Alles damit deine 5er-Gang endlich wirklich entscheiden kann, wer zahlt.",
+      "subtitle": "Casino-Physik, Crew-System, Stats. Damit eure 5er-Crew endlich gerecht entscheiden kann, wer zahlt.",
       "physicsTitle": "Echte Casino-Physik",
       "physicsText": "Kein vorberechneter Gewinner. Das Rad dreht mit realer Angular-Velocity und Reibung und kann überall stehenbleiben — Vegas-Feeling.",
       "crewsTitle": "Crews mit Code",
-      "crewsText": "Erstelle deine Gang in 5 Sekunden, teile den 6-stelligen Code via WhatsApp. Mehrere Crews gleichzeitig — Slack-Style Switcher.",
+      "crewsText": "Crew in 5 Sekunden gegründet, 6-stelliger Code via WhatsApp geteilt — fertig. Mehrere Crews parallel, einfaches Wechseln wie bei Slack.",
       "tableTitle": "Schande-Tabelle",
       "tableText": "Pro Crew eine eigene Tabelle. Wer verliert wie oft? Tagesfilter, Monat, Jahr, Alltime. Owner darf zurücksetzen — oder auch nicht.",
       "modesTitle": "2 Spielmodi",
@@ -65,7 +66,7 @@
       "step1Title": "Anmelden mit Google",
       "step1Text": "Ein Klick, du bist drin. Wir nutzen Google OAuth.",
       "step2Title": "Crew erstellen",
-      "step2Text": "Du wirst Owner und bekommst einen 6-stelligen Code. Teile ihn mit deiner Gang.",
+      "step2Text": "Du wirst Owner und bekommst einen 6-stelligen Code. Teile ihn mit deiner Crew.",
       "step3Title": "Rad drehen, leiden",
       "step3Text": "Spins gehen in eure gemeinsame Schande-Tabelle. Wer verliert, trägt."
     },
@@ -79,7 +80,7 @@
     },
     "cta": {
       "eyebrow": "Bereit für die Schande?",
-      "titlePre": "Sammle deine Gang.",
+      "titlePre": "Hol deine Crew.",
       "titleAccent": "Dreht das Rad.",
       "subtitle": "Login mit Google. Crew erstellen. Code teilen. 2 Minuten und ihr seid drin.",
       "button": "Mit Google anmelden"
@@ -217,7 +218,15 @@
       "transfer": "Übergeben",
       "transferring": "Übergebe…",
       "nick": "Nick",
-      "nickPlaceholder": "Spitzname"
+      "nickPlaceholder": "Spitzname",
+      "email": "E-Mail",
+      "avatarChange": "Avatar ändern",
+      "directLink": "Direkt-Link",
+      "makeOwner": "Owner übergeben",
+      "kick": "Mitglied entfernen",
+      "setNickname": "Spitzname vergeben",
+      "changeNickname": "Spitzname ändern",
+      "thisMember": "Dieses Mitglied"
     },
     "pill": {
       "soloLabel": "Solo",
@@ -266,6 +275,11 @@
     "pushOff": "Aus",
     "pushUnsupported": "Push wird auf diesem Gerät nicht unterstützt.",
     "pushDenied": "Erlaubnis verweigert. Aktiviere sie in den Browser-Einstellungen.",
+    "pushIosTitle": "Auf iPhone: App installieren",
+    "pushIosText": "Web-Push funktioniert auf iOS nur in der installierten App. Füge die App in 3 Schritten zum Home-Bildschirm hinzu:",
+    "pushIosStep1": "Tippe in Safari unten auf",
+    "pushIosStep2": "Wähle „Zum Home-Bildschirm",
+    "pushIosStep3": "App von dort öffnen, dann Push hier aktivieren",
     "language": "Sprache",
     "languageHint": "Wird mit deinem Account synchronisiert.",
     "account": "Account",

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Flame, Swords, Crown, Loader2, Dices } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 interface Rivalry {
   a: string;
@@ -29,6 +30,7 @@ interface StatsData {
 }
 
 export default function StatsPanel({ crewId }: { crewId: string }) {
+  const { t } = useT();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -61,9 +63,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
     return (
       <div className="card-casino p-6 text-center">
         <Dices size={28} className="text-fg-mute mx-auto mb-2" />
-        <p className="text-sm text-fg-mute">
-          Noch keine Spins in dieser Crew — drehe das Rad, dann gibt es Stats.
-        </p>
+        <p className="text-sm text-fg-mute">{t("stats.emptyText")}</p>
       </div>
     );
   }
@@ -76,10 +76,10 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
       {/* Top-Loser Highlight */}
       {data.topLoser && (
         <div className="card-casino p-5 sm:p-6">
-          <p className="eyebrow-gold mb-2">Hall of Shame</p>
+          <p className="eyebrow-gold mb-2">{t("stats.halloShame")}</p>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs text-fg-mute mb-0.5">Schande-König</div>
+              <div className="text-xs text-fg-mute mb-0.5">{t("stats.shameKing")}</div>
               <div className="font-display font-black text-2xl sm:text-3xl gradient-shame truncate">
                 {data.topLoser}
               </div>
@@ -89,7 +89,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
                 {data.topLoserCount}
               </div>
               <div className="text-[10px] uppercase tracking-widest text-fg-mute">
-                Schanden
+                {t("stats.shames")}
               </div>
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
         <div className="card-casino p-5 sm:p-6">
           <header className="flex items-center gap-2 mb-3">
             <Flame size={15} className="text-shame" />
-            <h3 className="font-display font-bold text-fg">Auf der Verlierer-Strecke</h3>
+            <h3 className="font-display font-bold text-fg">{t("stats.onFireTitle")}</h3>
           </header>
           <ul className="space-y-2">
             {onFire.map((s) => (
@@ -116,7 +116,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
                 <Flame size={18} className="text-shame shrink-0" />
                 <span className="flex-1 font-medium text-fg truncate">{s.name}</span>
                 <span className="text-xs text-fg-mute">
-                  {s.current} in Folge
+                  {s.current} {t("stats.onFireSuffix")}
                 </span>
               </li>
             ))}
@@ -130,10 +130,10 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
           <header className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Swords size={15} className="text-fg-mute" />
-              <h3 className="font-display font-bold text-fg">Rivalitäten</h3>
+              <h3 className="font-display font-bold text-fg">{t("stats.rivalriesTitle")}</h3>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-fg-mute">
-              Head-to-Head
+              {t("stats.headToHead")}
             </span>
           </header>
 
@@ -146,7 +146,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
               }}
             >
               <div className="text-[10px] uppercase tracking-widest text-fg-mute mb-1.5">
-                Biggest Beef
+                {t("stats.biggestBeef")}
               </div>
               <div className="flex items-center justify-center gap-3 text-fg">
                 <span className="font-display font-bold text-base sm:text-lg truncate">
@@ -166,7 +166,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
                   {topRivalry.bLost}
                 </span>
                 <span className="text-fg-mute">
-                  · {topRivalry.total} Spins
+                  · {topRivalry.total} {t("stats.spinsLabel")}
                 </span>
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
         <div className="card-casino p-5 sm:p-6">
           <header className="flex items-center gap-2 mb-3">
             <Crown size={15} className="text-gold-bright" />
-            <h3 className="font-display font-bold text-fg">Streak-Rekorde</h3>
+            <h3 className="font-display font-bold text-fg">{t("stats.streaksTitle")}</h3>
           </header>
           <ul className="space-y-1">
             {[...data.streaks]
@@ -206,7 +206,7 @@ export default function StatsPanel({ crewId }: { crewId: string }) {
                   </span>
                   {s.current > 0 && (
                     <span className="text-[10px] uppercase tracking-widest text-shame">
-                      aktuell {s.current}
+                      {t("stats.currentPrefix")} {s.current}
                     </span>
                   )}
                 </li>
