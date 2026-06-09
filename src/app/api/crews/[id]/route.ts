@@ -59,9 +59,14 @@ export async function GET(_req: Request, { params }: RouteCtx) {
 
   const members = memberships.map((m) => {
     const u = userMap.get(String(m.userId));
+    const name = (u?.name as string | undefined) ?? null;
+    const displayName =
+      m.nickname ?? name ?? (u?.email as string | undefined)?.split("@")[0] ?? "Anonym";
     return {
       userId: String(m.userId),
-      name: u?.name ?? null,
+      name,
+      nickname: m.nickname ?? null,
+      displayName,
       email: u?.email ?? null,
       image: u?.image ?? null,
       role: m.role,

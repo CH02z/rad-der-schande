@@ -1,16 +1,29 @@
 import { Schema, Types, models, model, type InferSchemaType } from "mongoose";
 
 /**
- * Spin — ein dokumentiertes Spin-Ergebnis.
+ * Spin — strukturiert: Participant kann ein registrierter User (userId)
+ * oder ein Gast (userId=null) sein. `name` ist immer ein Snapshot zum
+ * Zeitpunkt des Spins — falls sich der echte Name später ändert,
+ * können wir Stats per userId trotzdem konsistent gruppieren.
  *
  * Scope:
  *  - crewId === null → Solo-Spin (nur für den ausführenden User sichtbar)
  *  - crewId !== null → in einer Crew (sichtbar für alle aktiven Mitglieder)
- *
- * `loser` und `participants` bleiben als freie Strings — die Teilnehmer am
- * Wheel sind nicht zwingend registrierte User. So bleibt das Wheel auch
- * für „Gast"-Namen flexibel.
  */
+
+// Sub-Schema für Participant (Loser ist ein einzelner Participant)
+const ParticipantSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    name: { type: String, required: true, trim: true, maxlength: 30 },
+  },
+  { _id: false }
+);
+
 const SpinSchema = new Schema(
   {
     crewId: {
@@ -25,8 +38,8 @@ const SpinSchema = new Schema(
       required: true,
       index: true,
     },
-    loser: { type: String, required: true, trim: true, maxlength: 30 },
-    participants: { type: [String], default: [] },
+    loser: { type: ParticipantSchema, required: true },
+    participants: { type: [ParticipantSchema], default: [] },
     mode: {
       type: String,
       enum: ["classic", "elim"],
@@ -37,12 +50,14 @@ const SpinSchema = new Schema(
   { collection: "spins" }
 );
 
-// Optimiert für die zwei häufigsten Abfragen:
-// 1) Crew-Leaderboard:   { crewId, createdAt }
-// 2) User-Solo-Leader:   { spunByUserId, crewId: null, createdAt }
+// Crew-Leaderboard
 SpinSchema.index({ crewId: 1, createdAt: -1 });
+// Solo-Leaderboard
 SpinSchema.index({ spunByUserId: 1, crewId: 1, createdAt: -1 });
+// Aggregation by loser-user
+SpinSchema.index({ crewId: 1, "loser.userId": 1 });
 
+export type ParticipantDoc = InferSchemaType<typeof ParticipantSchema>;
 export type SpinDoc = InferSchemaType<typeof SpinSchema> & {
   _id: Types.ObjectId;
 };

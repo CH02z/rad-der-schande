@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plus, X, RotateCcw, Target, Swords, Check, ArrowLeft, ArrowRight, Users,
+  Plus, X, RotateCcw, Target, Swords, Check, ArrowLeft, ArrowRight,
+  Users, UserPlus, RefreshCw,
 } from "lucide-react";
 import { tick, winFanfare, spinStart } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
+import { useCrew } from "@/lib/crew-context";
 
 /* ============================================================
    CONSTANTS
@@ -18,8 +21,8 @@ const PALETTE = [
   "#C589FF", "#FF8A3D", "#3DDC91", "#FF6B86",
 ];
 
-const STARTING_NAMES = ["Du", "Schnüsi", "Bruno", "Lea", "Tom"];
-const MAX_NAMES = 12;
+const SOLO_DEFAULT_NAMES = ["Du", "Schnüsi", "Bruno", "Lea", "Tom"];
+const MAX_ROSTER = 12;
 const TWO_PI = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 
@@ -39,21 +42,32 @@ type Phase = "idle" | "spinning" | "stopped";
 type View = "setup" | "game";
 
 const MODES = [
-  {
-    id: "classic" as Mode,
-    title: "Klassisch",
-    desc: "Ein Spin, eine Schande.",
-    accent: "#FF2D55",
-    Icon: Target,
-  },
-  {
-    id: "elim" as Mode,
-    title: "Eliminierung",
-    desc: "Letzter im Rad verliert.",
-    accent: "#E8C36A",
-    Icon: Swords,
-  },
+  { id: "classic" as Mode, title: "Klassisch", desc: "Ein Spin, eine Schande.", accent: "#FF2D55", Icon: Target },
+  { id: "elim" as Mode, title: "Eliminierung", desc: "Letzter im Rad verliert.", accent: "#E8C36A", Icon: Swords },
 ];
+
+/** Ein Teilnehmer am Rad — entweder Crew-Member (userId) oder Gast (null). */
+interface RosterEntry {
+  userId: string | null;
+  name: string;
+  image?: string | null;
+  isGuest: boolean;
+  /** Aktuelle Session-Beteiligung. Ausgeschlossene erscheinen nicht auf dem Rad. */
+  included: boolean;
+}
+
+function makeKey(r: { userId: string | null; name: string }): string {
+  return r.userId ? `u:${r.userId}` : `g:${r.name}`;
+}
+
+function defaultSoloRoster(): RosterEntry[] {
+  return SOLO_DEFAULT_NAMES.map((n) => ({
+    userId: null,
+    name: n,
+    isGuest: true,
+    included: true,
+  }));
+}
 
 /* ============================================================
    HELPERS
@@ -80,11 +94,13 @@ function segmentAtPointer(angle: number, n: number): number {
    COMPONENT
    ============================================================ */
 
-export default function Wheel({ initialNames }: { initialNames?: string[] }) {
+export default function Wheel() {
+  const { activeCrew, activeCrewId } = useCrew();
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
 
-  // Animation-Refs
+  // === Animation-Refs ===
   const angleRef = useRef(0);
   const velRef = useRef(IDLE_VELOCITY);
   const lastTimeRef = useRef(0);
@@ -92,36 +108,44 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   const rafRef = useRef<number | null>(null);
   const phaseRef = useRef<Phase>("idle");
 
-  // State → Refs
-  const namesRef = useRef<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
+  // === Roster-Refs (für RAF-Loop) ===
+  const rosterRef = useRef<RosterEntry[]>(defaultSoloRoster());
   const modeRef = useRef<Mode>("classic");
   const mutedRef = useRef(false);
   const sizeRef = useRef(380);
   const fontFamilyRef = useRef<string>(FONT_FALLBACK);
 
-  // UI State
+  // === UI-State ===
   const [view, setView] = useState<View>("setup");
-  const [names, setNames] = useState<string[]>(initialNames?.length ? initialNames : STARTING_NAMES);
+  const [roster, setRoster] = useState<RosterEntry[]>(defaultSoloRoster());
+  const [loadingRoster, setLoadingRoster] = useState(false);
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<RosterEntry | null>(null);
   const [winning, setWinning] = useState(false);
   const [size, setSize] = useState(380);
   const [mode, setMode] = useState<Mode>("classic");
-  const [originalRoster, setOriginalRoster] = useState<string[] | null>(null);
-  const [eliminated, setEliminated] = useState<string | null>(null);
+  // Während Elim-Spiel: Snapshot des Rosters (gefilterte Included) für „Neue Runde"
+  const [originalRoster, setOriginalRoster] = useState<RosterEntry[] | null>(null);
+  const [eliminated, setEliminated] = useState<RosterEntry | null>(null);
   const [fontFamily, setFontFamily] = useState<string>(FONT_FALLBACK);
 
   const { muted } = useSound();
 
-  useEffect(() => { namesRef.current = names; }, [names]);
+  // Sync state → refs
+  useEffect(() => { rosterRef.current = roster; }, [roster]);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   useEffect(() => { mutedRef.current = muted; }, [muted]);
   useEffect(() => { sizeRef.current = size; }, [size]);
   useEffect(() => { fontFamilyRef.current = fontFamily; }, [fontFamily]);
 
   const inElimGame = mode === "elim" && originalRoster !== null;
+  const includedRoster = roster.filter((r) => r.included);
+  const canSpin =
+    !spinning && !eliminated && includedRoster.length >= 2;
+  const lockedForElim = inElimGame;
 
+  // === Resize ===
   useEffect(() => {
     function update() {
       const w = Math.min(580, window.innerWidth - 40);
@@ -132,6 +156,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
+  // === Font-Resolution ===
   useEffect(() => {
     try {
       const resolved = getComputedStyle(document.documentElement)
@@ -141,11 +166,52 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     } catch {}
   }, []);
 
-  // === Draw (uses refs) ===
+  // === Crew-Roster Loading ===
+  // Wenn activeCrewId set: lade Members aus /api/crews/[id].
+  // Solo: fallback auf SOLO_DEFAULT_NAMES.
+  const loadCrewRoster = useCallback(async () => {
+    if (!activeCrewId) {
+      setRoster(defaultSoloRoster());
+      setOriginalRoster(null);
+      return;
+    }
+    setLoadingRoster(true);
+    try {
+      const res = await fetch(`/api/crews/${activeCrewId}`);
+      if (!res.ok) {
+        setRoster(defaultSoloRoster());
+        return;
+      }
+      const data = (await res.json()) as {
+        members: Array<{
+          userId: string;
+          displayName: string;
+          image: string | null;
+        }>;
+      };
+      const entries: RosterEntry[] = data.members.slice(0, MAX_ROSTER).map((m) => ({
+        userId: m.userId,
+        name: m.displayName,
+        image: m.image,
+        isGuest: false,
+        included: true,
+      }));
+      setRoster(entries);
+      setOriginalRoster(null);
+    } finally {
+      setLoadingRoster(false);
+    }
+  }, [activeCrewId]);
+
+  useEffect(() => {
+    void loadCrewRoster();
+  }, [loadCrewRoster]);
+
+  // === Draw ===
   const drawWheel = useCallback(() => {
     const cvs = canvasRef.current;
     if (!cvs) return;
-    const names = namesRef.current;
+    const names = rosterRef.current.filter((r) => r.included).map((r) => r.name);
     const S = sizeRef.current;
     const fontFamily = fontFamilyRef.current;
 
@@ -168,6 +234,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
     ctx.clearRect(0, 0, S, S);
 
+    // Gold-Ring
     const ring = ctx.createRadialGradient(C, C, R_RING, C, C, R_OUTER);
     ring.addColorStop(0, "#2a1f08");
     ring.addColorStop(0.45, "#8a6a1c");
@@ -182,7 +249,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
 
     if (n === 0) return;
     const seg = TWO_PI / n;
-
     const labelRadial = R_SEG - R_HUB - 14;
     const radialMid = (R_SEG + R_HUB) / 2;
     const labelTangential = radialMid * seg * 0.78;
@@ -235,6 +301,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       ctx.restore();
     }
 
+    // Glanz
     ctx.save();
     ctx.beginPath();
     ctx.arc(C, C, R_SEG, 0, TWO_PI);
@@ -246,6 +313,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     ctx.fillRect(0, 0, S, S);
     ctx.restore();
 
+    // Hub
     const hubGrad = ctx.createRadialGradient(C - R_HUB * 0.35, C - R_HUB * 0.35, R_HUB * 0.1, C, C, R_HUB);
     hubGrad.addColorStop(0, "#3a3650");
     hubGrad.addColorStop(1, "#07060B");
@@ -277,14 +345,14 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     );
   }
 
-  async function logResult(loser: string) {
+  async function logResult(loser: RosterEntry, allPlaying: RosterEntry[]) {
     try {
       await fetch("/api/spins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          loser,
-          participants: namesRef.current,
+          loser: { userId: loser.userId, name: loser.name },
+          participants: allPlaying.map((p) => ({ userId: p.userId, name: p.name })),
           mode: modeRef.current,
         }),
       });
@@ -295,44 +363,60 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   }
 
   const finishSpin = useCallback(() => {
-    const names = namesRef.current;
+    const currentRoster = rosterRef.current;
+    const playing = currentRoster.filter((r) => r.included);
     const mode = modeRef.current;
-    const n = names.length;
-    const winnerIdx = segmentAtPointer(angleRef.current, n);
-    const landedName = names[winnerIdx];
+    const n = playing.length;
+    if (n === 0) return;
 
+    const winnerIdx = segmentAtPointer(angleRef.current, n);
+    const landed = playing[winnerIdx];
     setSpinning(false);
 
     if (mode === "classic") {
-      setResult(landedName);
+      setResult(landed);
       setWinning(true);
       setTimeout(() => setWinning(false), 1400);
       if (!mutedRef.current) winFanfare();
       fireConfetti();
-      void logResult(landedName);
+      void logResult(landed, playing);
+      return;
+    }
+
+    // === Elim-Mode ===
+    if (n <= 2) {
+      const loser = playing.find((_, i) => i !== winnerIdx)!;
+      setEliminated(landed);
+      setTimeout(() => {
+        setEliminated(null);
+        // Letzten Schritt anwenden: only loser included
+        setRoster((prev) =>
+          prev.map((r) =>
+            makeKey(r) === makeKey(loser)
+              ? { ...r, included: true }
+              : { ...r, included: false }
+          )
+        );
+        setResult(loser);
+        setWinning(true);
+        setTimeout(() => setWinning(false), 1400);
+        if (!mutedRef.current) winFanfare();
+        fireConfetti();
+        void logResult(loser, [loser]);
+      }, 1600);
     } else {
-      if (n <= 2) {
-        const loser = names.find((_, i) => i !== winnerIdx)!;
-        setEliminated(landedName);
-        setTimeout(() => {
-          setEliminated(null);
-          setNames([loser]);
-          setResult(loser);
-          setWinning(true);
-          setTimeout(() => setWinning(false), 1400);
-          if (!mutedRef.current) winFanfare();
-          fireConfetti();
-          void logResult(loser);
-        }, 1600);
-      } else {
-        setEliminated(landedName);
-        setTimeout(() => {
-          setNames((p) => p.filter((_, i) => i !== winnerIdx));
-          setEliminated(null);
-          phaseRef.current = "idle";
-          lastSegRef.current = null;
-        }, 1600);
-      }
+      // Eliminierung: lander.included = false
+      setEliminated(landed);
+      setTimeout(() => {
+        setRoster((prev) =>
+          prev.map((r) =>
+            makeKey(r) === makeKey(landed) ? { ...r, included: false } : r
+          )
+        );
+        setEliminated(null);
+        phaseRef.current = "idle";
+        lastSegRef.current = null;
+      }, 1600);
     }
   }, []);
 
@@ -343,7 +427,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       lastTimeRef.current = now;
 
       const phase = phaseRef.current;
-      const n = namesRef.current.length;
+      const playingCount = rosterRef.current.filter((r) => r.included).length;
 
       if (phase === "idle") {
         velRef.current = IDLE_VELOCITY;
@@ -356,8 +440,8 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
         angleRef.current += newV * dt;
         velRef.current = newV;
 
-        if (n > 0) {
-          const idx = segmentAtPointer(angleRef.current, n);
+        if (playingCount > 0) {
+          const idx = segmentAtPointer(angleRef.current, playingCount);
           if (lastSegRef.current !== null && idx !== lastSegRef.current) {
             const vol = Math.max(0.25, Math.min(1, v / 14));
             if (!mutedRef.current) tick(vol);
@@ -387,39 +471,54 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   }, [step]);
 
   function spin() {
-    if (spinning || eliminated || names.length < 2) return;
+    if (!canSpin) return;
     if (mode === "elim" && originalRoster === null) {
-      setOriginalRoster([...names]);
+      setOriginalRoster(roster.filter((r) => r.included));
     }
     setSpinning(true);
     setResult(null);
     setWinning(false);
-    lastSegRef.current = segmentAtPointer(angleRef.current, names.length);
+    const playingCount = roster.filter((r) => r.included).length;
+    lastSegRef.current = segmentAtPointer(angleRef.current, playingCount);
     velRef.current = 26 + Math.random() * 10;
     phaseRef.current = "spinning";
     if (!muted) spinStart();
   }
 
-  function addName() {
+  function toggleParticipant(key: string) {
+    if (spinning || lockedForElim) return;
+    setRoster((prev) =>
+      prev.map((r) => (makeKey(r) === key ? { ...r, included: !r.included } : r))
+    );
+  }
+
+  function addGuest() {
     const v = input.trim();
-    if (!v || names.length >= MAX_NAMES) return;
-    if (names.includes(v)) {
+    if (!v || roster.length >= MAX_ROSTER || lockedForElim) return;
+    const key = `g:${v}`;
+    if (roster.some((r) => makeKey(r) === key)) {
       setInput("");
       return;
     }
-    setNames((p) => [...p, v]);
+    setRoster((prev) => [
+      ...prev,
+      { userId: null, name: v, isGuest: true, included: true },
+    ]);
     setInput("");
   }
 
-  function removeName(i: number) {
-    if (names.length <= 2 || spinning || inElimGame) return;
-    setNames((p) => p.filter((_, idx) => idx !== i));
+  function removeGuest(key: string) {
+    if (spinning || lockedForElim) return;
+    setRoster((prev) => prev.filter((r) => makeKey(r) !== key));
   }
 
   function dismissResult() {
     setResult(null);
     if (mode === "elim" && originalRoster) {
-      setNames(originalRoster);
+      setRoster((prev) => {
+        const inSet = new Set(originalRoster.map(makeKey));
+        return prev.map((r) => ({ ...r, included: inSet.has(makeKey(r)) }));
+      });
       setOriginalRoster(null);
     }
     phaseRef.current = "idle";
@@ -435,16 +534,20 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     lastSegRef.current = null;
     phaseRef.current = "idle";
     if (mode === "elim" && originalRoster) {
-      setNames(originalRoster);
+      setRoster((prev) => {
+        const inSet = new Set(originalRoster.map(makeKey));
+        return prev.map((r) => ({ ...r, included: inSet.has(makeKey(r)) }));
+      });
       setOriginalRoster(null);
+    } else {
+      setRoster((prev) => prev.map((r) => ({ ...r, included: true })));
     }
   }
 
   function changeMode(next: Mode) {
-    if (spinning || eliminated) return;
-    if (next === mode) return;
+    if (spinning || eliminated || next === mode) return;
     if (originalRoster) {
-      setNames(originalRoster);
+      setRoster((prev) => prev.map((r) => ({ ...r, included: true })));
       setOriginalRoster(null);
     }
     setResult(null);
@@ -452,14 +555,17 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
   }
 
   function startGame() {
-    if (names.length < 2) return;
+    if (includedRoster.length < 2) return;
     setView("game");
   }
 
   function backToSetup() {
     if (spinning) return;
     if (originalRoster) {
-      setNames(originalRoster);
+      setRoster((prev) => {
+        const inSet = new Set(originalRoster.map(makeKey));
+        return prev.map((r) => ({ ...r, included: inSet.has(makeKey(r)) }));
+      });
       setOriginalRoster(null);
     }
     setResult(null);
@@ -469,17 +575,13 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
     setView("setup");
   }
 
-  const canSpin = !spinning && !eliminated && names.length >= 2;
-  const lockedForElim = inElimGame;
   const activeMode = MODES.find((m) => m.id === mode)!;
+  const isCrewMode = activeCrewId !== null;
 
   return (
     <div className="w-full">
       <AnimatePresence mode="wait">
         {view === "setup" ? (
-          /* =========================================================
-             SETUP VIEW
-             ========================================================= */
           <motion.div
             key="setup"
             initial={{ opacity: 0, y: 14 }}
@@ -496,11 +598,37 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 <span className="text-fg-faint">?</span>
               </h1>
               <p className="mt-3 text-fg-soft text-sm sm:text-base max-w-md mx-auto">
-                Wähle den Modus und füge die Spieler hinzu.
+                {isCrewMode
+                  ? "Tippe Mitglieder an, um sie für diese Runde rein- oder rauszuschalten."
+                  : "Wähle den Modus und füge die Spieler hinzu."}
               </p>
             </div>
 
-            {/* === SECTION: Spielmodus === */}
+            {/* Crew-Context-Indicator */}
+            {isCrewMode && activeCrew && (
+              <div className="mb-5 flex justify-center">
+                <div
+                  className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1 text-xs font-semibold"
+                  style={{
+                    background: "var(--surface-gold)",
+                    color: "var(--text-gold)",
+                    border: "1px solid var(--border-gold)",
+                  }}
+                >
+                  <span
+                    className="grid place-items-center w-5 h-5 rounded-full text-[12px]"
+                    style={{
+                      background: `color-mix(in srgb, ${activeCrew.accentColor} 25%, transparent)`,
+                    }}
+                  >
+                    {activeCrew.emoji}
+                  </span>
+                  <span>{activeCrew.name}</span>
+                </div>
+              </div>
+            )}
+
+            {/* === MODUS === */}
             <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4">
                 <p className="eyebrow-gold">01 · Modus</p>
@@ -508,7 +636,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                   Wie wird gespielt?
                 </h2>
               </header>
-
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                 {MODES.map((m) => {
                   const active = mode === m.id;
@@ -517,6 +644,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                     <button
                       key={m.id}
                       onClick={() => changeMode(m.id)}
+                      disabled={spinning || eliminated !== null}
                       data-active={active}
                       className="mode-card disabled:cursor-not-allowed"
                     >
@@ -555,13 +683,13 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               </div>
             </section>
 
-            {/* === SECTION: Spieler === */}
+            {/* === SPIELER === */}
             <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4 flex items-end justify-between gap-3">
                 <div>
                   <p className="eyebrow-gold">02 · Spieler</p>
                   <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
-                    Wer ist dabei?
+                    {isCrewMode ? "Wer ist heute dabei?" : "Wer spielt mit?"}
                   </h2>
                 </div>
                 <div
@@ -573,71 +701,147 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                   }}
                 >
                   <Users size={12} />
-                  {names.length}/{MAX_NAMES}
+                  {includedRoster.length}/{roster.length}
                 </div>
               </header>
 
-              {/* Chips */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <AnimatePresence initial={false}>
-                  {names.map((name, i) => (
-                    <motion.span
-                      key={name + "-" + i}
-                      layout
-                      initial={{ opacity: 0, scale: 0.7, y: 8 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.5, x: -20, transition: { duration: 0.4 } }}
-                      transition={{ duration: 0.18 }}
-                      className="chip"
-                      style={{ borderLeft: `3px solid ${PALETTE[i % PALETTE.length]}` }}
-                    >
-                      <span>{name}</span>
-                      <button
-                        onClick={() => removeName(i)}
-                        disabled={names.length <= 2}
-                        aria-label={`${name} entfernen`}
-                        className="chip-x disabled:opacity-30"
-                      >
-                        <X size={14} strokeWidth={2.5} />
-                      </button>
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              </div>
+              {loadingRoster ? (
+                <div className="py-6 text-center text-sm text-fg-mute flex items-center justify-center gap-2">
+                  <RefreshCw size={14} className="animate-spin" /> Lade Crew-Mitglieder…
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <AnimatePresence initial={false}>
+                      {roster.map((r, i) => {
+                        const key = makeKey(r);
+                        const accentColor = PALETTE[i % PALETTE.length];
+                        return (
+                          <motion.span
+                            key={key}
+                            layout
+                            initial={{ opacity: 0, scale: 0.7, y: 8 }}
+                            animate={{ opacity: r.included ? 1 : 0.45, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.5, x: -20, transition: { duration: 0.4 } }}
+                            transition={{ duration: 0.18 }}
+                            className="inline-flex items-center gap-1.5 rounded-full pl-1 pr-1 py-0.5 text-sm font-medium"
+                            style={{
+                              background: r.included ? "var(--surface)" : "transparent",
+                              border: `1.5px solid ${r.included ? accentColor : "var(--border)"}`,
+                              borderStyle: r.included ? "solid" : "dashed",
+                              color: "var(--text)",
+                            }}
+                          >
+                            {r.image ? (
+                              <Image
+                                src={r.image}
+                                alt={r.name}
+                                width={24}
+                                height={24}
+                                className="rounded-full"
+                                style={{ opacity: r.included ? 1 : 0.6 }}
+                              />
+                            ) : (
+                              <span
+                                className="grid place-items-center w-6 h-6 rounded-full text-[11px] font-bold"
+                                style={{
+                                  background: r.isGuest
+                                    ? "var(--surface-gold)"
+                                    : "var(--surface)",
+                                  color: r.isGuest
+                                    ? "var(--text-gold)"
+                                    : "var(--text-soft)",
+                                }}
+                              >
+                                {r.isGuest ? "★" : r.name.slice(0, 1).toUpperCase()}
+                              </span>
+                            )}
+                            <span className="px-1.5">{r.name}</span>
+                            {/* Toggle / Remove */}
+                            {r.isGuest ? (
+                              <button
+                                onClick={() => removeGuest(key)}
+                                disabled={spinning || lockedForElim}
+                                aria-label={`${r.name} entfernen`}
+                                className="grid place-items-center w-6 h-6 rounded-full transition disabled:opacity-30"
+                                style={{
+                                  background: "transparent",
+                                  color: "var(--text-mute)",
+                                }}
+                              >
+                                <X size={13} strokeWidth={2.6} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => toggleParticipant(key)}
+                                disabled={spinning || lockedForElim}
+                                aria-label={
+                                  r.included ? `${r.name} ausschliessen` : `${r.name} dabeihaben`
+                                }
+                                className="grid place-items-center w-6 h-6 rounded-full transition disabled:opacity-30"
+                                style={{
+                                  background: r.included
+                                    ? "transparent"
+                                    : "var(--surface-gold)",
+                                  color: r.included ? "var(--text-mute)" : "var(--text-gold)",
+                                }}
+                              >
+                                {r.included ? (
+                                  <X size={13} strokeWidth={2.6} />
+                                ) : (
+                                  <Plus size={13} strokeWidth={2.8} />
+                                )}
+                              </button>
+                            )}
+                          </motion.span>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </div>
 
-              {/* Input */}
-              <div className="flex gap-2">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addName())}
-                  placeholder={
-                    names.length >= MAX_NAMES ? "Maximum erreicht" : "Name hinzufügen…"
-                  }
-                  maxLength={14}
-                  disabled={names.length >= MAX_NAMES}
-                  className="field"
-                />
-                <button
-                  onClick={addName}
-                  disabled={!input.trim() || names.length >= MAX_NAMES}
-                  className="btn-ghost !rounded-2xl !px-4 !py-3 disabled:opacity-40"
-                  aria-label="Hinzufügen"
-                >
-                  <Plus size={18} strokeWidth={2.5} />
-                </button>
-              </div>
-              {names.length < 2 && (
-                <p className="text-xs text-shame mt-3 text-center">
-                  Mindestens 2 Spieler nötig.
-                </p>
+                  {/* Gast-Input */}
+                  <div className="flex gap-2">
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addGuest())
+                      }
+                      placeholder={
+                        lockedForElim
+                          ? "Spiel läuft — keine Änderungen"
+                          : roster.length >= MAX_ROSTER
+                            ? "Maximum erreicht"
+                            : isCrewMode
+                              ? "Gast hinzufügen…"
+                              : "Name hinzufügen…"
+                      }
+                      maxLength={20}
+                      disabled={roster.length >= MAX_ROSTER || lockedForElim}
+                      className="field"
+                    />
+                    <button
+                      onClick={addGuest}
+                      disabled={!input.trim() || roster.length >= MAX_ROSTER || lockedForElim}
+                      className="btn-ghost !rounded-2xl !px-4 !py-3 disabled:opacity-40"
+                      aria-label="Gast hinzufügen"
+                    >
+                      <UserPlus size={18} strokeWidth={2.5} />
+                    </button>
+                  </div>
+
+                  {includedRoster.length < 2 && (
+                    <p className="text-xs text-shame mt-3 text-center">
+                      Mindestens 2 Spieler aktiv nötig.
+                    </p>
+                  )}
+                </>
               )}
             </section>
 
-            {/* === START BUTTON === */}
             <button
               onClick={startGame}
-              disabled={names.length < 2}
+              disabled={includedRoster.length < 2}
               className="btn-primary w-full text-lg py-5 disabled:opacity-50"
             >
               Spiel starten
@@ -645,9 +849,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
             </button>
           </motion.div>
         ) : (
-          /* =========================================================
-             GAME VIEW
-             ========================================================= */
+          /* === GAME VIEW === */
           <motion.div
             key="game"
             initial={{ opacity: 0, y: 14 }}
@@ -656,18 +858,15 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
             transition={{ duration: 0.32, ease: [0.2, 0.7, 0.2, 1] }}
             className="max-w-3xl mx-auto"
           >
-            {/* Game-Header: Back + Mode-Chip */}
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <button
                 onClick={backToSetup}
                 disabled={spinning}
                 className="btn-ghost"
-                aria-label="Zurück zum Setup"
               >
                 <ArrowLeft size={16} />
                 <span className="hidden sm:inline">Setup</span>
               </button>
-
               <div
                 className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold"
                 style={{
@@ -678,41 +877,30 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               >
                 <activeMode.Icon size={13} strokeWidth={2.4} />
                 {activeMode.title}
-                {inElimGame && (
-                  <>
-                    <span className="opacity-50">·</span>
-                    <span className="tabular-nums">
-                      {names.length}/{originalRoster?.length}
-                    </span>
-                  </>
-                )}
-                {!inElimGame && (
-                  <>
-                    <span className="opacity-50">·</span>
-                    <span className="tabular-nums">{names.length}</span>
-                  </>
+                <span className="opacity-50">·</span>
+                {inElimGame ? (
+                  <span className="tabular-nums">
+                    {includedRoster.length}/{originalRoster?.length}
+                  </span>
+                ) : (
+                  <span className="tabular-nums">{includedRoster.length}</span>
                 )}
               </div>
-
               <button
                 onClick={resetWheel}
                 disabled={spinning}
                 className="btn-ghost"
-                aria-label="Rad zurücksetzen"
+                aria-label="Reset"
               >
                 <RotateCcw size={16} />
               </button>
             </div>
 
-            {/* Wheel-Stage — zentriert */}
             <div className="flex flex-col items-center gap-7 sm:gap-9">
               <div className="relative" style={{ width: size, height: size + 40 }}>
                 <div
                   className="absolute inset-0 -z-10 rounded-full opacity-70 blur-3xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle, rgba(255,45,85,0.35), transparent 60%)",
-                  }}
+                  style={{ background: "radial-gradient(circle, rgba(255,45,85,0.35), transparent 60%)" }}
                 />
 
                 {winning && (
@@ -781,7 +969,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                 </div>
               </div>
 
-              {/* DREHEN-Button — riesig + Casino-Glow */}
               <button
                 onClick={spin}
                 disabled={!canSpin}
@@ -830,7 +1017,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                   textDecorationColor: "rgba(255,255,255,0.3)",
                 }}
               >
-                {eliminated}
+                {eliminated.name}
               </div>
               <div className="mt-3 text-white/70 text-sm uppercase tracking-[0.25em]">
                 ist sicher
@@ -840,7 +1027,7 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
         )}
       </AnimatePresence>
 
-      {/* Fullscreen-Loser-Reveal */}
+      {/* Loser-Reveal */}
       <AnimatePresence>
         {result && (
           <motion.div
@@ -864,7 +1051,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                   "radial-gradient(circle at 50% 45%, rgba(255,45,85,0.35), transparent 55%)",
               }}
             />
-
             <motion.div
               initial={{ scale: 0.7, y: 30, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -881,7 +1067,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               >
                 🎰 JACKPOT 🎰
               </motion.div>
-
               <motion.div
                 initial={{ opacity: 0, scale: 0.6 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -892,9 +1077,8 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
                   filter: "drop-shadow(0 8px 40px rgba(255,45,85,0.5))",
                 }}
               >
-                {result}
+                {result.name}
               </motion.div>
-
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -903,7 +1087,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               >
                 trägt die <span className="gradient-shame">Schande</span>
               </motion.div>
-
               <motion.button
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -919,7 +1102,6 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
               >
                 {mode === "elim" ? "Neue Runde" : "Weiter"}
               </motion.button>
-
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

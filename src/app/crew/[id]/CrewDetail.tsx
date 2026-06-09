@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Mail,
   Sparkles,
+  X,
 } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
 import CrewAvatar from "@/components/CrewAvatar";
@@ -38,6 +39,8 @@ import {
 interface Member {
   userId: string;
   name: string | null;
+  nickname: string | null;
+  displayName: string;
   email: string | null;
   image: string | null;
   role: "owner" | "admin" | "member";
@@ -77,6 +80,10 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const [transferTarget, setTransferTarget] = useState<Member | null>(null);
+
+  // Inline-Editor für Nicknames
+  const [editingNickFor, setEditingNickFor] = useState<string | null>(null);
+  const [nickValue, setNickValue] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -203,6 +210,29 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
         { method: "DELETE" }
       );
       if (res.ok) await load();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSaveNick() {
+    if (!data || !editingNickFor) return;
+    const newNick = nickValue.trim();
+    setBusy(true);
+    try {
+      const res = await fetch(
+        `/api/crews/${data.id}/members/${editingNickFor}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nickname: newNick || null }),
+        }
+      );
+      if (res.ok) {
+        await load();
+        setEditingNickFor(null);
+        setNickValue("");
+      }
     } finally {
       setBusy(false);
     }
@@ -435,72 +465,147 @@ export default function CrewDetail({ crewId }: { crewId: string }) {
           </span>
         </header>
         <ul className="space-y-1">
-          {data.members.map((m) => (
-            <li
-              key={m.userId}
-              className="flex items-center gap-3 rounded-xl px-2 py-2"
-            >
-              {m.image ? (
-                <Image
-                  src={m.image}
-                  alt={m.name ?? ""}
-                  width={36}
-                  height={36}
-                  className="rounded-full shrink-0"
-                />
-              ) : (
-                <div
-                  className="grid place-items-center w-9 h-9 rounded-full shrink-0 font-bold"
-                  style={{ background: "var(--surface)", color: "var(--text-soft)" }}
-                >
-                  {(m.name ?? "?").slice(0, 1).toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-fg truncate">
-                    {m.name ?? "Anonym"}
-                  </span>
-                  {m.isYou && (
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-fg-mute">
-                      Du
-                    </span>
-                  )}
-                  {m.role === "owner" && (
-                    <Crown
-                      size={12}
-                      className="text-gold-bright"
-                      strokeWidth={2.4}
-                    />
-                  )}
-                </div>
-                {m.email && (
-                  <div className="text-xs text-fg-mute truncate">{m.email}</div>
+          {data.members.map((m) => {
+            const isEditing = editingNickFor === m.userId;
+            return (
+              <li
+                key={m.userId}
+                className="flex items-start gap-3 rounded-xl px-2 py-2"
+              >
+                {m.image ? (
+                  <Image
+                    src={m.image}
+                    alt={m.name ?? ""}
+                    width={36}
+                    height={36}
+                    className="rounded-full shrink-0"
+                  />
+                ) : (
+                  <div
+                    className="grid place-items-center w-9 h-9 rounded-full shrink-0 font-bold"
+                    style={{ background: "var(--surface)", color: "var(--text-soft)" }}
+                  >
+                    {(m.displayName).slice(0, 1).toUpperCase()}
+                  </div>
                 )}
-              </div>
-              {isOwner && !m.isYou && m.role !== "owner" && (
-                <div className="flex items-center gap-0.5 shrink-0">
-                  <button
-                    onClick={() => setTransferTarget(m)}
-                    disabled={busy}
-                    aria-label="Owner machen"
-                    className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
-                    title="Owner übergeben"
-                  >
-                    <Crown size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleKick(m.userId)}
-                    disabled={busy}
-                    aria-label="Kicken"
-                    className="p-2 rounded-lg text-fg-mute hover:text-shame hover:bg-shame/10 transition"
-                  >
-                    <UserMinus size={14} />
-                  </button>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <input
+                        value={nickValue}
+                        onChange={(e) => setNickValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveNick();
+                          if (e.key === "Escape") {
+                            setEditingNickFor(null);
+                            setNickValue("");
+                          }
+                        }}
+                        placeholder={m.name ?? "Spitzname"}
+                        maxLength={30}
+                        autoFocus
+                        disabled={busy}
+                        className="field text-sm py-2"
+                      />
+                      <button
+                        onClick={handleSaveNick}
+                        disabled={busy}
+                        className="btn-primary text-xs px-3 py-2"
+                      >
+                        OK
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingNickFor(null);
+                          setNickValue("");
+                        }}
+                        disabled={busy}
+                        className="btn-ghost text-xs px-2 py-2"
+                        aria-label="Abbrechen"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium text-fg truncate">
+                          {m.displayName}
+                        </span>
+                        {m.nickname && (
+                          <span
+                            className="text-[9px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded"
+                            style={{
+                              background: "var(--surface-gold)",
+                              color: "var(--text-gold)",
+                            }}
+                          >
+                            Nick
+                          </span>
+                        )}
+                        {m.isYou && (
+                          <span className="text-[10px] uppercase font-bold tracking-widest text-fg-mute">
+                            Du
+                          </span>
+                        )}
+                        {m.role === "owner" && (
+                          <Crown
+                            size={12}
+                            className="text-gold-bright"
+                            strokeWidth={2.4}
+                          />
+                        )}
+                      </div>
+                      {(m.nickname ? m.name : m.email) && (
+                        <div className="text-xs text-fg-mute truncate">
+                          {m.nickname ? m.name : m.email}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
-              )}
-            </li>
-          ))}
+                {!isEditing && (
+                  <div className="flex items-center gap-0.5 shrink-0 pt-0.5">
+                    {isOwner && (
+                      <button
+                        onClick={() => {
+                          setEditingNickFor(m.userId);
+                          setNickValue(m.nickname ?? "");
+                        }}
+                        disabled={busy}
+                        aria-label="Spitzname vergeben"
+                        className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
+                        title={m.nickname ? "Spitzname ändern" : "Spitzname vergeben"}
+                      >
+                        <Pencil size={13} />
+                      </button>
+                    )}
+                    {isOwner && !m.isYou && m.role !== "owner" && (
+                      <>
+                        <button
+                          onClick={() => setTransferTarget(m)}
+                          disabled={busy}
+                          aria-label="Owner machen"
+                          className="p-2 rounded-lg text-fg-mute hover:text-gold-bright hover:bg-gold/10 transition"
+                          title="Owner übergeben"
+                        >
+                          <Crown size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleKick(m.userId)}
+                          disabled={busy}
+                          aria-label="Kicken"
+                          className="p-2 rounded-lg text-fg-mute hover:text-shame hover:bg-shame/10 transition"
+                        >
+                          <UserMinus size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
 

@@ -3,6 +3,7 @@ import { Types, type PipelineStage } from "mongoose";
 import { dbConnect } from "@/lib/mongoose";
 import { getCurrentUserId } from "@/lib/user";
 import { isCrewMember, isCrewOwner } from "@/lib/crew";
+import { resolveDisplayNames } from "@/lib/display";
 import Spin from "@/models/Spin";
 import UserProfile from "@/models/UserProfile";
 
@@ -28,11 +29,6 @@ function rangeStart(range: Range): Date | null {
   }
 }
 
-/**
- * Liefert den scope-filter für die nachfolgenden Queries.
- * Solo-Mode: nur eigene Spins ohne crewId.
- * Crew-Mode: alle Spins der aktiven Crew.
- */
 async function resolveScope(userId: Types.ObjectId) {
   const profile = await UserProfile.findOne({ userId }).lean<{
     activeCrewId: Types.ObjectId | null;
@@ -44,16 +40,37 @@ async function resolveScope(userId: Types.ObjectId) {
   return { crewId: null, isSolo: true } as const;
 }
 
+/** Normalisiert beide Eingabe-Formate (string oder {userId, name}) auf das structured Format. */
+type RawParticipant = string | { userId?: string | null; name?: unknown };
+function normalizeParticipant(
+  raw: RawParticipant
+): { userId: Types.ObjectId | null; name: string } | null {
+  if (typeof raw === "string") {
+    const n = raw.trim();
+    return n ? { userId: null, name: n.slice(0, 30) } : null;
+  }
+  if (typeof raw === "object" && raw !== null) {
+    const name =
+      typeof raw.name === "string" ? raw.name.trim().slice(0, 30) : "";
+    if (!name) return null;
+    let uid: Types.ObjectId | null = null;
+    if (raw.userId && typeof raw.userId === "string" && Types.ObjectId.isValid(raw.userId)) {
+      uid = new Types.ObjectId(raw.userId);
+    }
+    return { userId: uid, name };
+  }
+  return null;
+}
+
 /** POST /api/spins — neues Ergebnis loggen */
 export async function POST(req: Request) {
   const userId = await getCurrentUserId();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
-  }
 
   let body: {
-    loser?: unknown;
-    participants?: unknown;
+    loser?: RawParticipant;
+    participants?: RawParticipant[];
     mode?: unknown;
   };
   try {
@@ -62,12 +79,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const loser = typeof body.loser === "string" ? body.loser.trim() : "";
-  if (!loser || loser.length > 30) {
-    return NextResponse.json({ error: "loser fehlt oder zu lang" }, { status: 400 });
+  const loser = body.loser ? normalizeParticipant(body.loser) : null;
+  if (!loser) {
+    return NextResponse.json({ error: "loser fehlt oder invalid" }, { status: 400 });
   }
   const participants = Array.isArray(body.participants)
-    ? body.participants.filter((p): p is string => typeof p === "string")
+    ? (body.participants
+        .map(normalizeParticipant)
+        .filter(Boolean) as { userId: Types.ObjectId | null; name: string }[])
     : [];
   const mode = body.mode === "elim" ? "elim" : "classic";
 
@@ -90,15 +109,13 @@ export async function POST(req: Request) {
 
 /**
  * GET /api/spins?range=week|month|year|all
- *
- * Solo-User: aggregiert eigene Solo-Spins.
- * Crew-User: aggregiert alle Spins der aktiven Crew.
+ * Aggregiert nach userId (Crew-Member) oder Name (Gast).
+ * Display-Namen resolved via lib/display.
  */
 export async function GET(req: Request) {
   const userId = await getCurrentUserId();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
-  }
 
   const url = new URL(req.url);
   const range = (url.searchParams.get("range") ?? "all") as Range;
@@ -114,29 +131,61 @@ export async function GET(req: Request) {
 
   const pipeline: PipelineStage[] = [
     { $match: match },
-    { $group: { _id: "$loser", count: { $sum: 1 } } },
+    { $sort: { createdAt: -1 } },
+    {
+      $group: {
+        _id: {
+          $cond: [
+            { $ne: ["$loser.userId", null] },
+            { $concat: ["u:", { $toString: "$loser.userId" }] },
+            { $concat: ["g:", "$loser.name"] },
+          ],
+        },
+        userId: { $first: "$loser.userId" },
+        snapshotName: { $first: "$loser.name" },
+        count: { $sum: 1 },
+      },
+    },
     { $sort: { count: -1 } },
   ];
-  const board = await Spin.aggregate(pipeline);
 
-  return NextResponse.json(
-    board.map((b: { _id: string; count: number }) => ({
-      name: b._id,
-      count: b.count,
-    }))
-  );
+  const grouped = await Spin.aggregate<{
+    _id: string;
+    userId: Types.ObjectId | null;
+    snapshotName: string;
+    count: number;
+  }>(pipeline);
+
+  // User-ObjectIds einsammeln und Anzeige-Namen auflösen
+  const userIds = grouped
+    .map((g) => g.userId)
+    .filter((u): u is Types.ObjectId => u !== null);
+  const displayMap = await resolveDisplayNames(userIds, crewId);
+
+  const rows = grouped.map((g) => {
+    const name =
+      g.userId !== null
+        ? displayMap.get(String(g.userId)) ?? g.snapshotName
+        : g.snapshotName;
+    return {
+      userId: g.userId ? String(g.userId) : null,
+      name,
+      count: g.count,
+    };
+  });
+
+  return NextResponse.json(rows);
 }
 
 /**
- * DELETE /api/spins — Schande-Tabelle leeren.
+ * DELETE /api/spins — Tabelle leeren.
  * Solo: nur eigene Solo-Spins.
- * Crew: nur der Owner darf die Crew-Tabelle leeren.
+ * Crew: nur Owner.
  */
 export async function DELETE() {
   const userId = await getCurrentUserId();
-  if (!userId) {
+  if (!userId)
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
-  }
 
   await dbConnect();
   const { crewId, isSolo } = await resolveScope(userId);

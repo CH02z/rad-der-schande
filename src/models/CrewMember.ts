@@ -31,6 +31,16 @@ const CrewMemberSchema = new Schema(
       default: "member",
       required: true,
     },
+    /**
+     * Crew-spezifischer Spitzname. Wird nur vom Owner gesetzt.
+     * Null = Google-Name verwenden.
+     */
+    nickname: {
+      type: String,
+      default: null,
+      trim: true,
+      maxlength: 30,
+    },
     joinedAt: { type: Date, default: Date.now },
     leftAt: { type: Date, default: null, index: true },
   },

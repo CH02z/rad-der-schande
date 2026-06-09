@@ -1,39 +1,31 @@
 import { NextResponse } from "next/server";
-import { Types, type PipelineStage } from "mongoose";
+import { Types } from "mongoose";
 import { dbConnect } from "@/lib/mongoose";
 import { getCurrentUserId } from "@/lib/user";
 import { isCrewMember } from "@/lib/crew";
+import { resolveDisplayNames } from "@/lib/display";
 import Spin from "@/models/Spin";
 
 export const dynamic = "force-dynamic";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
-interface Rivalry {
-  a: string;
-  b: string;
-  aLost: number;
-  bLost: number;
-  total: number;
-}
-
-interface Streak {
+interface Participant {
+  userId: Types.ObjectId | null;
   name: string;
-  current: number;
-  max: number;
-  isOnFire: boolean;
 }
 
-/**
- * GET /api/crews/[id]/stats
- *
- * Liefert für die Crew:
- *   - rivalries: top 8 Paarungen mit „wer hat wie oft gegen wen verloren"
- *   - streaks:   aktuelle + max Verlustserie pro Spieler
- *   - topLoser:  Person mit den meisten Schande-Punkten gesamt
- *   - totalSpins
- *   - lastLoser: zuletzt verloren
- */
+interface SpinLean {
+  loser: Participant;
+  participants: Participant[];
+  createdAt: Date;
+}
+
+/** Key der Teilnehmer-Identität: `u:<userId>` für registrierte, `g:<name>` für Gäste. */
+function keyOf(p: Participant): string {
+  return p.userId ? `u:${p.userId}` : `g:${p.name}`;
+}
+
 export async function GET(_req: Request, { params }: RouteCtx) {
   const { id } = await params;
   const userId = await getCurrentUserId();
@@ -48,101 +40,106 @@ export async function GET(_req: Request, { params }: RouteCtx) {
     return NextResponse.json({ error: "Kein Zugriff" }, { status: 403 });
   }
 
-  // === Rivalitäten via Aggregation ===
-  const rivalryPipeline: PipelineStage[] = [
-    { $match: { crewId } },
-    { $match: { $expr: { $gte: [{ $size: "$participants" }, 2] } } },
-    {
-      $project: {
-        loser: 1,
-        others: { $setDifference: ["$participants", ["$loser"]] },
-      },
-    },
-    { $unwind: "$others" },
-    {
-      $project: {
-        loser: 1,
-        pairA: {
-          $cond: [{ $lt: ["$loser", "$others"] }, "$loser", "$others"],
-        },
-        pairB: {
-          $cond: [{ $lt: ["$loser", "$others"] }, "$others", "$loser"],
-        },
-        aLost: { $cond: [{ $lt: ["$loser", "$others"] }, 1, 0] },
-        bLost: { $cond: [{ $lt: ["$loser", "$others"] }, 0, 1] },
-      },
-    },
-    {
-      $group: {
-        _id: { a: "$pairA", b: "$pairB" },
-        total: { $sum: 1 },
-        aLost: { $sum: "$aLost" },
-        bLost: { $sum: "$bLost" },
-      },
-    },
-    { $sort: { total: -1 } },
-    { $limit: 8 },
-  ];
-
-  // === Top-Loser ===
-  const topLoserPipeline: PipelineStage[] = [
-    { $match: { crewId } },
-    { $group: { _id: "$loser", count: { $sum: 1 } } },
-    { $sort: { count: -1 } },
-    { $limit: 1 },
-  ];
-
-  // === Sortierte Spins für Streak-Berechnung ===
-  const sortedSpinsP = Spin.find({ crewId })
+  // Spins chronologisch — wir machen alle Aggregationen in einem Pass.
+  const spins = (await Spin.find({ crewId })
     .sort({ createdAt: 1 })
-    .select("loser createdAt")
-    .lean<{ loser: string; createdAt: Date }[]>();
+    .select("loser participants createdAt")
+    .lean()) as unknown as SpinLean[];
 
-  const totalP = Spin.countDocuments({ crewId });
+  const totalSpins = spins.length;
 
-  const [rivalryAgg, topLoserAgg, sortedSpins, totalSpins] = await Promise.all([
-    Spin.aggregate<{
-      _id: { a: string; b: string };
-      total: number;
-      aLost: number;
-      bLost: number;
-    }>(rivalryPipeline),
-    Spin.aggregate<{ _id: string; count: number }>(topLoserPipeline),
-    sortedSpinsP,
-    totalP,
-  ]);
+  // === Eindeutige Identitäten sammeln (für Display-Name-Resolution) ===
+  const identityByKey = new Map<string, Participant>();
+  for (const spin of spins) {
+    identityByKey.set(keyOf(spin.loser), spin.loser);
+    for (const p of spin.participants) identityByKey.set(keyOf(p), p);
+  }
+  const userIds = Array.from(identityByKey.values())
+    .map((p) => p.userId)
+    .filter((u): u is Types.ObjectId => u !== null);
+  const displayMap = await resolveDisplayNames(userIds, crewId);
 
-  const rivalries: Rivalry[] = rivalryAgg.map((r) => ({
-    a: r._id.a,
-    b: r._id.b,
-    aLost: r.aLost,
-    bLost: r.bLost,
-    total: r.total,
-  }));
+  const displayName = (key: string): string => {
+    const p = identityByKey.get(key);
+    if (!p) return "Anonym";
+    if (p.userId) return displayMap.get(String(p.userId)) ?? p.name;
+    return p.name;
+  };
 
-  // === Streaks: chronologisch durchlaufen ===
+  // === Streaks + Top-Loser + Last-Loser im selben Loop ===
   const streakMap = new Map<string, { current: number; max: number }>();
-  let lastLoser: string | null = null;
+  const loserCounts = new Map<string, number>();
+  let lastKey: string | null = null;
   let currentRun = 0;
-  for (const spin of sortedSpins) {
-    if (spin.loser === lastLoser) {
-      currentRun += 1;
-    } else {
-      currentRun = 1;
-    }
-    lastLoser = spin.loser;
+  let topKey: string | null = null;
+  let topCount = 0;
 
-    const s = streakMap.get(spin.loser) ?? { current: 0, max: 0 };
+  for (const spin of spins) {
+    const k = keyOf(spin.loser);
+
+    // Streak-Logic
+    if (k === lastKey) currentRun += 1;
+    else currentRun = 1;
+    lastKey = k;
+    const s = streakMap.get(k) ?? { current: 0, max: 0 };
     s.max = Math.max(s.max, currentRun);
-    streakMap.set(spin.loser, s);
+    streakMap.set(k, s);
+
+    // Top-Loser
+    const c = (loserCounts.get(k) ?? 0) + 1;
+    loserCounts.set(k, c);
+    if (c > topCount) {
+      topCount = c;
+      topKey = k;
+    }
   }
-  for (const [name, s] of streakMap) {
-    s.current = name === lastLoser ? currentRun : 0;
+  for (const [k, s] of streakMap) {
+    s.current = k === lastKey ? currentRun : 0;
   }
 
-  const streaks: Streak[] = Array.from(streakMap.entries())
-    .map(([name, s]) => ({
-      name,
+  // === Rivalitäten ===
+  interface RivalryInner {
+    aKey: string;
+    bKey: string;
+    aLost: number;
+    bLost: number;
+    total: number;
+  }
+  const rivalryMap = new Map<string, RivalryInner>();
+  for (const spin of spins) {
+    const loserKey = keyOf(spin.loser);
+    for (const other of spin.participants) {
+      const otherKey = keyOf(other);
+      if (otherKey === loserKey) continue;
+
+      const [k1, k2] =
+        loserKey < otherKey ? [loserKey, otherKey] : [otherKey, loserKey];
+      const pairKey = `${k1}||${k2}`;
+      let r = rivalryMap.get(pairKey);
+      if (!r) {
+        r = { aKey: k1, bKey: k2, aLost: 0, bLost: 0, total: 0 };
+        rivalryMap.set(pairKey, r);
+      }
+      r.total += 1;
+      if (loserKey === k1) r.aLost += 1;
+      else r.bLost += 1;
+    }
+  }
+
+  const rivalries = Array.from(rivalryMap.values())
+    .sort((x, y) => y.total - x.total)
+    .slice(0, 8)
+    .map((r) => ({
+      a: displayName(r.aKey),
+      b: displayName(r.bKey),
+      aLost: r.aLost,
+      bLost: r.bLost,
+      total: r.total,
+    }));
+
+  const streaks = Array.from(streakMap.entries())
+    .map(([k, s]) => ({
+      name: displayName(k),
       current: s.current,
       max: s.max,
       isOnFire: s.current >= 3,
@@ -151,9 +148,9 @@ export async function GET(_req: Request, { params }: RouteCtx) {
 
   return NextResponse.json({
     totalSpins,
-    topLoser: topLoserAgg[0]?._id ?? null,
-    topLoserCount: topLoserAgg[0]?.count ?? 0,
-    lastLoser,
+    topLoser: topKey ? displayName(topKey) : null,
+    topLoserCount: topCount,
+    lastLoser: lastKey ? displayName(lastKey) : null,
     rivalries,
     streaks,
   });
