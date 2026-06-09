@@ -2,28 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Dices, Trophy, Menu } from "lucide-react";
+import { Dices, Trophy, Users, Menu } from "lucide-react";
 
 const ITEMS = [
-  { href: "/", label: "Drehen", icon: Dices },
+  { href: "/", label: "Rad", icon: Dices },
   { href: "/tabelle", label: "Tabelle", icon: Trophy },
+  { href: "/crew", label: "Crew", icon: Users },
   { href: "/settings", label: "Mehr", icon: Menu },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
 
 export default function BottomNav() {
   const pathname = usePathname();
 
-  // Auf der Login-Page kein Nav
   if (pathname === "/login") return null;
 
   return (
     <nav
       className="sm:hidden fixed bottom-0 left-0 right-0 z-40"
-      style={{
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      {/* Backdrop-Blur Bar */}
       <div
         className="relative mx-3 mb-3 rounded-3xl border overflow-hidden"
         style={{
@@ -34,7 +36,6 @@ export default function BottomNav() {
           boxShadow: "0 -8px 40px rgba(0,0,0,0.45)",
         }}
       >
-        {/* Gold-Trim oben */}
         <div
           aria-hidden
           className="absolute top-0 left-[15%] right-[15%] h-px pointer-events-none"
@@ -46,7 +47,7 @@ export default function BottomNav() {
 
         <ul className="flex">
           {ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href;
+            const active = isActive(pathname, href);
             return (
               <li key={href} className="flex-1">
                 <Link
@@ -54,11 +55,10 @@ export default function BottomNav() {
                   className="relative flex flex-col items-center justify-center gap-0.5 py-2.5 select-none"
                   style={{ minHeight: 56 }}
                 >
-                  {/* Aktiver Pill-Background */}
                   {active && (
                     <span
                       aria-hidden
-                      className="absolute inset-x-3 top-1.5 bottom-1.5 rounded-2xl"
+                      className="absolute inset-x-2 top-1.5 bottom-1.5 rounded-2xl"
                       style={{
                         background:
                           "linear-gradient(180deg, rgba(232,195,106,0.18), rgba(232,195,106,0.06))",
@@ -67,7 +67,7 @@ export default function BottomNav() {
                     />
                   )}
                   <Icon
-                    size={22}
+                    size={20}
                     strokeWidth={active ? 2.4 : 1.9}
                     className={
                       "relative z-10 transition-colors " +
@@ -76,7 +76,7 @@ export default function BottomNav() {
                   />
                   <span
                     className={
-                      "relative z-10 text-[10.5px] font-bold tracking-wide transition-colors " +
+                      "relative z-10 text-[10px] font-bold tracking-wide transition-colors " +
                       (active ? "text-fg" : "text-fg-mute")
                     }
                   >

@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, Dices, Trophy } from "lucide-react";
+import { Settings, Dices, Trophy, Users } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
+import CrewPill from "@/components/CrewPill";
 
 interface Props {
   user?: { name?: string | null; image?: string | null } | null;
@@ -13,7 +14,13 @@ interface Props {
 const TABS = [
   { href: "/", label: "Drehen", icon: Dices },
   { href: "/tabelle", label: "Tabelle", icon: Trophy },
+  { href: "/crew", label: "Crew", icon: Users },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
 
 export default function TopNav({ user }: Props) {
   const pathname = usePathname();
@@ -21,7 +28,6 @@ export default function TopNav({ user }: Props) {
   return (
     <header className="max-w-5xl mx-auto mb-6 sm:mb-10">
       <div className="flex items-center justify-between gap-3">
-        {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <BrandMark size={28} />
           <span className="font-display font-extrabold tracking-tight text-base sm:text-xl text-fg">
@@ -29,10 +35,10 @@ export default function TopNav({ user }: Props) {
           </span>
         </Link>
 
-        {/* Tab-Pills (Desktop only) */}
+        {/* Desktop-Tabs */}
         <nav className="hidden sm:flex items-center gap-1">
           {TABS.map((t) => {
-            const active = pathname === t.href;
+            const active = isActive(pathname, t.href);
             const Icon = t.icon;
             return (
               <Link
@@ -48,28 +54,15 @@ export default function TopNav({ user }: Props) {
           })}
         </nav>
 
-        {/* User + Settings (Desktop) */}
+        {/* Desktop: Crew-Pill + User + Settings */}
         <div className="hidden sm:flex items-center gap-2">
-          {user?.image && (
-            <div className="hidden md:flex items-center gap-2.5 glass rounded-full pl-1 pr-4 py-1">
-              <Image
-                src={user.image}
-                alt={user.name ?? ""}
-                width={28}
-                height={28}
-                className="rounded-full"
-              />
-              <span className="text-sm font-medium text-fg-soft truncate max-w-[140px]">
-                {user.name ?? "Anonym"}
-              </span>
-            </div>
-          )}
+          <CrewPill />
           <Link href="/settings" className="btn-ghost" aria-label="Einstellungen">
             <Settings size={16} />
           </Link>
         </div>
 
-        {/* Mobile: kleines Avatar-Bild rechts (ohne Settings — das ist in der Bottom-Nav) */}
+        {/* Mobile: Avatar */}
         {user?.image && (
           <div className="sm:hidden">
             <Image

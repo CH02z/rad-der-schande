@@ -282,7 +282,11 @@ export default function Wheel({ initialNames }: { initialNames?: string[] }) {
       await fetch("/api/spins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ loser, participants: namesRef.current }),
+        body: JSON.stringify({
+          loser,
+          participants: namesRef.current,
+          mode: modeRef.current,
+        }),
       });
       window.dispatchEvent(new Event("spin-logged"));
     } catch (e) {

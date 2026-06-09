@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Trash2, AlertTriangle, Dices } from "lucide-react";
+import { Flame, Trash2, AlertTriangle, Dices, Crown, User as UserIcon } from "lucide-react";
+import { useCrew } from "@/lib/crew-context";
 
 type Row = { name: string; count: number };
 type Range = "week" | "month" | "year" | "all";
@@ -17,11 +18,17 @@ const RANGES: { id: Range; label: string }[] = [
 const MEDAL = ["🥇", "🥈", "🥉"];
 
 export default function Leaderboard() {
+  const { activeCrew, activeCrewId } = useCrew();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<Range>("all");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const isOwner = activeCrew?.role === "owner";
+  const isSolo = activeCrewId === null;
+  // Solo-User dürfen ihre Tabelle leeren, Crew nur der Owner
+  const canDelete = isSolo || isOwner;
 
   const load = useCallback(
     async (r: Range = range) => {
@@ -41,9 +48,14 @@ export default function Leaderboard() {
   useEffect(() => {
     load(range);
     const onSpin = () => load(range);
+    const onCrewChange = () => load(range);
     window.addEventListener("spin-logged", onSpin);
-    return () => window.removeEventListener("spin-logged", onSpin);
-  }, [load, range]);
+    window.addEventListener("crew-changed", onCrewChange);
+    return () => {
+      window.removeEventListener("spin-logged", onSpin);
+      window.removeEventListener("crew-changed", onCrewChange);
+    };
+  }, [load, range, activeCrewId]);
 
   async function handleDelete() {
     setDeleting(true);
@@ -66,6 +78,37 @@ export default function Leaderboard() {
 
   return (
     <>
+      {/* Crew-Context-Badge */}
+      <div className="mb-4 flex justify-center">
+        <div
+          className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold"
+          style={{
+            background: isSolo ? "var(--surface)" : "var(--surface-gold)",
+            color: isSolo ? "var(--text-soft)" : "var(--text-gold)",
+            border: `1px solid ${isSolo ? "var(--border)" : "var(--border-gold)"}`,
+          }}
+        >
+          {isSolo ? (
+            <>
+              <UserIcon size={12} strokeWidth={2.4} />
+              <span>Solo-Tabelle</span>
+            </>
+          ) : (
+            <>
+              <span
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: "var(--text-gold)",
+                  boxShadow: "0 0 8px var(--text-gold)",
+                }}
+              />
+              <span>{activeCrew?.name}</span>
+              {isOwner && <Crown size={11} strokeWidth={2.4} />}
+            </>
+          )}
+        </div>
+      </div>
+
       <section className="glass-strong rounded-3xl p-6 sm:p-7">
         {/* Stats Header */}
         <div className="flex items-center justify-between mb-5">
@@ -174,7 +217,7 @@ export default function Leaderboard() {
           </ol>
         )}
 
-        {rows.length > 0 && (
+        {rows.length > 0 && canDelete && (
           <div className="mt-5 pt-4 border-t border-line flex justify-end">
             <button
               onClick={() => setConfirmOpen(true)}
@@ -182,6 +225,7 @@ export default function Leaderboard() {
             >
               <Trash2 size={13} />
               Tabelle leeren
+              {!isSolo && <span className="text-fg-faint">(Owner)</span>}
             </button>
           </div>
         )}
