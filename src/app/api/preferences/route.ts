@@ -12,7 +12,8 @@ type PreferenceDoc = {
   updatedAt: Date;
 };
 
-// GET: Präferenzen für eingeloggten User laden (oder Defaults)
+// GET: Präferenzen laden — upserted bei Bedarf, damit jeder eingeloggte
+//       User auch ohne expliziten Toggle in der DB landet.
 export async function GET() {
   const session = await auth();
   if (!session?.user?.email) {
@@ -20,9 +21,17 @@ export async function GET() {
   }
 
   await dbConnect();
-  const pref = await UserPreference.findOne<PreferenceDoc>({
-    email: session.user.email,
-  }).lean();
+  const pref = (await UserPreference.findOneAndUpdate(
+    { email: session.user.email },
+    {
+      $setOnInsert: {
+        email: session.user.email,
+        theme: "dark",
+        muted: false,
+      },
+    },
+    { upsert: true, new: true }
+  ).lean()) as PreferenceDoc | null;
 
   return NextResponse.json({
     theme: pref?.theme ?? "dark",
