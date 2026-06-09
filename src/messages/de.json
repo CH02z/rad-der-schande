@@ -91,7 +91,8 @@
     "title": "Anmelden",
     "subtitle": "Melde dich mit Google an, um zu starten.",
     "button": "Mit Google anmelden",
-    "footer": "Nur Mitglieder der Crew. Niemand sonst sieht eure Schande."
+    "footer": "Nur Mitglieder der Crew. Niemand sonst sieht eure Schande.",
+    "back": "Zur Startseite"
   },
   "wheel": {
     "setup": {
@@ -157,7 +158,16 @@
     "confirmTitle": "Wirklich alles löschen?",
     "confirmText": "Die komplette Schande-Tabelle wird unwiderruflich entfernt. Alle Spin-Ergebnisse sind weg.",
     "deleteFinal": "Endgültig löschen",
-    "deleting": "Lösche…"
+    "deleting": "Lösche…",
+    "tabs": {
+      "ranking": "Rangliste",
+      "history": "Verlauf"
+    },
+    "history": {
+      "empty": "Noch keine Drehungen in diesem Zeitraum.",
+      "bears": "trägt die Schande",
+      "spunBy": "gedreht von {name}"
+    }
   },
   "crew": {
     "list": {
@@ -291,5 +301,37 @@
     "en": "Englisch",
     "fr": "Französisch",
     "es": "Spanisch"
+  },
+  "legal": {
+    "eyebrow": "Rechtliches",
+    "back": "Zurück",
+    "updated": "Zuletzt aktualisiert",
+    "authoritative": "Massgebend ist die deutsche Fassung; dies ist eine Übersetzung.",
+    "nav": {
+      "impressum": "Impressum",
+      "privacy": "Datenschutz",
+      "terms": "AGB"
+    },
+    "cookies": {
+      "title": "Cookies & Privatsphäre",
+      "text": "Wir nutzen nur technisch notwendige Cookies für deinen Login und speichern Einstellungen lokal. Kein Tracking, keine Werbung.",
+      "accept": "Alles klar",
+      "essential": "Nur Notwendige",
+      "more": "Mehr erfahren"
+    },
+    "decree": {
+      "trigger": "§ Verbindlich & rechtskräftig",
+      "eyebrow": "Hohe Drehkammer",
+      "title": "Verbindlichkeitserklärung des Rades",
+      "intro": "Hiermit wird mit sofortiger Wirkung und unter Ausschluss des Rechtswegs festgehalten:",
+      "p1": "Wer vom Rad der Schande erwählt wird, ist unwiderruflich, vollumfänglich und auf ewig verpflichtet, der getroffenen Abmachung Folge zu leisten — sei es die Runde zu zahlen, den Abwasch zu erledigen oder die Schande in Würde zu tragen.",
+      "p2": "Sollte das Rad ausnahmsweise für etwas anderes als das Zahlen einer Runde bemüht werden, gilt: Die erwählte Person zahlt trotzdem. Sicherheitshalber. Das Rad irrt nie.",
+      "p3": "Ausreden, Einsprüche, Berufungen, Rekurse sowie das Vorbringen von «aber ich hatte schon letztes Mal» werden vom Hohen Rat des Rades mit einem milden Lächeln und einer weiteren Runde quittiert.",
+      "p4": "Die Schwerkraft, der Zufall und die Physik haben entschieden. Gegen Naturgesetze ist kein Kraut gewachsen — gegen das Rad erst recht nicht.",
+      "p5": "Mit dem Druck auf «Drehen» erkennt jede teilnehmende Person diese Erklärung als bindend, heilig und absolut an. Zeugen sind sämtliche Anwesenden sowie mindestens ein:e Barkeeper:in.",
+      "fineprint": "Hinweis für Spielverderber: In der echten Welt ist das natürlich nur ein Spass (siehe AGB, Ziffer 5). Aber psst.",
+      "sign": "Im Namen des Rades · Die Hohe Drehkammer",
+      "close": "Ich füge mich dem Rad"
+    }
   }
 }

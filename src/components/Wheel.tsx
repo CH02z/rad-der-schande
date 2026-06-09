@@ -12,6 +12,7 @@ import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
 import { useCrew } from "@/lib/crew-context";
 import { useT } from "@/lib/i18n";
+import BindingDecree from "@/components/BindingDecree";
 
 /* ============================================================
    CONSTANTS
@@ -1150,9 +1151,12 @@ export default function Wheel() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}
-                className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/40 whitespace-nowrap"
+                className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 whitespace-nowrap"
               >
-                {t("wheel.result.tapToClose")}
+                <span className="text-xs uppercase tracking-[0.3em] text-white/40">
+                  {t("wheel.result.tapToClose")}
+                </span>
+                <BindingDecree variant="fineprint" />
               </motion.div>
             </motion.div>
           </motion.div>

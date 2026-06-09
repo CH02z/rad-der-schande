@@ -3,76 +3,90 @@
 @tailwind utilities;
 
 /* ============================================================
-   THEME-VARIABLEN — Modern Casino: Emerald-Black + Gold + Multi
+   RAD DER SCHANDE — „Emerald Salon"
+   Edles Las-Vegas-Theme:
+     · tiefes, sattes Smaragd-Felt als Stage
+     · kühle Graphit-Panels (bewusst gräulich, nicht grün-weiss)
+     · Champagner-Gold-Trim + Ruby-Akzent
+   Alles läuft über CSS-Variablen → Dark/Light bleibt kohärent.
    ============================================================ */
 
 :root {
-  /* === DARK (Default) — Casino-Felt-Table === */
-  --bg: #061711;              /* dunkles Felt-Schwarz mit Smaragd-Cast */
-  --bg-soft: #0A2218;
-  --surface: rgba(255, 255, 255, 0.045);
-  --surface-strong: rgba(255, 255, 255, 0.085);
-  --surface-gold: rgba(232, 195, 106, 0.10);
+  /* === DARK (Default) — Smaragd-Spieltisch im Salon === */
+  --bg: #072A1B;             /* sattes, sichtbares Smaragd-Felt */
+  --bg-soft: #0A3724;
 
-  --text: #F5F1E6;
-  --text-soft: rgba(245, 241, 230, 0.72);
-  --text-mute: rgba(245, 241, 230, 0.44);
-  --text-faint: rgba(245, 241, 230, 0.22);
-  --text-gold: #E8C36A;
+  /* Panels: kühles Graphit-Slab (das „Gräuliche") */
+  --surface: rgba(150, 162, 158, 0.07);
+  --surface-strong: rgba(156, 168, 164, 0.12);
+  --surface-gold: rgba(232, 206, 146, 0.12);
+  --panel-top: rgba(58, 69, 65, 0.62);
+  --panel-bottom: rgba(29, 38, 35, 0.74);
 
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-gold: rgba(232, 195, 106, 0.32);
-  --border-gold-strong: rgba(232, 195, 106, 0.5);
+  --text: #F4EFE2;
+  --text-soft: rgba(244, 239, 226, 0.70);
+  --text-mute: rgba(244, 239, 226, 0.42);
+  --text-faint: rgba(244, 239, 226, 0.20);
+  --text-gold: #E8CE92;
 
-  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.05) inset, 0 14px 44px rgba(0, 28, 18, 0.55);
-  --shadow-wheel: 0 30px 80px -10px rgba(255,45,85,0.32), 0 0 0 1px rgba(232,195,106,0.18) inset;
-  --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.5);
-  --shadow-gold: 0 8px 30px -6px rgba(232,195,106,0.4);
+  --border: rgba(236, 230, 214, 0.10);
+  --border-strong: rgba(236, 230, 214, 0.16);
+  --border-gold: rgba(232, 206, 146, 0.30);
+  --border-gold-strong: rgba(232, 206, 146, 0.52);
 
-  --noise-opacity: 0.022;
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.06) inset, 0 20px 54px -16px rgba(0, 0, 0, 0.72);
+  --shadow-wheel: 0 44px 96px -24px rgba(0,0,0,0.72), 0 0 90px -30px rgba(45,210,140,0.40), 0 0 0 1px rgba(232,206,146,0.20) inset;
+  --shadow-pop: 0 24px 80px -12px rgba(255,45,85,0.5);
+  --shadow-gold: 0 12px 38px -10px rgba(232,206,146,0.42);
 
-  /* Casino-Felt-Stage: sattes Grün dominiert, dezente Akzente */
-  --felt-base: rgba(36, 150, 92, 0.32);
-  --felt-glow: rgba(70, 220, 140, 0.20);
-  --felt-deep: rgba(8, 40, 26, 0.6);
-  --glow-red:  rgba(255, 45, 85, 0.10);
-  --glow-gold: rgba(232, 195, 106, 0.12);
+  --noise-opacity: 0.025;
+
+  /* Felt-Stage — sattes Smaragd dominiert: heller Spotlight oben, weiche Vignette */
+  --felt-core: rgba(58, 224, 142, 0.32);   /* Smaragd-Spotlight oben-mitte */
+  --felt-base: rgba(26, 164, 102, 0.60);    /* Haupt-Felt — sattes Grün */
+  --felt-glow: rgba(82, 236, 164, 0.22);
+  --felt-deep: rgba(2, 22, 13, 0.78);       /* Edge-Vignette → tiefes Smaragd-Schwarz */
+  --glow-gold: rgba(232, 206, 146, 0.12);
+  --glow-red:  rgba(255, 45, 85, 0.09);
 
   color-scheme: dark;
 }
 
 :root.light {
-  /* === LIGHT — Casino-Felt heller, wärmer === */
-  --bg: #E8F0E2;              /* sehr helles felt-cream */
-  --bg-soft: #D8E4CF;
-  --surface: rgba(255, 255, 255, 0.74);
-  --surface-strong: rgba(255, 255, 255, 0.92);
-  --surface-gold: rgba(232, 195, 106, 0.18);
+  /* === LIGHT — heller Felt-Salon, warmes Graphit === */
+  --bg: #E6EFE2;
+  --bg-soft: #D3E2CC;
+
+  --surface: rgba(60, 76, 70, 0.05);
+  --surface-strong: rgba(255, 255, 255, 0.78);
+  --surface-gold: rgba(180, 140, 40, 0.14);
+  --panel-top: rgba(249, 251, 248, 0.86);
+  --panel-bottom: rgba(231, 238, 230, 0.80);
 
   --text: #0B1810;
-  --text-soft: rgba(11, 24, 16, 0.72);
+  --text-soft: rgba(11, 24, 16, 0.70);
   --text-mute: rgba(11, 24, 16, 0.46);
   --text-faint: rgba(11, 24, 16, 0.22);
-  --text-gold: #8E6A14;
+  --text-gold: #8A6713;
 
   --border: rgba(11, 24, 16, 0.10);
-  --border-strong: rgba(11, 24, 16, 0.18);
-  --border-gold: rgba(180, 140, 40, 0.45);
-  --border-gold-strong: rgba(180, 140, 40, 0.65);
+  --border-strong: rgba(11, 24, 16, 0.15);
+  --border-gold: rgba(170, 132, 40, 0.42);
+  --border-gold-strong: rgba(170, 132, 40, 0.62);
 
-  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.9) inset, 0 14px 44px rgba(40, 80, 60, 0.14);
-  --shadow-wheel: 0 30px 90px -10px rgba(255,45,85,0.25), 0 0 0 1px rgba(180,140,40,0.25) inset;
+  --shadow-card: 0 1px 0 0 rgba(255,255,255,0.9) inset, 0 18px 48px -16px rgba(28, 70, 50, 0.22);
+  --shadow-wheel: 0 40px 90px -22px rgba(28,70,50,0.30), 0 0 0 1px rgba(170,132,40,0.28) inset;
   --shadow-pop: 0 20px 70px -10px rgba(255,45,85,0.36);
-  --shadow-gold: 0 8px 30px -6px rgba(180,140,40,0.45);
+  --shadow-gold: 0 10px 32px -8px rgba(170,132,40,0.4);
 
   --noise-opacity: 0.04;
 
-  --felt-base: rgba(36, 150, 92, 0.20);
-  --felt-glow: rgba(70, 220, 140, 0.14);
-  --felt-deep: rgba(180, 200, 170, 0.5);
+  --felt-core: rgba(42, 196, 122, 0.16);
+  --felt-base: rgba(40, 164, 102, 0.22);
+  --felt-glow: rgba(64, 224, 152, 0.12);
+  --felt-deep: rgba(150, 180, 160, 0.45);
+  --glow-gold: rgba(232, 206, 146, 0.18);
   --glow-red:  rgba(255, 45, 85, 0.05);
-  --glow-gold: rgba(232, 195, 106, 0.16);
 
   color-scheme: light;
 }
@@ -87,24 +101,26 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Casino-Felt-Table-Effekt:
-   - grosser, flacher Smaragd-Glow über die ganze Stage
-   - Edge-Vignette für Tiefe (wie ein bespanntes Spielfeld)
-   - kleine Gold/Rot-Akzente in den Ecken */
+/* Casino-Felt-Table:
+   - sattes Smaragd dominiert die ganze Stage (Spotlight oben + breites Felt-Glow)
+   - tiefe Edge-Vignette für die „bespanntes Spielfeld"-Tiefe
+   - dezente Gold/Ruby-Glows in den Ecken */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -2;
   background:
-    /* Edge-Vignette */
-    radial-gradient(ellipse 130% 100% at 50% 50%, transparent 40%, var(--felt-deep) 100%),
+    /* Edge-Vignette — weiter aussen, damit das Grün in der Mitte steht */
+    radial-gradient(ellipse 138% 108% at 50% 36%, transparent 45%, var(--felt-deep) 100%),
     /* Akzent-Glows in den Ecken */
-    radial-gradient(520px 420px at 90% 8%, var(--glow-gold), transparent 60%),
-    radial-gradient(460px 380px at 8% 100%, var(--glow-red), transparent 60%),
-    /* Felt-Haupt-Glow: warmer Smaragd übers ganze Feld */
-    radial-gradient(ellipse 1400px 1100px at 50% 30%, var(--felt-glow), transparent 65%),
-    radial-gradient(ellipse 1600px 1300px at 50% 50%, var(--felt-base), transparent 70%);
+    radial-gradient(620px 480px at 86% 2%, var(--glow-gold), transparent 60%),
+    radial-gradient(540px 460px at 12% 104%, var(--glow-red), transparent 60%),
+    /* Smaragd-Spotlight von oben */
+    radial-gradient(1180px 820px at 50% -8%, var(--felt-core), transparent 62%),
+    /* Felt-Haupt-Glow + breite Basis (deckt fast das ganze Feld) */
+    radial-gradient(ellipse 1550px 1200px at 50% 32%, var(--felt-glow), transparent 62%),
+    radial-gradient(ellipse 2050px 1750px at 50% 46%, var(--felt-base), transparent 82%);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -125,46 +141,67 @@ body::after {
    ============================================================ */
 
 @layer components {
+  /* .glass / .glass-strong nutzen denselben Graphit-Slab wie .card-casino,
+     damit Schande-Tabelle, Settings, Login & Modals exakt denselben Ton
+     haben und nicht das grüne Felt durchscheinen lassen. */
   .glass {
-    background: var(--surface);
+    position: relative;
+    background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
     border: 1px solid var(--border);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(130%);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
   }
 
   .glass-strong {
-    background: var(--surface-strong);
+    position: relative;
+    background:
+      radial-gradient(130% 80% at 50% -14%, rgba(255,255,255,0.06), transparent 56%),
+      linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
     border: 1px solid var(--border-strong);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(26px) saturate(135%);
+    -webkit-backdrop-filter: blur(26px) saturate(135%);
     box-shadow: var(--shadow-card);
   }
+  .glass-strong::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 7%;
+    right: 7%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--text-gold) 28%, #FFF3D2 50%, var(--text-gold) 72%, transparent);
+    opacity: 0.55;
+    pointer-events: none;
+  }
 
-  /* Casino-Card: glass + sehr dezente Gold-Trim oben */
+  /* Signature-Panel: Graphit-Slab mit Innen-Schein + feinem Gold-Trim oben */
   .card-casino {
     position: relative;
-    background: var(--surface-strong);
+    background:
+      radial-gradient(130% 80% at 50% -14%, rgba(255,255,255,0.07), transparent 56%),
+      linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
     border: 1px solid var(--border-strong);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(26px) saturate(130%);
+    -webkit-backdrop-filter: blur(26px) saturate(130%);
     box-shadow: var(--shadow-card);
-    border-radius: 28px;
+    border-radius: 26px;
     overflow: hidden;
   }
   .card-casino::before {
     content: "";
     position: absolute;
     top: 0;
-    left: 8%;
-    right: 8%;
+    left: 7%;
+    right: 7%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(232,195,106,0.6), transparent);
+    background: linear-gradient(90deg, transparent, var(--text-gold) 28%, #FFF3D2 50%, var(--text-gold) 72%, transparent);
+    opacity: 0.7;
     pointer-events: none;
   }
 
   /* Gold-Eyebrow: kleine Section-Labels in Gold mit Glow-Dot */
   .eyebrow-gold {
-    @apply inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.28em];
+    @apply inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em];
     color: var(--text-gold);
   }
   .eyebrow-gold::before {
@@ -172,23 +209,59 @@ body::after {
     width: 6px; height: 6px;
     border-radius: 50%;
     background: var(--text-gold);
-    box-shadow: 0 0 8px rgba(232,195,106,0.7);
+    box-shadow: 0 0 10px rgba(232,206,146,0.85);
+  }
+
+  /* Feine Gold-Trennlinie (z.B. Landing) */
+  .rule-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-gold-strong), transparent);
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3
-           font-display font-bold text-white text-base
+    @apply relative inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3
+           font-display font-bold text-white text-base overflow-hidden
            transition-all duration-200 select-none;
-    background: linear-gradient(180deg, #FF4A6E 0%, #E5113E 100%);
+    background: linear-gradient(180deg, #FF4D6F 0%, #E5163F 52%, #B30735 100%);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.25) inset,
-      0 -2px 0 rgba(0,0,0,0.2) inset,
-      0 0 0 1px rgba(232,195,106,0.35) inset,
-      0 12px 32px -6px rgba(255,45,85,0.55);
+      0 1px 0 rgba(255,255,255,0.28) inset,
+      0 -2px 7px rgba(70,0,14,0.35) inset,
+      0 0 0 1px rgba(232,206,146,0.42) inset,
+      0 14px 34px -8px rgba(255,45,85,0.5);
   }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
-  .btn-primary:active:not(:disabled) { transform: translateY(1px); filter: brightness(0.96); }
-  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 50% 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.22), transparent);
+    pointer-events: none;
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06) saturate(1.04); }
+  .btn-primary:active:not(:disabled) { transform: translateY(1px); filter: brightness(0.97); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Brushed-Gold-CTA (edle Alternative für Landing/Anmelden) */
+  .btn-gold {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3
+           font-display font-extrabold text-base overflow-hidden
+           transition-all duration-200 select-none;
+    color: #2A1E06;
+    background: linear-gradient(180deg, #F8E9BE 0%, #E6C879 46%, #C49A40 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.55) inset,
+      0 -2px 6px rgba(120,80,10,0.30) inset,
+      0 12px 30px -8px rgba(200,150,50,0.45);
+  }
+  .btn-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 55% 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent);
+    pointer-events: none;
+  }
+  .btn-gold:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
+  .btn-gold:active:not(:disabled) { transform: translateY(1px); }
+  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2
@@ -197,7 +270,7 @@ body::after {
     background: var(--surface);
     border: 1px solid var(--border);
   }
-  .btn-ghost:hover { color: var(--text); border-color: var(--border-strong); background: var(--surface-strong); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border-gold); background: var(--surface-strong); }
   .btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .btn-danger {
@@ -227,20 +300,28 @@ body::after {
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
-    --tw-ring-color: rgba(232,195,106,0.45);
+    --tw-ring-color: rgba(232,206,146,0.45);
   }
   .field::placeholder { color: var(--text-mute); }
-  .field:focus { border-color: rgba(232,195,106,0.5); }
+  .field:focus { border-color: rgba(232,206,146,0.55); }
 
   .gradient-shame {
-    background: linear-gradient(135deg, #FFD15C 0%, #FF6B86 38%, #FF2D55 62%, #B30032 100%);
+    background: linear-gradient(135deg, #FFD15C 0%, #FF7A93 32%, #FF2D55 60%, #B00735 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .gradient-gold {
-    background: linear-gradient(135deg, #FFE8A8 0%, #FFD15C 45%, #C99320 100%);
+    background: linear-gradient(135deg, #FBEFC8 0%, #E8CE92 45%, #B98B36 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Smaragd-Verlauf für Headlines (Salon-Akzent) */
+  .gradient-emerald {
+    background: linear-gradient(135deg, #8DF7C6 0%, #3DDC91 42%, #0F8A57 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -259,7 +340,7 @@ body::after {
   .segmented-btn[data-active="true"] {
     background: var(--surface-strong);
     color: var(--text);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   }
 
   /* === Tab-Pills (Desktop-Nav) === */
@@ -271,7 +352,7 @@ body::after {
   .tab-pill[data-active="true"] {
     background: var(--surface-strong);
     color: var(--text);
-    box-shadow: 0 2px 12px rgba(232,195,106,0.18), 0 0 0 1px var(--border-gold) inset;
+    box-shadow: 0 2px 14px rgba(232,206,146,0.18), 0 0 0 1px var(--border-gold) inset;
   }
 
   /* === Mode-Card (gross, Icon + Title + Description) === */
@@ -333,13 +414,31 @@ body::after {
   100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0;   }
 }
 
+/* Bewegte Animationen (Landing + Akzente) */
+@keyframes sheen {
+  0%        { transform: translateX(-130%) skewX(-18deg); }
+  60%, 100% { transform: translateX(230%) skewX(-18deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.6); }
+  50%      { opacity: 1;    transform: scale(1); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.05); }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-mute); }
 ::-webkit-scrollbar-track { background: transparent; }
 
-::selection { background: rgba(232,195,106,0.45); color: var(--bg); }
+::selection { background: rgba(232,206,146,0.45); color: var(--bg); }
 
 /* === Safe-Area-Helpers (für Bottom-Nav) === */
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }

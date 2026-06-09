@@ -85,7 +85,7 @@ export default function CrewPill() {
             transition={{ duration: 0.16 }}
             className="absolute right-0 top-[calc(100%+8px)] w-72 rounded-2xl overflow-hidden z-50"
             style={{
-              background: "var(--surface-strong)",
+              background: "linear-gradient(180deg, var(--panel-top), var(--panel-bottom))",
               border: "1px solid var(--border-strong)",
               backdropFilter: "blur(24px) saturate(160%)",
               WebkitBackdropFilter: "blur(24px) saturate(160%)",

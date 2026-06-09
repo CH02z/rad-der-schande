@@ -91,7 +91,8 @@
     "title": "Sign in",
     "subtitle": "Sign in with Google to get started.",
     "button": "Sign in with Google",
-    "footer": "Crew members only. Nobody else sees your shame."
+    "footer": "Crew members only. Nobody else sees your shame.",
+    "back": "Back to home"
   },
   "wheel": {
     "setup": {
@@ -157,7 +158,16 @@
     "confirmTitle": "Really delete everything?",
     "confirmText": "The entire shame table will be permanently removed. All spin results gone.",
     "deleteFinal": "Delete permanently",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "tabs": {
+      "ranking": "Ranking",
+      "history": "History"
+    },
+    "history": {
+      "empty": "No spins in this period yet.",
+      "bears": "carries the shame",
+      "spunBy": "spun by {name}"
+    }
   },
   "crew": {
     "list": {
@@ -291,5 +301,37 @@
     "en": "English",
     "fr": "French",
     "es": "Spanish"
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "back": "Back",
+    "updated": "Last updated",
+    "authoritative": "The German version is authoritative; this is a translation.",
+    "nav": {
+      "impressum": "Legal notice",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "cookies": {
+      "title": "Cookies & privacy",
+      "text": "We use only strictly necessary cookies for your login and store settings locally. No tracking, no ads.",
+      "accept": "Got it",
+      "essential": "Necessary only",
+      "more": "Learn more"
+    },
+    "decree": {
+      "trigger": "§ Binding & enforceable",
+      "eyebrow": "High Spinning Chamber",
+      "title": "Binding Decree of the Wheel",
+      "intro": "Be it hereby known, with immediate effect and excluding all legal recourse:",
+      "p1": "Whosoever is chosen by the Wheel of Shame is irrevocably, fully and eternally obliged to honour the agreed deal — be it buying the round, doing the dishes, or carrying the shame with dignity.",
+      "p2": "Should the Wheel ever be summoned for anything other than buying a round, the following applies: the chosen one pays anyway. Just to be safe. The Wheel is never wrong.",
+      "p3": "Excuses, objections, appeals, motions and the plea of «but I had it last time» shall be answered by the High Council of the Wheel with a gentle smile and one more round.",
+      "p4": "Gravity, chance and physics have spoken. There is no remedy against the laws of nature — and even less against the Wheel.",
+      "p5": "By pressing «Spin», every participant acknowledges this declaration as binding, sacred and absolute. Witnesses are all those present and at least one bartender.",
+      "fineprint": "Note for party-poopers: in the real world this is, of course, just for fun (see Terms, clause 5). But shhh.",
+      "sign": "In the name of the Wheel · The High Spinning Chamber",
+      "close": "I submit to the Wheel"
+    }
   }
 }

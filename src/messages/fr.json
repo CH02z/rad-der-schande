@@ -91,7 +91,8 @@
     "title": "Connexion",
     "subtitle": "Connecte-toi avec Google pour commencer.",
     "button": "Se connecter avec Google",
-    "footer": "Membres de l'équipe uniquement. Personne d'autre ne voit votre honte."
+    "footer": "Membres de l'équipe uniquement. Personne d'autre ne voit votre honte.",
+    "back": "Accueil"
   },
   "wheel": {
     "setup": {
@@ -157,7 +158,16 @@
     "confirmTitle": "Tout supprimer vraiment ?",
     "confirmText": "Tout le classement sera supprimé définitivement. Tous les résultats partis.",
     "deleteFinal": "Supprimer définitivement",
-    "deleting": "Suppression…"
+    "deleting": "Suppression…",
+    "tabs": {
+      "ranking": "Classement",
+      "history": "Historique"
+    },
+    "history": {
+      "empty": "Aucun tirage sur cette période.",
+      "bears": "porte la honte",
+      "spunBy": "lancé par {name}"
+    }
   },
   "crew": {
     "list": {
@@ -291,5 +301,37 @@
     "en": "Anglais",
     "fr": "Français",
     "es": "Espagnol"
+  },
+  "legal": {
+    "eyebrow": "Mentions légales",
+    "back": "Retour",
+    "updated": "Dernière mise à jour",
+    "authoritative": "La version allemande fait foi ; ceci est une traduction.",
+    "nav": {
+      "impressum": "Mentions légales",
+      "privacy": "Confidentialité",
+      "terms": "CGU"
+    },
+    "cookies": {
+      "title": "Cookies & confidentialité",
+      "text": "Nous utilisons uniquement des cookies strictement nécessaires à ta connexion et stockons les réglages localement. Pas de pistage, pas de publicité.",
+      "accept": "D'accord",
+      "essential": "Nécessaires uniquement",
+      "more": "En savoir plus"
+    },
+    "decree": {
+      "trigger": "§ Contraignant & exécutoire",
+      "eyebrow": "Haute Chambre Tournante",
+      "title": "Déclaration contraignante de la Roue",
+      "intro": "Il est par la présente établi, avec effet immédiat et à l'exclusion de toute voie de droit :",
+      "p1": "Quiconque est désigné par la Roue de la Honte est irrévocablement, intégralement et éternellement tenu d'honorer l'accord conclu — payer la tournée, faire la vaisselle ou porter la honte avec dignité.",
+      "p2": "Si la Roue venait à être invoquée pour autre chose que payer une tournée, la règle suivante s'applique : l'élu·e paie quand même. Par précaution. La Roue ne se trompe jamais.",
+      "p3": "Excuses, objections, recours et le fameux « mais c'était déjà moi la dernière fois » seront accueillis par le Haut Conseil de la Roue d'un doux sourire et d'une tournée supplémentaire.",
+      "p4": "La gravité, le hasard et la physique ont tranché. On ne lutte pas contre les lois de la nature — et encore moins contre la Roue.",
+      "p5": "En appuyant sur « Tourner », chaque participant·e reconnaît cette déclaration comme contraignante, sacrée et absolue. Les témoins sont toutes les personnes présentes ainsi qu'au moins un·e barman·aid.",
+      "fineprint": "Note pour les rabat-joie : dans le monde réel, ceci n'est bien sûr qu'une plaisanterie (voir CGU, point 5). Mais chut.",
+      "sign": "Au nom de la Roue · La Haute Chambre Tournante",
+      "close": "Je me soumets à la Roue"
+    }
   }
 }

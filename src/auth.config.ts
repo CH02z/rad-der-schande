@@ -12,9 +12,12 @@ export default {
   pages: { signIn: "/login" },
   callbacks: {
     authorized({ auth, request }) {
-      // Landing-Page und Join-Deep-Link sind public
+      // Landing-Page, Join-Deep-Link und Rechtsseiten sind public
       const path = request.nextUrl.pathname;
-      if (path === "/" || path.startsWith("/join/")) return true;
+      const PUBLIC_PATHS = ["/impressum", "/datenschutz", "/agb"];
+      if (path === "/" || path.startsWith("/join/") || PUBLIC_PATHS.includes(path)) {
+        return true;
+      }
       return !!auth?.user;
     },
     // JWT enthält `sub` = users._id (vom Adapter beim ersten Sign-In gesetzt).

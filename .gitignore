@@ -43,3 +43,6 @@ Thumbs.db
 
 # auth.js
 .auth.js
+
+# claude code / preview tooling (lokal)
+.claude/

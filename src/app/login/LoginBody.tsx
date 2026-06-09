@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 import { useT } from "@/lib/i18n";
 
@@ -10,13 +12,22 @@ export default function LoginBody({
 }) {
   const { t } = useT();
   return (
-    <main className="min-h-screen grid place-items-center px-4">
+    <main className="relative min-h-screen grid place-items-center px-4 py-16">
+      {/* Zurück zur Landing-Page */}
+      <Link
+        href="/"
+        className="btn-ghost absolute top-5 left-4 sm:left-6 !rounded-full"
+      >
+        <ArrowLeft size={16} strokeWidth={2.4} />
+        <span>{t("login.back")}</span>
+      </Link>
+
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="animate-float">
+        <Link href="/" aria-label={t("login.back")} className="flex justify-center mb-6">
+          <span className="animate-float">
             <BrandMark size={64} />
-          </div>
-        </div>
+          </span>
+        </Link>
 
         <div className="glass-strong rounded-[28px] p-8 sm:p-10 text-center">
           <h1 className="font-display font-extrabold text-3xl sm:text-4xl tracking-tight leading-none text-fg">
@@ -47,7 +58,13 @@ export default function LoginBody({
           <p className="mt-6 text-xs text-fg-mute">{t("login.footer")}</p>
         </div>
 
-        <p className="text-center mt-6 text-xs text-fg-faint">rad-der-schande.ch</p>
+        <div className="mt-6 flex items-center justify-center gap-4 text-xs text-fg-faint">
+          <Link href="/impressum" className="hover:text-fg-soft transition">{t("legal.nav.impressum")}</Link>
+          <span aria-hidden>·</span>
+          <Link href="/datenschutz" className="hover:text-fg-soft transition">{t("legal.nav.privacy")}</Link>
+          <span aria-hidden>·</span>
+          <Link href="/agb" className="hover:text-fg-soft transition">{t("legal.nav.terms")}</Link>
+        </div>
       </div>
     </main>
   );

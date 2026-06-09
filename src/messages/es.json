@@ -91,7 +91,8 @@
     "title": "Iniciar sesión",
     "subtitle": "Inicia sesión con Google para empezar.",
     "button": "Iniciar sesión con Google",
-    "footer": "Solo miembros del crew. Nadie más ve la vergüenza."
+    "footer": "Solo miembros del crew. Nadie más ve la vergüenza.",
+    "back": "Inicio"
   },
   "wheel": {
     "setup": {
@@ -157,7 +158,16 @@
     "confirmTitle": "¿Eliminar todo de verdad?",
     "confirmText": "Toda la tabla se eliminará para siempre. Todos los resultados desaparecen.",
     "deleteFinal": "Eliminar para siempre",
-    "deleting": "Eliminando…"
+    "deleting": "Eliminando…",
+    "tabs": {
+      "ranking": "Clasificación",
+      "history": "Historial"
+    },
+    "history": {
+      "empty": "Aún no hay tiradas en este periodo.",
+      "bears": "carga con la vergüenza",
+      "spunBy": "girada por {name}"
+    }
   },
   "crew": {
     "list": {
@@ -291,5 +301,37 @@
     "en": "Inglés",
     "fr": "Francés",
     "es": "Español"
+  },
+  "legal": {
+    "eyebrow": "Legal",
+    "back": "Volver",
+    "updated": "Última actualización",
+    "authoritative": "La versión en alemán es la vinculante; esto es una traducción.",
+    "nav": {
+      "impressum": "Aviso legal",
+      "privacy": "Privacidad",
+      "terms": "Términos"
+    },
+    "cookies": {
+      "title": "Cookies y privacidad",
+      "text": "Solo usamos cookies estrictamente necesarias para tu inicio de sesión y guardamos los ajustes localmente. Sin rastreo ni publicidad.",
+      "accept": "Entendido",
+      "essential": "Solo necesarias",
+      "more": "Saber más"
+    },
+    "decree": {
+      "trigger": "§ Vinculante y ejecutable",
+      "eyebrow": "Alta Cámara Giratoria",
+      "title": "Declaración vinculante de la Rueda",
+      "intro": "Por la presente se establece, con efecto inmediato y excluyendo toda vía legal:",
+      "p1": "Quien sea elegido por la Rueda de la Vergüenza queda irrevocable, íntegra y eternamente obligado a cumplir el acuerdo pactado: pagar la ronda, fregar los platos o llevar la vergüenza con dignidad.",
+      "p2": "Si la Rueda llegara a usarse para algo distinto de pagar una ronda, se aplica lo siguiente: el elegido paga igualmente. Por si acaso. La Rueda nunca se equivoca.",
+      "p3": "Excusas, objeciones, recursos y el clásico «pero si ya me tocó la última vez» serán respondidos por el Alto Consejo de la Rueda con una suave sonrisa y otra ronda más.",
+      "p4": "La gravedad, el azar y la física han hablado. No hay remedio contra las leyes de la naturaleza, y mucho menos contra la Rueda.",
+      "p5": "Al pulsar «Girar», cada participante reconoce esta declaración como vinculante, sagrada y absoluta. Son testigos todos los presentes y al menos un camarero.",
+      "fineprint": "Nota para aguafiestas: en el mundo real esto es, por supuesto, solo una broma (véanse los Términos, cláusula 5). Pero shhh.",
+      "sign": "En nombre de la Rueda · La Alta Cámara Giratoria",
+      "close": "Me someto a la Rueda"
+    }
   }
 }
