@@ -14,7 +14,7 @@ type ProfileDoc = {
   preferences: {
     theme: "dark" | "light";
     muted: boolean;
-    locale: "de" | "en";
+    locale: "de" | "en" | "fr" | "es";
   };
 };
 
@@ -83,7 +83,12 @@ export async function PUT(req: Request) {
   if (typeof body.muted === "boolean") {
     set["preferences.muted"] = body.muted;
   }
-  if (body.locale === "de" || body.locale === "en") {
+  if (
+    body.locale === "de" ||
+    body.locale === "en" ||
+    body.locale === "fr" ||
+    body.locale === "es"
+  ) {
     set["preferences.locale"] = body.locale;
   }
 

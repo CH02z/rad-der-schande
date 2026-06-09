@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dices, Trophy, Users, Menu } from "lucide-react";
-
-const ITEMS = [
-  { href: "/", label: "Rad", icon: Dices },
-  { href: "/tabelle", label: "Tabelle", icon: Trophy },
-  { href: "/crew", label: "Crew", icon: Users },
-  { href: "/settings", label: "Mehr", icon: Menu },
-];
+import { useT } from "@/lib/i18n";
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -18,8 +12,16 @@ function isActive(pathname: string, href: string) {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useT();
 
   if (pathname === "/login") return null;
+
+  const ITEMS = [
+    { href: "/", label: t("nav.spin"), icon: Dices },
+    { href: "/tabelle", label: t("nav.tabelle"), icon: Trophy },
+    { href: "/crew", label: t("nav.crew"), icon: Users },
+    { href: "/settings", label: t("nav.more"), icon: Menu },
+  ];
 
   return (
     <nav

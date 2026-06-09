@@ -1,0 +1,275 @@
+{
+  "brand": {
+    "name": "Rad der Schande"
+  },
+  "nav": {
+    "spin": "Drehen",
+    "tabelle": "Tabelle",
+    "crew": "Crew",
+    "more": "Mehr",
+    "settings": "Einstellungen",
+    "back": "Zurück"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "leave": "Verlassen",
+    "confirm": "Bestätigen",
+    "continue": "Weiter",
+    "newRound": "Neue Runde",
+    "loading": "Lädt…",
+    "spinning": "Dreht…",
+    "you": "Du",
+    "anon": "Anonym",
+    "yes": "Ja",
+    "no": "Nein",
+    "of": "von",
+    "share": "Teilen",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "moreOptions": "Mehr Optionen"
+  },
+  "landing": {
+    "signIn": "Anmelden",
+    "hero": {
+      "eyebrow": "Casino-Style für Freunde",
+      "titlePre": "Wer trägt die",
+      "titleAccent": "Schande",
+      "subtitle": "Drehe das Rad. Erstelle Crews. Die Schande-Tabelle vergisst nichts — wer am häufigsten verliert, trägt die Krone.",
+      "ctaPrimary": "Jetzt loslegen",
+      "ctaSecondary": "So funktioniert es",
+      "note": "Kostenlos · Login mit Google · Nur deine Crew sieht eure Schande"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "titlePre": "Mehr als nur ein",
+      "titleAccent": "Glücksrad",
+      "subtitle": "Casino-Physik, Crew-System, Stats. Alles damit deine 5er-Gang endlich wirklich entscheiden kann, wer zahlt.",
+      "physicsTitle": "Echte Casino-Physik",
+      "physicsText": "Kein vorberechneter Gewinner. Das Rad dreht mit realer Angular-Velocity und Reibung und kann überall stehenbleiben — Vegas-Feeling.",
+      "crewsTitle": "Crews mit Code",
+      "crewsText": "Erstelle deine Gang in 5 Sekunden, teile den 6-stelligen Code via WhatsApp. Mehrere Crews gleichzeitig — Slack-Style Switcher.",
+      "tableTitle": "Schande-Tabelle",
+      "tableText": "Pro Crew eine eigene Tabelle. Wer verliert wie oft? Tagesfilter, Monat, Jahr, Alltime. Owner darf zurücksetzen — oder auch nicht.",
+      "modesTitle": "2 Spielmodi",
+      "modesText": "Klassisch: ein Spin, eine Schande. Eliminierung: jeder Spin entfernt einen, der letzte trägt die Schande. Beide Modi mit voller Statistik.",
+      "rivalsTitle": "Rivalitäten & Streaks",
+      "rivalsText": "Bruno verliert 8:3 gegen Lea. Head-to-Head pro Paarung, plus Verlust-Streaks. Wer ist auf der schlechten Strecke?",
+      "nicksTitle": "Spitznamen pro Crew",
+      "nicksText": "Owner vergibt Spitznamen — aus Bruno Schmid wird Bro, überall in der Crew. Historie bleibt korrekt, weil wir intern per User-ID arbeiten."
+    },
+    "howto": {
+      "eyebrow": "In 3 Schritten",
+      "title": "So geht es",
+      "step1Title": "Anmelden mit Google",
+      "step1Text": "Ein Klick, du bist drin. Wir nutzen Google OAuth.",
+      "step2Title": "Crew erstellen",
+      "step2Text": "Du wirst Owner und bekommst einen 6-stelligen Code. Teile ihn mit deiner Gang.",
+      "step3Title": "Rad drehen, leiden",
+      "step3Text": "Spins gehen in eure gemeinsame Schande-Tabelle. Wer verliert, trägt."
+    },
+    "trust": {
+      "private": "Privat",
+      "privateText": "Nur eingeladene Crew-Mitglieder sehen die Tabelle.",
+      "sound": "Casino-Sound",
+      "soundText": "Mechanische Ticks beim Drehen, Jackpot beim Gewinn.",
+      "idle": "Idle-Modus",
+      "idleText": "Das Rad lebt — dreht sich auch ohne Spin gemütlich weiter."
+    },
+    "cta": {
+      "eyebrow": "Bereit für die Schande?",
+      "titlePre": "Sammle deine Gang.",
+      "titleAccent": "Dreht das Rad.",
+      "subtitle": "Login mit Google. Crew erstellen. Code teilen. 2 Minuten und ihr seid drin.",
+      "button": "Mit Google anmelden"
+    },
+    "footer": "rad-der-schande.ch · gebaut mit ♥ für 5er-Crews"
+  },
+  "login": {
+    "title": "Anmelden",
+    "subtitle": "Melde dich mit Google an, um zu starten.",
+    "button": "Mit Google anmelden",
+    "footer": "Nur Mitglieder der Crew. Niemand sonst sieht eure Schande."
+  },
+  "wheel": {
+    "setup": {
+      "eyebrow": "Game Setup",
+      "titlePre": "Wer trägt die",
+      "titleAccent": "Schande",
+      "soloSubtitle": "Wähle den Modus und füge die Spieler hinzu.",
+      "crewSubtitle": "Tippe Mitglieder an, um sie für diese Runde rein- oder rauszuschalten.",
+      "modeSection": "01 · Modus",
+      "modeTitle": "Wie wird gespielt?",
+      "playersSection": "02 · Spieler",
+      "playersTitleSolo": "Wer spielt mit?",
+      "playersTitleCrew": "Wer ist heute dabei?",
+      "addGuest": "Gast hinzufügen…",
+      "addName": "Name hinzufügen…",
+      "maxReached": "Maximum erreicht",
+      "lockedElim": "Spiel läuft — keine Änderungen",
+      "minPlayers": "Mindestens 2 Spieler aktiv nötig.",
+      "loadingMembers": "Lade Crew-Mitglieder…",
+      "startGame": "Spiel starten"
+    },
+    "modes": {
+      "classic": "Klassisch",
+      "classicDesc": "Ein Spin, eine Schande.",
+      "elim": "Eliminierung",
+      "elimDesc": "Letzter im Rad verliert."
+    },
+    "game": {
+      "spin": "DREHEN",
+      "back": "Setup",
+      "reset": "Zurücksetzen"
+    },
+    "result": {
+      "jackpot": "JACKPOT",
+      "bears": "trägt die",
+      "shame": "Schande",
+      "consequencePrefix": "… und",
+      "tapToClose": "Tippe irgendwo, um zu schliessen"
+    },
+    "elim": {
+      "eliminated": "Ausgeschieden",
+      "safe": "ist sicher"
+    }
+  },
+  "tabelle": {
+    "eyebrow": "Hall of Shame",
+    "title": "Schande-Tabelle",
+    "subtitle": "Wer wie oft den Kürzeren gezogen hat.",
+    "soloLabel": "Solo-Tabelle",
+    "spinsLabel": "Spins",
+    "spinLabel": "Spin",
+    "losersLabel": "Verlierer",
+    "ranges": {
+      "week": "Woche",
+      "month": "Monat",
+      "year": "Jahr",
+      "all": "Alltime"
+    },
+    "emptyAll": "Noch keine Schande in der Datenbank. Dreh das Rad.",
+    "emptyRange": "Keine Einträge für diesen Zeitraum.",
+    "clear": "Tabelle leeren",
+    "ownerOnly": "(Owner)",
+    "confirmTitle": "Wirklich alles löschen?",
+    "confirmText": "Die komplette Schande-Tabelle wird unwiderruflich entfernt. Alle Spin-Ergebnisse sind weg.",
+    "deleteFinal": "Endgültig löschen",
+    "deleting": "Lösche…"
+  },
+  "crew": {
+    "list": {
+      "eyebrow": "Hall of Crews",
+      "titlePre": "Deine",
+      "titleAccent": "Crews",
+      "subtitle": "Wechsle zwischen Crews oder erstelle eine neue.",
+      "currentLabel": "Aktuell:",
+      "solo": "Solo",
+      "emptyTitle": "Du fliegst noch solo",
+      "emptyText": "Erstelle eine Crew und teile den Code mit deinen Freunden, oder tritt einer bestehenden Crew bei.",
+      "createCta": "Crew erstellen",
+      "joinCta": "Mit Code beitreten",
+      "soloCardTitle": "Solo-Modus",
+      "soloCardText": "Privat. Nur du siehst deine Solo-Spins.",
+      "membersOne": "Mitglied",
+      "membersMany": "Mitglieder",
+      "activate": "Aktivieren",
+      "open": "Öffnen",
+      "newCrew": "Neue Crew",
+      "joinShort": "Beitreten",
+      "createSectionEyebrow": "Neu",
+      "createSectionTitle": "Crew erstellen",
+      "createSectionText": "Du wirst automatisch Owner. Code wird generiert.",
+      "createPlaceholder": "z.B. Die Saufclique",
+      "creating": "Erstelle…",
+      "create": "Crew erstellen",
+      "joinSectionEyebrow": "Code",
+      "joinSectionTitle": "Mit Code beitreten",
+      "joinSectionText": "Frag den Owner deiner Crew nach dem 6-stelligen Code.",
+      "joining": "Trete bei…",
+      "join": "Beitreten"
+    },
+    "detail": {
+      "back": "Crews",
+      "activeCrew": "Aktive Crew",
+      "setActive": "Als aktiv setzen",
+      "code": "Crew-Code",
+      "members": "Mitglieder",
+      "settings": "Crew-Einstellungen",
+      "defaultMode": "Standard-Modus",
+      "defaultModeHint": "Wird beim Öffnen des Rads automatisch vorausgewählt.",
+      "consequences": "Konsequenzen-Vorlagen",
+      "consequencesHint": "Wird zufällig beim Spin-Resultat angezeigt.",
+      "consequencePlaceholder": "z.B. zahlt eine Runde Bier",
+      "dangerZone": "Achtung",
+      "dangerTitle": "Crew verlassen",
+      "ownerDangerText": "Als Owner kannst du die Crew löschen, oder die Ownership an ein Mitglied übergeben (Kronen-Icon in der Liste).",
+      "memberDangerText": "Du verlässt die Crew. Deine Spin-Einträge bleiben in der Crew-Tabelle.",
+      "deleteCrew": "Crew löschen",
+      "leaveCrew": "Crew verlassen",
+      "deleteConfirmTitle": "Crew löschen?",
+      "deleteConfirmText": "Alle Mitglieder fliegen raus, alle Spin-Einträge werden gelöscht. Unwiderruflich.",
+      "leaveConfirmTitle": "Crew verlassen?",
+      "leaveConfirmText": "Du verlässt die Crew. Du kannst über den Code wieder beitreten.",
+      "transferConfirmTitle": "Owner übergeben?",
+      "transferConfirmText": "wird neuer Owner und übernimmt alle Privilegien. Du wirst normales Mitglied.",
+      "transfer": "Übergeben",
+      "transferring": "Übergebe…",
+      "nick": "Nick",
+      "nickPlaceholder": "Spitzname"
+    },
+    "pill": {
+      "soloLabel": "Solo",
+      "newCrew": "Neue Crew erstellen",
+      "joinCode": "Mit Code beitreten",
+      "manage": "Crews verwalten"
+    },
+    "join": {
+      "eyebrow": "Beitreten",
+      "checking": "Code wird geprüft…",
+      "welcome": "Willkommen",
+      "redirect": "Du wirst weitergeleitet…",
+      "errorTitle": "Hat nicht geklappt",
+      "errorText": "Code ungültig oder Crew nicht erreichbar.",
+      "openCrews": "Crews öffnen",
+      "home": "Zur Startseite"
+    }
+  },
+  "stats": {
+    "halloShame": "Hall of Shame",
+    "shameKing": "Schande-König",
+    "shames": "Schanden",
+    "onFireTitle": "Auf der Verlierer-Strecke",
+    "onFireSuffix": "in Folge",
+    "rivalriesTitle": "Rivalitäten",
+    "headToHead": "Head-to-Head",
+    "biggestBeef": "Biggest Beef",
+    "spinsLabel": "Spins",
+    "streaksTitle": "Streak-Rekorde",
+    "currentPrefix": "aktuell",
+    "emptyText": "Noch keine Spins in dieser Crew — drehe das Rad, dann gibt es Stats."
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "appearance": "Darstellung",
+    "appearanceHint": "Wähle dein bevorzugtes Theme. Wird auf diesem Gerät gespeichert.",
+    "themeDark": "Dunkel",
+    "themeLight": "Hell",
+    "sound": "Sound",
+    "soundHint": "Casino-Ticks beim Drehen und Jackpot-Fanfare beim Gewinnen.",
+    "soundOn": "An",
+    "soundOff": "Aus",
+    "language": "Sprache",
+    "languageHint": "Wird mit deinem Account synchronisiert.",
+    "account": "Account",
+    "accountHint": "Du bleibst bis zur Abmeldung eingeloggt.",
+    "signOut": "Abmelden"
+  },
+  "languages": {
+    "de": "Deutsch",
+    "en": "Englisch",
+    "fr": "Französisch",
+    "es": "Spanisch"
+  }
+}

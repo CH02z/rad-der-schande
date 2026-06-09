@@ -11,6 +11,7 @@ import { tick, winFanfare, spinStart } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
 import { useCrew } from "@/lib/crew-context";
+import { useT } from "@/lib/i18n";
 
 /* ============================================================
    CONSTANTS
@@ -40,11 +41,6 @@ const FONT_MAX = 100;
 type Mode = "classic" | "elim";
 type Phase = "idle" | "spinning" | "stopped";
 type View = "setup" | "game";
-
-const MODES = [
-  { id: "classic" as Mode, title: "Klassisch", desc: "Ein Spin, eine Schande.", accent: "#FF2D55", Icon: Target },
-  { id: "elim" as Mode, title: "Eliminierung", desc: "Letzter im Rad verliert.", accent: "#E8C36A", Icon: Swords },
-];
 
 /** Ein Teilnehmer am Rad — entweder Crew-Member (userId) oder Gast (null). */
 interface RosterEntry {
@@ -96,6 +92,11 @@ function segmentAtPointer(angle: number, n: number): number {
 
 export default function Wheel() {
   const { activeCrew, activeCrewId } = useCrew();
+  const { t } = useT();
+  const MODES_TR = [
+    { id: "classic" as Mode, title: t("wheel.modes.classic"), desc: t("wheel.modes.classicDesc"), accent: "#FF2D55", Icon: Target },
+    { id: "elim" as Mode, title: t("wheel.modes.elim"), desc: t("wheel.modes.elimDesc"), accent: "#E8C36A", Icon: Swords },
+  ];
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
@@ -601,7 +602,7 @@ export default function Wheel() {
     setView("setup");
   }
 
-  const activeMode = MODES.find((m) => m.id === mode)!;
+  const activeMode = MODES_TR.find((m) => m.id === mode)!;
   const isCrewMode = activeCrewId !== null;
 
   return (
@@ -618,15 +619,14 @@ export default function Wheel() {
           >
             {/* Hero */}
             <div className="text-center mb-8 sm:mb-12">
-              <p className="eyebrow-gold justify-center mb-3">Game Setup</p>
+              <p className="eyebrow-gold justify-center mb-3">{t("wheel.setup.eyebrow")}</p>
               <h1 className="font-display font-black leading-[0.92] tracking-tight text-4xl sm:text-6xl text-fg">
-                Wer trägt die <span className="gradient-shame">Schande</span>
+                {t("wheel.setup.titlePre")}{" "}
+                <span className="gradient-shame">{t("wheel.setup.titleAccent")}</span>
                 <span className="text-fg-faint">?</span>
               </h1>
               <p className="mt-3 text-fg-soft text-sm sm:text-base max-w-md mx-auto">
-                {isCrewMode
-                  ? "Tippe Mitglieder an, um sie für diese Runde rein- oder rauszuschalten."
-                  : "Wähle den Modus und füge die Spieler hinzu."}
+                {isCrewMode ? t("wheel.setup.crewSubtitle") : t("wheel.setup.soloSubtitle")}
               </p>
             </div>
 
@@ -657,13 +657,13 @@ export default function Wheel() {
             {/* === MODUS === */}
             <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4">
-                <p className="eyebrow-gold">01 · Modus</p>
+                <p className="eyebrow-gold">{t("wheel.setup.modeSection")}</p>
                 <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
-                  Wie wird gespielt?
+                  {t("wheel.setup.modeTitle")}
                 </h2>
               </header>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-                {MODES.map((m) => {
+                {MODES_TR.map((m) => {
                   const active = mode === m.id;
                   const Icon = m.Icon;
                   return (
@@ -713,9 +713,9 @@ export default function Wheel() {
             <section className="card-casino p-5 sm:p-6 mb-6 sm:mb-7">
               <header className="mb-4 flex items-end justify-between gap-3">
                 <div>
-                  <p className="eyebrow-gold">02 · Spieler</p>
+                  <p className="eyebrow-gold">{t("wheel.setup.playersSection")}</p>
                   <h2 className="font-display font-bold text-lg sm:text-xl text-fg mt-1">
-                    {isCrewMode ? "Wer ist heute dabei?" : "Wer spielt mit?"}
+                    {isCrewMode ? t("wheel.setup.playersTitleCrew") : t("wheel.setup.playersTitleSolo")}
                   </h2>
                 </div>
                 <div
@@ -733,7 +733,7 @@ export default function Wheel() {
 
               {loadingRoster ? (
                 <div className="py-6 text-center text-sm text-fg-mute flex items-center justify-center gap-2">
-                  <RefreshCw size={14} className="animate-spin" /> Lade Crew-Mitglieder…
+                  <RefreshCw size={14} className="animate-spin" /> {t("wheel.setup.loadingMembers")}
                 </div>
               ) : (
                 <>
@@ -835,12 +835,12 @@ export default function Wheel() {
                       }
                       placeholder={
                         lockedForElim
-                          ? "Spiel läuft — keine Änderungen"
+                          ? t("wheel.setup.lockedElim")
                           : roster.length >= MAX_ROSTER
-                            ? "Maximum erreicht"
+                            ? t("wheel.setup.maxReached")
                             : isCrewMode
-                              ? "Gast hinzufügen…"
-                              : "Name hinzufügen…"
+                              ? t("wheel.setup.addGuest")
+                              : t("wheel.setup.addName")
                       }
                       maxLength={20}
                       disabled={roster.length >= MAX_ROSTER || lockedForElim}
@@ -850,7 +850,7 @@ export default function Wheel() {
                       onClick={addGuest}
                       disabled={!input.trim() || roster.length >= MAX_ROSTER || lockedForElim}
                       className="btn-ghost !rounded-2xl !px-4 !py-3 disabled:opacity-40"
-                      aria-label="Gast hinzufügen"
+                      aria-label={t("wheel.setup.addGuest")}
                     >
                       <UserPlus size={18} strokeWidth={2.5} />
                     </button>
@@ -858,7 +858,7 @@ export default function Wheel() {
 
                   {includedRoster.length < 2 && (
                     <p className="text-xs text-shame mt-3 text-center">
-                      Mindestens 2 Spieler aktiv nötig.
+                      {t("wheel.setup.minPlayers")}
                     </p>
                   )}
                 </>
@@ -870,7 +870,7 @@ export default function Wheel() {
               disabled={includedRoster.length < 2}
               className="btn-primary w-full text-lg py-5 disabled:opacity-50"
             >
-              Spiel starten
+              {t("wheel.setup.startGame")}
               <ArrowRight size={20} strokeWidth={2.5} />
             </button>
           </motion.div>
@@ -891,7 +891,7 @@ export default function Wheel() {
                 className="btn-ghost"
               >
                 <ArrowLeft size={16} />
-                <span className="hidden sm:inline">Setup</span>
+                <span className="hidden sm:inline">{t("wheel.game.back")}</span>
               </button>
               <div
                 className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold"
@@ -1001,7 +1001,7 @@ export default function Wheel() {
                 className="btn-primary text-xl sm:text-2xl px-14 py-5 sm:px-16 sm:py-6"
                 style={{ minWidth: 220 }}
               >
-                {spinning ? "Dreht…" : "DREHEN"}
+                {spinning ? t("common.spinning") : t("wheel.game.spin")}
               </button>
             </div>
           </motion.div>
@@ -1031,7 +1031,7 @@ export default function Wheel() {
               className="text-center"
             >
               <div className="text-xs font-bold uppercase tracking-[0.4em] text-shame mb-3">
-                Ausgeschieden
+                {t("wheel.elim.eliminated")}
               </div>
               <div
                 className="font-display font-black gradient-shame leading-[0.85]"
@@ -1046,7 +1046,7 @@ export default function Wheel() {
                 {eliminated.name}
               </div>
               <div className="mt-3 text-white/70 text-sm uppercase tracking-[0.25em]">
-                ist sicher
+                {t("wheel.elim.safe")}
               </div>
             </motion.div>
           </motion.div>
@@ -1091,7 +1091,7 @@ export default function Wheel() {
                 transition={{ delay: 0.25, duration: 0.4 }}
                 className="font-bold gradient-gold tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
               >
-                🎰 JACKPOT 🎰
+                🎰 {t("wheel.result.jackpot")} 🎰
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, scale: 0.6 }}
@@ -1111,7 +1111,7 @@ export default function Wheel() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-4"
               >
-                trägt die <span className="gradient-shame">Schande</span>
+                {t("wheel.result.bears")} <span className="gradient-shame">{t("wheel.result.shame")}</span>
               </motion.div>
 
               {resultConsequence && (
@@ -1125,7 +1125,7 @@ export default function Wheel() {
                     textShadow: "0 2px 12px rgba(232,195,106,0.4)",
                   }}
                 >
-                  … und {resultConsequence}
+                  {t("wheel.result.consequencePrefix")} {resultConsequence}
                 </motion.div>
               )}
 
@@ -1144,7 +1144,7 @@ export default function Wheel() {
                   backdropFilter: "blur(20px)",
                 }}
               >
-                {mode === "elim" ? "Neue Runde" : "Weiter"}
+                {mode === "elim" ? t("common.newRound") : t("common.continue")}
               </motion.button>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -1152,7 +1152,7 @@ export default function Wheel() {
                 transition={{ delay: 1.2 }}
                 className="absolute -bottom-12 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-white/40 whitespace-nowrap"
               >
-                Tippe irgendwo, um zu schliessen
+                {t("wheel.result.tapToClose")}
               </motion.div>
             </motion.div>
           </motion.div>

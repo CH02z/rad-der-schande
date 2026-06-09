@@ -14,8 +14,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
+import { useT, LOCALES, type Locale } from "@/lib/i18n";
 
-/* === Mini-Wheel-Illustration für den Hero === */
+/* === Mini-Wheel-Illustration === */
 function MiniWheel({ size = 280 }: { size?: number }) {
   const segments = [
     "#FF2D55", "#E8C36A", "#5FE3C4", "#69A6FF", "#C589FF", "#FF8A3D",
@@ -26,11 +27,7 @@ function MiniWheel({ size = 280 }: { size?: number }) {
   const seg = (Math.PI * 2) / segments.length;
 
   return (
-    <div
-      className="relative grid place-items-center"
-      style={{ width: size, height: size }}
-    >
-      {/* Glow */}
+    <div className="relative grid place-items-center" style={{ width: size, height: size }}>
       <div
         className="absolute inset-0 rounded-full blur-3xl opacity-70 -z-10"
         style={{
@@ -38,8 +35,6 @@ function MiniWheel({ size = 280 }: { size?: number }) {
             "radial-gradient(circle, rgba(255,45,85,0.45), rgba(232,195,106,0.25) 50%, transparent 70%)",
         }}
       />
-
-      {/* Rotating Wheel */}
       <motion.svg
         viewBox={`0 0 ${size} ${size}`}
         width={size}
@@ -55,10 +50,7 @@ function MiniWheel({ size = 280 }: { size?: number }) {
             <stop offset="1" stopColor="#3a2a08" />
           </radialGradient>
         </defs>
-        {/* Outer ring background */}
         <circle cx={cx} cy={cy} r={r + size * 0.04} fill="url(#gold-ring)" />
-
-        {/* Segments */}
         {segments.map((color, i) => {
           const a0 = i * seg - Math.PI / 2;
           const a1 = (i + 1) * seg - Math.PI / 2;
@@ -76,20 +68,10 @@ function MiniWheel({ size = 280 }: { size?: number }) {
             />
           );
         })}
-
-        {/* Hub */}
         <circle cx={cx} cy={cy} r={size * 0.085} fill="#07060B" stroke="#FFD15C" strokeWidth="2" />
         <circle cx={cx} cy={cy} r={size * 0.02} fill="#FFD15C" />
       </motion.svg>
-
-      {/* Pointer (static — sits at top, points down) */}
-      <svg
-        width="36"
-        height="44"
-        viewBox="0 0 36 44"
-        className="absolute z-20"
-        style={{ top: -4 }}
-      >
+      <svg width="36" height="44" viewBox="0 0 36 44" className="absolute z-20" style={{ top: -4 }}>
         <defs>
           <linearGradient id="lp-ptr" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#FFE8A8" />
@@ -104,14 +86,7 @@ function MiniWheel({ size = 280 }: { size?: number }) {
   );
 }
 
-/* === Reusable Section-Animator === */
-function Reveal({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) {
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -124,7 +99,6 @@ function Reveal({
   );
 }
 
-/* === Feature-Card === */
 function Feature({
   icon: Icon,
   color,
@@ -150,23 +124,50 @@ function Feature({
         >
           <Icon size={22} strokeWidth={2.2} />
         </div>
-        <h3 className="font-display font-extrabold text-xl text-fg mb-2">
-          {title}
-        </h3>
+        <h3 className="font-display font-extrabold text-xl text-fg mb-2">{title}</h3>
         <p className="text-sm text-fg-soft leading-relaxed">{text}</p>
       </div>
     </Reveal>
   );
 }
 
-/* ============================================================
-   LANDING PAGE
-   ============================================================ */
+const FLAGS: Record<Locale, string> = { de: "🇩🇪", en: "🇬🇧", fr: "🇫🇷", es: "🇪🇸" };
+
+/** Kleiner Locale-Switcher im Landing-Header */
+function LangSwitcher() {
+  const { locale, setLocale } = useT();
+  return (
+    <div
+      className="hidden sm:inline-flex items-center gap-0.5 rounded-xl p-0.5"
+      style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+    >
+      {LOCALES.map((l) => {
+        const active = locale === l;
+        return (
+          <button
+            key={l}
+            onClick={() => setLocale(l)}
+            className="grid place-items-center w-7 h-7 rounded-lg text-base transition"
+            style={{
+              background: active ? "var(--surface-strong)" : "transparent",
+              opacity: active ? 1 : 0.5,
+            }}
+            aria-label={l}
+          >
+            {FLAGS[l]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Landing() {
+  const { t } = useT();
+
   return (
     <main className="min-h-screen">
-      {/* === HEADER === */}
+      {/* HEADER */}
       <header className="sticky top-0 z-30 px-4 sm:px-8 py-4">
         <div
           className="max-w-6xl mx-auto flex items-center justify-between rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5"
@@ -183,25 +184,28 @@ export default function Landing() {
               Rad der <span className="gradient-shame">Schande</span>
             </span>
           </div>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all"
-            style={{
-              background: "var(--surface-gold)",
-              color: "var(--text-gold)",
-              border: "1px solid var(--border-gold)",
-            }}
-          >
-            Anmelden
-            <ArrowRight size={14} strokeWidth={2.6} />
-          </Link>
+
+          <div className="flex items-center gap-2">
+            <LangSwitcher />
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all"
+              style={{
+                background: "var(--surface-gold)",
+                color: "var(--text-gold)",
+                border: "1px solid var(--border-gold)",
+              }}
+            >
+              {t("landing.signIn")}
+              <ArrowRight size={14} strokeWidth={2.6} />
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* === HERO === */}
+      {/* HERO */}
       <section className="px-4 sm:px-8 pt-10 sm:pt-16 pb-16 sm:pb-24">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
-          {/* Left: copy */}
           <div className="text-center lg:text-left">
             <motion.p
               initial={{ opacity: 0, y: -8 }}
@@ -209,61 +213,52 @@ export default function Landing() {
               transition={{ duration: 0.5 }}
               className="eyebrow-gold justify-center lg:justify-start mb-4"
             >
-              Casino-Style für Freunde
+              {t("landing.hero.eyebrow")}
             </motion.p>
-
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
               className="font-display font-black leading-[0.92] tracking-tight text-5xl sm:text-7xl lg:text-[5.5rem] text-fg"
             >
-              Wer trägt die <span className="gradient-shame">Schande</span>
+              {t("landing.hero.titlePre")}{" "}
+              <span className="gradient-shame">
+                {t("landing.hero.titleAccent")}
+              </span>
               <span className="text-fg-faint">?</span>
             </motion.h1>
-
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.3 }}
               className="mt-5 text-fg-soft text-lg sm:text-xl max-w-xl mx-auto lg:mx-0"
             >
-              Drehe das Rad. Erstelle Crews. Die Schande-Tabelle vergisst nichts —
-              wer am häufigsten verliert, trägt die Krone.
+              {t("landing.hero.subtitle")}
             </motion.p>
-
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
               className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start"
             >
-              <Link
-                href="/login"
-                className="btn-primary text-lg px-7 py-4 inline-flex justify-center"
-              >
-                Jetzt loslegen
+              <Link href="/login" className="btn-primary text-lg px-7 py-4 inline-flex justify-center">
+                {t("landing.hero.ctaPrimary")}
                 <ArrowRight size={18} strokeWidth={2.6} />
               </Link>
-              <Link
-                href="#features"
-                className="btn-ghost text-base px-5 py-3.5 inline-flex justify-center"
-              >
-                So funktioniert es
+              <Link href="#features" className="btn-ghost text-base px-5 py-3.5 inline-flex justify-center">
+                {t("landing.hero.ctaSecondary")}
               </Link>
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
               className="mt-6 text-xs text-fg-mute"
             >
-              Kostenlos · Login mit Google · Nur deine Crew sieht eure Schande
+              {t("landing.hero.note")}
             </motion.div>
           </div>
 
-          {/* Right: rotating wheel */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -275,109 +270,54 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* === FEATURES === */}
+      {/* FEATURES */}
       <section id="features" className="px-4 sm:px-8 py-16 sm:py-24">
         <div className="max-w-6xl mx-auto">
           <Reveal>
             <div className="text-center mb-12 sm:mb-16">
-              <p className="eyebrow-gold justify-center mb-3">Features</p>
+              <p className="eyebrow-gold justify-center mb-3">{t("landing.features.eyebrow")}</p>
               <h2 className="font-display font-black text-4xl sm:text-5xl text-fg mb-3">
-                Mehr als nur ein <span className="gradient-shame">Glücksrad</span>
+                {t("landing.features.titlePre")}{" "}
+                <span className="gradient-shame">{t("landing.features.titleAccent")}</span>
               </h2>
               <p className="text-fg-soft text-base sm:text-lg max-w-2xl mx-auto">
-                Casino-Physik, Crew-System, Stats. Alles damit deine 5er-Gang
-                endlich wirklich entscheiden kann, wer zahlt.
+                {t("landing.features.subtitle")}
               </p>
             </div>
           </Reveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Feature
-              icon={Dices}
-              color="#FF2D55"
-              title="Echte Casino-Physik"
-              text="Kein vorberechneter Gewinner. Das Rad dreht mit realer Angular-Velocity und Reibung und kann überall stehenbleiben — Vegas-Feeling."
-            />
-            <Feature
-              icon={Users}
-              color="#E8C36A"
-              delay={0.05}
-              title="Crews mit Code"
-              text="Erstelle deine Gang in 5 Sekunden, teile den 6-stelligen Code via WhatsApp. Mehrere Crews gleichzeitig — Slack-Style Switcher."
-            />
-            <Feature
-              icon={Trophy}
-              color="#5FE3C4"
-              delay={0.1}
-              title="Schande-Tabelle"
-              text="Pro Crew eine eigene Tabelle. Wer verliert wie oft? Tagesfilter, Monat, Jahr, Alltime. Owner darf zurücksetzen — oder auch nicht."
-            />
-            <Feature
-              icon={Swords}
-              color="#69A6FF"
-              delay={0.15}
-              title="2 Spielmodi"
-              text="Klassisch: ein Spin, eine Schande. Eliminierung: jeder Spin entfernt einen, der letzte trägt die Schande. Beide Modi mit voller Statistik."
-            />
-            <Feature
-              icon={Flame}
-              color="#C589FF"
-              delay={0.2}
-              title="Rivalitäten & Streaks"
-              text="Bruno verliert 8:3 gegen Lea. Head-to-Head pro Paarung, plus Verlust-Streaks. Wer ist auf der schlechten Strecke?"
-            />
-            <Feature
-              icon={Sparkles}
-              color="#FF8A3D"
-              delay={0.25}
-              title="Spitznamen pro Crew"
-              text="Owner vergibt Spitznamen — aus Bruno Schmid wird Bro, überall in der Crew. Historie bleibt korrekt, weil wir intern per User-ID arbeiten."
-            />
+            <Feature icon={Dices} color="#FF2D55" title={t("landing.features.physicsTitle")} text={t("landing.features.physicsText")} />
+            <Feature icon={Users} color="#E8C36A" delay={0.05} title={t("landing.features.crewsTitle")} text={t("landing.features.crewsText")} />
+            <Feature icon={Trophy} color="#5FE3C4" delay={0.1} title={t("landing.features.tableTitle")} text={t("landing.features.tableText")} />
+            <Feature icon={Swords} color="#69A6FF" delay={0.15} title={t("landing.features.modesTitle")} text={t("landing.features.modesText")} />
+            <Feature icon={Flame} color="#C589FF" delay={0.2} title={t("landing.features.rivalsTitle")} text={t("landing.features.rivalsText")} />
+            <Feature icon={Sparkles} color="#FF8A3D" delay={0.25} title={t("landing.features.nicksTitle")} text={t("landing.features.nicksText")} />
           </div>
         </div>
       </section>
 
-      {/* === BAND: How it works === */}
+      {/* HOW IT WORKS */}
       <section className="px-4 sm:px-8 py-16 sm:py-20 border-y" style={{ borderColor: "var(--border)" }}>
         <div className="max-w-4xl mx-auto">
           <Reveal>
             <div className="text-center mb-12">
-              <p className="eyebrow-gold justify-center mb-3">In 3 Schritten</p>
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-fg">
-                So geht es
-              </h2>
+              <p className="eyebrow-gold justify-center mb-3">{t("landing.howto.eyebrow")}</p>
+              <h2 className="font-display font-black text-3xl sm:text-4xl text-fg">{t("landing.howto.title")}</h2>
             </div>
           </Reveal>
-
           <div className="grid sm:grid-cols-3 gap-5">
             {[
-              {
-                step: "01",
-                title: "Anmelden mit Google",
-                text: "Ein Klick, du bist drin. Wir nutzen Google OAuth.",
-              },
-              {
-                step: "02",
-                title: "Crew erstellen",
-                text: "Du wirst Owner und bekommst einen 6-stelligen Code. Teile ihn mit deiner Gang.",
-              },
-              {
-                step: "03",
-                title: "Rad drehen, leiden",
-                text: "Spins gehen in eure gemeinsame Schande-Tabelle. Wer verliert, trägt.",
-              },
+              { step: "01", title: t("landing.howto.step1Title"), text: t("landing.howto.step1Text") },
+              { step: "02", title: t("landing.howto.step2Title"), text: t("landing.howto.step2Text") },
+              { step: "03", title: t("landing.howto.step3Title"), text: t("landing.howto.step3Text") },
             ].map((s, i) => (
               <Reveal key={s.step} delay={i * 0.08}>
                 <div className="card-casino p-6 text-center h-full">
-                  <div
-                    className="font-mono font-extrabold text-3xl mb-2"
-                    style={{ color: "var(--text-gold)" }}
-                  >
+                  <div className="font-mono font-extrabold text-3xl mb-2" style={{ color: "var(--text-gold)" }}>
                     {s.step}
                   </div>
-                  <h3 className="font-display font-bold text-lg text-fg mb-2">
-                    {s.title}
-                  </h3>
+                  <h3 className="font-display font-bold text-lg text-fg mb-2">{s.title}</h3>
                   <p className="text-sm text-fg-soft">{s.text}</p>
                 </div>
               </Reveal>
@@ -386,35 +326,36 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* === TRUST BAND === */}
+      {/* TRUST */}
       <section className="px-4 sm:px-8 py-12 sm:py-16">
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: ShieldCheck, label: "Privat", text: "Nur eingeladene Crew-Mitglieder sehen die Tabelle." },
-            { icon: Volume2, label: "Casino-Sound", text: "Mechanische Ticks beim Drehen, Jackpot beim Gewinn." },
-            { icon: Sparkles, label: "Idle-Modus", text: "Das Rad lebt — dreht sich auch ohne Spin gemütlich weiter." },
-          ].map((t, i) => (
-            <Reveal key={t.label} delay={i * 0.05}>
-              <div className="flex items-start gap-3 p-4 rounded-2xl">
-                <div
-                  className="grid place-items-center w-10 h-10 rounded-xl shrink-0"
-                  style={{ background: "var(--surface)", color: "var(--text-gold)" }}
-                >
-                  <t.icon size={18} />
-                </div>
-                <div>
-                  <div className="font-display font-bold text-fg text-sm">
-                    {t.label}
+            { icon: ShieldCheck, label: t("landing.trust.private"), text: t("landing.trust.privateText") },
+            { icon: Volume2, label: t("landing.trust.sound"), text: t("landing.trust.soundText") },
+            { icon: Sparkles, label: t("landing.trust.idle"), text: t("landing.trust.idleText") },
+          ].map((t, i) => {
+            const Icon = t.icon;
+            return (
+              <Reveal key={t.label} delay={i * 0.05}>
+                <div className="flex items-start gap-3 p-4 rounded-2xl">
+                  <div
+                    className="grid place-items-center w-10 h-10 rounded-xl shrink-0"
+                    style={{ background: "var(--surface)", color: "var(--text-gold)" }}
+                  >
+                    <Icon size={18} />
                   </div>
-                  <div className="text-xs text-fg-soft mt-0.5">{t.text}</div>
+                  <div>
+                    <div className="font-display font-bold text-fg text-sm">{t.label}</div>
+                    <div className="text-xs text-fg-soft mt-0.5">{t.text}</div>
+                  </div>
                 </div>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
-      {/* === FINAL CTA === */}
+      {/* FINAL CTA */}
       <section className="px-4 sm:px-8 py-20 sm:py-28">
         <Reveal>
           <div
@@ -428,28 +369,18 @@ export default function Landing() {
           >
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(circle at 50% 0%, rgba(255,45,85,0.2), transparent 60%)",
-              }}
+              style={{ background: "radial-gradient(circle at 50% 0%, rgba(255,45,85,0.2), transparent 60%)" }}
             />
-            <p className="eyebrow-gold justify-center mb-4 relative">
-              Bereit für die Schande?
-            </p>
+            <p className="eyebrow-gold justify-center mb-4 relative">{t("landing.cta.eyebrow")}</p>
             <h2 className="font-display font-black text-4xl sm:text-5xl text-fg leading-tight mb-4 relative">
-              Sammle deine Gang.
+              {t("landing.cta.titlePre")}
               <br />
-              <span className="gradient-shame">Dreht das Rad.</span>
+              <span className="gradient-shame">{t("landing.cta.titleAccent")}</span>
             </h2>
-            <p className="text-fg-soft mb-7 max-w-md mx-auto relative">
-              Login mit Google. Crew erstellen. Code teilen. 2 Minuten und ihr seid drin.
-            </p>
+            <p className="text-fg-soft mb-7 max-w-md mx-auto relative">{t("landing.cta.subtitle")}</p>
             <div className="relative">
-              <Link
-                href="/login"
-                className="btn-primary text-lg px-10 py-4 inline-flex"
-              >
-                Mit Google anmelden
+              <Link href="/login" className="btn-primary text-lg px-10 py-4 inline-flex">
+                {t("landing.cta.button")}
                 <ArrowRight size={18} strokeWidth={2.6} />
               </Link>
             </div>
@@ -458,8 +389,7 @@ export default function Landing() {
       </section>
 
       <footer className="px-4 sm:px-8 py-10 text-center text-xs text-fg-faint">
-        rad-der-schande.ch · gebaut mit{" "}
-        <span className="text-shame">♥</span> für 5er-Crews
+        {t("landing.footer")}
       </footer>
     </main>
   );

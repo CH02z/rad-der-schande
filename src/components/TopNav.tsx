@@ -6,16 +6,11 @@ import { usePathname } from "next/navigation";
 import { Settings, Dices, Trophy, Users } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 import CrewPill from "@/components/CrewPill";
+import { useT } from "@/lib/i18n";
 
 interface Props {
   user?: { name?: string | null; image?: string | null } | null;
 }
-
-const TABS = [
-  { href: "/", label: "Drehen", icon: Dices },
-  { href: "/tabelle", label: "Tabelle", icon: Trophy },
-  { href: "/crew", label: "Crew", icon: Users },
-];
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -24,6 +19,13 @@ function isActive(pathname: string, href: string) {
 
 export default function TopNav({ user }: Props) {
   const pathname = usePathname();
+  const { t } = useT();
+
+  const TABS = [
+    { href: "/", label: t("nav.spin"), icon: Dices },
+    { href: "/tabelle", label: t("nav.tabelle"), icon: Trophy },
+    { href: "/crew", label: t("nav.crew"), icon: Users },
+  ];
 
   return (
     <header className="max-w-5xl mx-auto mb-6 sm:mb-10">
@@ -57,7 +59,7 @@ export default function TopNav({ user }: Props) {
         {/* Desktop: Crew-Pill + User + Settings */}
         <div className="hidden sm:flex items-center gap-2">
           <CrewPill />
-          <Link href="/settings" className="btn-ghost" aria-label="Einstellungen">
+          <Link href="/settings" className="btn-ghost" aria-label={t("nav.settings")}>
             <Settings size={16} />
           </Link>
         </div>

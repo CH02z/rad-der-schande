@@ -1,0 +1,275 @@
+{
+  "brand": {
+    "name": "Wheel of Shame"
+  },
+  "nav": {
+    "spin": "Spin",
+    "tabelle": "Table",
+    "crew": "Crew",
+    "more": "More",
+    "settings": "Settings",
+    "back": "Back"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "leave": "Leave",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "newRound": "New round",
+    "loading": "Loading…",
+    "spinning": "Spinning…",
+    "you": "You",
+    "anon": "Anonymous",
+    "yes": "Yes",
+    "no": "No",
+    "of": "of",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied",
+    "moreOptions": "More options"
+  },
+  "landing": {
+    "signIn": "Sign in",
+    "hero": {
+      "eyebrow": "Casino-style for friends",
+      "titlePre": "Who wears the",
+      "titleAccent": "Shame",
+      "subtitle": "Spin the wheel. Build crews. The shame table never forgets — whoever loses most often wears the crown.",
+      "ctaPrimary": "Get started",
+      "ctaSecondary": "How it works",
+      "note": "Free · Sign in with Google · Only your crew sees your shame"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "titlePre": "More than just a",
+      "titleAccent": "Wheel of Fortune",
+      "subtitle": "Casino physics, crew system, stats. Everything your 5-friend gang needs to finally decide, fair and square, who pays.",
+      "physicsTitle": "Real Casino Physics",
+      "physicsText": "No pre-computed winner. The wheel spins with real angular velocity and friction and can stop anywhere — Vegas feeling.",
+      "crewsTitle": "Crews via Code",
+      "crewsText": "Create your gang in 5 seconds, share the 6-character code via WhatsApp. Multiple crews simultaneously — Slack-style switcher.",
+      "tableTitle": "Shame Table",
+      "tableText": "Each crew has its own table. Who loses how often? Weekly, monthly, yearly, all-time filters. Owner can reset — or not.",
+      "modesTitle": "2 Game Modes",
+      "modesText": "Classic: one spin, one shame. Elimination: each spin removes one, the last carries the shame. Both modes with full stats.",
+      "rivalsTitle": "Rivalries & Streaks",
+      "rivalsText": "Bruno loses 8:3 to Lea. Head-to-head per pairing, plus losing streaks. Who's on the bad track?",
+      "nicksTitle": "Nicknames per crew",
+      "nicksText": "Owner assigns nicknames — Bruno Schmid becomes Bro, everywhere in the crew. History stays correct because we use user IDs internally."
+    },
+    "howto": {
+      "eyebrow": "In 3 steps",
+      "title": "How it works",
+      "step1Title": "Sign in with Google",
+      "step1Text": "One click and you're in. We use Google OAuth.",
+      "step2Title": "Create a crew",
+      "step2Text": "You become owner and get a 6-character code. Share it with your gang.",
+      "step3Title": "Spin and suffer",
+      "step3Text": "Spins go into your shared shame table. Whoever loses wears it."
+    },
+    "trust": {
+      "private": "Private",
+      "privateText": "Only invited crew members see the table.",
+      "sound": "Casino sound",
+      "soundText": "Mechanical ticks while spinning, jackpot on win.",
+      "idle": "Idle mode",
+      "idleText": "The wheel lives — it keeps spinning gently even without a game."
+    },
+    "cta": {
+      "eyebrow": "Ready for the shame?",
+      "titlePre": "Gather your gang.",
+      "titleAccent": "Spin the wheel.",
+      "subtitle": "Sign in with Google. Create a crew. Share the code. 2 minutes and you're in.",
+      "button": "Sign in with Google"
+    },
+    "footer": "rad-der-schande.ch · built with ♥ for 5-friend crews"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Sign in with Google to get started.",
+    "button": "Sign in with Google",
+    "footer": "Crew members only. Nobody else sees your shame."
+  },
+  "wheel": {
+    "setup": {
+      "eyebrow": "Game Setup",
+      "titlePre": "Who wears the",
+      "titleAccent": "Shame",
+      "soloSubtitle": "Choose the mode and add players.",
+      "crewSubtitle": "Tap members to include or exclude them for this round.",
+      "modeSection": "01 · Mode",
+      "modeTitle": "How do we play?",
+      "playersSection": "02 · Players",
+      "playersTitleSolo": "Who's playing?",
+      "playersTitleCrew": "Who's in today?",
+      "addGuest": "Add guest…",
+      "addName": "Add name…",
+      "maxReached": "Max reached",
+      "lockedElim": "Game in progress — no changes",
+      "minPlayers": "At least 2 active players required.",
+      "loadingMembers": "Loading crew members…",
+      "startGame": "Start game"
+    },
+    "modes": {
+      "classic": "Classic",
+      "classicDesc": "One spin, one shame.",
+      "elim": "Elimination",
+      "elimDesc": "Last one in the wheel loses."
+    },
+    "game": {
+      "spin": "SPIN",
+      "back": "Setup",
+      "reset": "Reset"
+    },
+    "result": {
+      "jackpot": "JACKPOT",
+      "bears": "wears the",
+      "shame": "Shame",
+      "consequencePrefix": "… and",
+      "tapToClose": "Tap anywhere to close"
+    },
+    "elim": {
+      "eliminated": "Eliminated",
+      "safe": "is safe"
+    }
+  },
+  "tabelle": {
+    "eyebrow": "Hall of Shame",
+    "title": "Shame Table",
+    "subtitle": "Who lost how often.",
+    "soloLabel": "Solo Table",
+    "spinsLabel": "Spins",
+    "spinLabel": "Spin",
+    "losersLabel": "Losers",
+    "ranges": {
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "all": "All time"
+    },
+    "emptyAll": "No shame in the database yet. Spin the wheel.",
+    "emptyRange": "No entries for this period.",
+    "clear": "Clear table",
+    "ownerOnly": "(owner)",
+    "confirmTitle": "Really delete everything?",
+    "confirmText": "The entire shame table will be permanently removed. All spin results gone.",
+    "deleteFinal": "Delete permanently",
+    "deleting": "Deleting…"
+  },
+  "crew": {
+    "list": {
+      "eyebrow": "Hall of Crews",
+      "titlePre": "Your",
+      "titleAccent": "Crews",
+      "subtitle": "Switch between crews or create a new one.",
+      "currentLabel": "Currently:",
+      "solo": "Solo",
+      "emptyTitle": "You're flying solo",
+      "emptyText": "Create a crew and share the code with your friends, or join an existing crew.",
+      "createCta": "Create crew",
+      "joinCta": "Join with code",
+      "soloCardTitle": "Solo mode",
+      "soloCardText": "Private. Only you see your solo spins.",
+      "membersOne": "member",
+      "membersMany": "members",
+      "activate": "Activate",
+      "open": "Open",
+      "newCrew": "New crew",
+      "joinShort": "Join",
+      "createSectionEyebrow": "New",
+      "createSectionTitle": "Create a crew",
+      "createSectionText": "You'll be the owner. A code is generated automatically.",
+      "createPlaceholder": "e.g. The Drinking Squad",
+      "creating": "Creating…",
+      "create": "Create crew",
+      "joinSectionEyebrow": "Code",
+      "joinSectionTitle": "Join with code",
+      "joinSectionText": "Ask the owner of your crew for the 6-character code.",
+      "joining": "Joining…",
+      "join": "Join"
+    },
+    "detail": {
+      "back": "Crews",
+      "activeCrew": "Active crew",
+      "setActive": "Set as active",
+      "code": "Crew code",
+      "members": "Members",
+      "settings": "Crew settings",
+      "defaultMode": "Default mode",
+      "defaultModeHint": "Auto-selected when opening the wheel.",
+      "consequences": "Consequence templates",
+      "consequencesHint": "Randomly shown on spin result.",
+      "consequencePlaceholder": "e.g. buys a round of beer",
+      "dangerZone": "Heads up",
+      "dangerTitle": "Leave crew",
+      "ownerDangerText": "As owner you can delete the crew or transfer ownership to a member (crown icon in the list).",
+      "memberDangerText": "You're leaving the crew. Your spin entries remain in the crew table.",
+      "deleteCrew": "Delete crew",
+      "leaveCrew": "Leave crew",
+      "deleteConfirmTitle": "Delete crew?",
+      "deleteConfirmText": "All members are removed, all spin entries are deleted. Irreversible.",
+      "leaveConfirmTitle": "Leave crew?",
+      "leaveConfirmText": "You're leaving the crew. You can rejoin via the code.",
+      "transferConfirmTitle": "Transfer ownership?",
+      "transferConfirmText": "becomes new owner and takes over all privileges. You become a regular member.",
+      "transfer": "Transfer",
+      "transferring": "Transferring…",
+      "nick": "Nick",
+      "nickPlaceholder": "Nickname"
+    },
+    "pill": {
+      "soloLabel": "Solo",
+      "newCrew": "Create new crew",
+      "joinCode": "Join with code",
+      "manage": "Manage crews"
+    },
+    "join": {
+      "eyebrow": "Joining",
+      "checking": "Checking code…",
+      "welcome": "Welcome",
+      "redirect": "Redirecting you…",
+      "errorTitle": "Didn't work",
+      "errorText": "Invalid code or crew unavailable.",
+      "openCrews": "Open crews",
+      "home": "To homepage"
+    }
+  },
+  "stats": {
+    "halloShame": "Hall of Shame",
+    "shameKing": "Shame King",
+    "shames": "Shames",
+    "onFireTitle": "On the losing streak",
+    "onFireSuffix": "in a row",
+    "rivalriesTitle": "Rivalries",
+    "headToHead": "Head-to-Head",
+    "biggestBeef": "Biggest Beef",
+    "spinsLabel": "Spins",
+    "streaksTitle": "Streak records",
+    "currentPrefix": "current",
+    "emptyText": "No spins in this crew yet — spin the wheel and there'll be stats."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "appearanceHint": "Choose your preferred theme. Stored on this device.",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "sound": "Sound",
+    "soundHint": "Casino ticks while spinning and jackpot fanfare on win.",
+    "soundOn": "On",
+    "soundOff": "Off",
+    "language": "Language",
+    "languageHint": "Synced with your account.",
+    "account": "Account",
+    "accountHint": "You stay signed in until you sign out.",
+    "signOut": "Sign out"
+  },
+  "languages": {
+    "de": "German",
+    "en": "English",
+    "fr": "French",
+    "es": "Spanish"
+  }
+}

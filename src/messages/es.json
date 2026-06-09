@@ -1,0 +1,275 @@
+{
+  "brand": {
+    "name": "Rueda de la Vergüenza"
+  },
+  "nav": {
+    "spin": "Girar",
+    "tabelle": "Tabla",
+    "crew": "Crew",
+    "more": "Más",
+    "settings": "Ajustes",
+    "back": "Volver"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "leave": "Salir",
+    "confirm": "Confirmar",
+    "continue": "Continuar",
+    "newRound": "Nueva ronda",
+    "loading": "Cargando…",
+    "spinning": "Girando…",
+    "you": "Tú",
+    "anon": "Anónimo",
+    "yes": "Sí",
+    "no": "No",
+    "of": "de",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "moreOptions": "Más opciones"
+  },
+  "landing": {
+    "signIn": "Iniciar sesión",
+    "hero": {
+      "eyebrow": "Estilo casino entre amigos",
+      "titlePre": "¿Quién carga con la",
+      "titleAccent": "Vergüenza",
+      "subtitle": "Gira la rueda. Crea crews. La tabla de la vergüenza no olvida — quien pierde más a menudo lleva la corona.",
+      "ctaPrimary": "Empezar ahora",
+      "ctaSecondary": "Cómo funciona",
+      "note": "Gratis · Login con Google · Solo tu crew ve la vergüenza"
+    },
+    "features": {
+      "eyebrow": "Características",
+      "titlePre": "Más que solo una",
+      "titleAccent": "rueda de la suerte",
+      "subtitle": "Física de casino, sistema de crew, estadísticas. Todo para que tu grupo de 5 decida por fin quién paga.",
+      "physicsTitle": "Física de casino real",
+      "physicsText": "Sin ganador pre-calculado. La rueda gira con velocidad angular y fricción reales y puede parar en cualquier lugar — sensación Vegas.",
+      "crewsTitle": "Crews con código",
+      "crewsText": "Crea tu grupo en 5 segundos, comparte el código de 6 caracteres por WhatsApp. Varias crews a la vez — selector estilo Slack.",
+      "tableTitle": "Tabla de la vergüenza",
+      "tableText": "Una tabla por crew. ¿Quién pierde cuántas veces? Filtros semana, mes, año, total. El owner puede reiniciar — o no.",
+      "modesTitle": "2 modos de juego",
+      "modesText": "Clásico: un giro, una vergüenza. Eliminación: cada giro elimina a uno, el último carga la vergüenza. Ambos modos con estadísticas completas.",
+      "rivalsTitle": "Rivalidades y rachas",
+      "rivalsText": "Bruno pierde 8:3 contra Lea. Cara a cara por pareja, más rachas de derrotas. ¿Quién está en mala racha?",
+      "nicksTitle": "Apodos por crew",
+      "nicksText": "El owner asigna apodos — Bruno Schmid se convierte en Bro, en todo el crew. El historial se mantiene correcto porque usamos IDs internamente."
+    },
+    "howto": {
+      "eyebrow": "En 3 pasos",
+      "title": "Cómo funciona",
+      "step1Title": "Inicia sesión con Google",
+      "step1Text": "Un click y estás dentro. Usamos Google OAuth.",
+      "step2Title": "Crea un crew",
+      "step2Text": "Tú eres owner y recibes un código de 6 caracteres. Compártelo con tu grupo.",
+      "step3Title": "Gira y sufre",
+      "step3Text": "Los giros van a tu tabla compartida. Quien pierde, carga."
+    },
+    "trust": {
+      "private": "Privado",
+      "privateText": "Solo miembros invitados ven la tabla.",
+      "sound": "Sonido de casino",
+      "soundText": "Clics mecánicos al girar, jackpot al ganar.",
+      "idle": "Modo reposo",
+      "idleText": "La rueda vive — gira suavemente incluso sin jugar."
+    },
+    "cta": {
+      "eyebrow": "¿Listos para la vergüenza?",
+      "titlePre": "Reúne a tu grupo.",
+      "titleAccent": "Giren la rueda.",
+      "subtitle": "Login con Google. Crea un crew. Comparte el código. 2 minutos y estás dentro.",
+      "button": "Iniciar sesión con Google"
+    },
+    "footer": "rad-der-schande.ch · hecho con ♥ para grupos de 5"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Inicia sesión con Google para empezar.",
+    "button": "Iniciar sesión con Google",
+    "footer": "Solo miembros del crew. Nadie más ve la vergüenza."
+  },
+  "wheel": {
+    "setup": {
+      "eyebrow": "Configuración",
+      "titlePre": "¿Quién carga con la",
+      "titleAccent": "Vergüenza",
+      "soloSubtitle": "Elige el modo y añade jugadores.",
+      "crewSubtitle": "Toca a los miembros para incluirlos o excluirlos en esta ronda.",
+      "modeSection": "01 · Modo",
+      "modeTitle": "¿Cómo jugamos?",
+      "playersSection": "02 · Jugadores",
+      "playersTitleSolo": "¿Quién juega?",
+      "playersTitleCrew": "¿Quién está hoy?",
+      "addGuest": "Añadir invitado…",
+      "addName": "Añadir nombre…",
+      "maxReached": "Máximo alcanzado",
+      "lockedElim": "Partida en curso — sin cambios",
+      "minPlayers": "Mínimo 2 jugadores activos.",
+      "loadingMembers": "Cargando miembros…",
+      "startGame": "Empezar partida"
+    },
+    "modes": {
+      "classic": "Clásico",
+      "classicDesc": "Un giro, una vergüenza.",
+      "elim": "Eliminación",
+      "elimDesc": "El último en la rueda pierde."
+    },
+    "game": {
+      "spin": "GIRAR",
+      "back": "Config",
+      "reset": "Resetear"
+    },
+    "result": {
+      "jackpot": "JACKPOT",
+      "bears": "carga con la",
+      "shame": "Vergüenza",
+      "consequencePrefix": "… y",
+      "tapToClose": "Toca para cerrar"
+    },
+    "elim": {
+      "eliminated": "Eliminado",
+      "safe": "está a salvo"
+    }
+  },
+  "tabelle": {
+    "eyebrow": "Salón de la Vergüenza",
+    "title": "Tabla de la Vergüenza",
+    "subtitle": "Quién perdió cuántas veces.",
+    "soloLabel": "Tabla solo",
+    "spinsLabel": "Giros",
+    "spinLabel": "Giro",
+    "losersLabel": "Perdedores",
+    "ranges": {
+      "week": "Semana",
+      "month": "Mes",
+      "year": "Año",
+      "all": "Todo"
+    },
+    "emptyAll": "Aún no hay vergüenza. Gira la rueda.",
+    "emptyRange": "No hay entradas para este período.",
+    "clear": "Vaciar tabla",
+    "ownerOnly": "(owner)",
+    "confirmTitle": "¿Eliminar todo de verdad?",
+    "confirmText": "Toda la tabla se eliminará para siempre. Todos los resultados desaparecen.",
+    "deleteFinal": "Eliminar para siempre",
+    "deleting": "Eliminando…"
+  },
+  "crew": {
+    "list": {
+      "eyebrow": "Salón de Crews",
+      "titlePre": "Tus",
+      "titleAccent": "Crews",
+      "subtitle": "Cambia entre crews o crea uno nuevo.",
+      "currentLabel": "Actual:",
+      "solo": "Solo",
+      "emptyTitle": "Vas en solitario",
+      "emptyText": "Crea un crew y comparte el código con tus amigos, o únete a uno existente.",
+      "createCta": "Crear crew",
+      "joinCta": "Unirse con código",
+      "soloCardTitle": "Modo solo",
+      "soloCardText": "Privado. Solo tú ves tus giros solo.",
+      "membersOne": "miembro",
+      "membersMany": "miembros",
+      "activate": "Activar",
+      "open": "Abrir",
+      "newCrew": "Nuevo crew",
+      "joinShort": "Unirse",
+      "createSectionEyebrow": "Nuevo",
+      "createSectionTitle": "Crear crew",
+      "createSectionText": "Serás owner. Se genera un código automáticamente.",
+      "createPlaceholder": "ej. Los Sedientos",
+      "creating": "Creando…",
+      "create": "Crear",
+      "joinSectionEyebrow": "Código",
+      "joinSectionTitle": "Unirse con código",
+      "joinSectionText": "Pídele al owner el código de 6 caracteres.",
+      "joining": "Uniéndose…",
+      "join": "Unirse"
+    },
+    "detail": {
+      "back": "Crews",
+      "activeCrew": "Crew activo",
+      "setActive": "Activar",
+      "code": "Código del crew",
+      "members": "Miembros",
+      "settings": "Ajustes del crew",
+      "defaultMode": "Modo predeterminado",
+      "defaultModeHint": "Se preselecciona al abrir la rueda.",
+      "consequences": "Plantillas de consecuencias",
+      "consequencesHint": "Se muestra al azar en el resultado.",
+      "consequencePlaceholder": "ej. paga una ronda",
+      "dangerZone": "Atención",
+      "dangerTitle": "Salir del crew",
+      "ownerDangerText": "Como owner puedes eliminar el crew o transferir la propiedad (icono de corona).",
+      "memberDangerText": "Sales del crew. Tus giros permanecen en la tabla.",
+      "deleteCrew": "Eliminar crew",
+      "leaveCrew": "Salir del crew",
+      "deleteConfirmTitle": "¿Eliminar el crew?",
+      "deleteConfirmText": "Todos los miembros salen, todos los giros se eliminan. Irreversible.",
+      "leaveConfirmTitle": "¿Salir del crew?",
+      "leaveConfirmText": "Sales del crew. Puedes volver con el código.",
+      "transferConfirmTitle": "¿Transferir la propiedad?",
+      "transferConfirmText": "se convierte en nuevo owner con todos los privilegios. Tú pasas a miembro normal.",
+      "transfer": "Transferir",
+      "transferring": "Transfiriendo…",
+      "nick": "Apodo",
+      "nickPlaceholder": "Apodo"
+    },
+    "pill": {
+      "soloLabel": "Solo",
+      "newCrew": "Crear crew",
+      "joinCode": "Unirse con código",
+      "manage": "Gestionar crews"
+    },
+    "join": {
+      "eyebrow": "Uniéndose",
+      "checking": "Verificando código…",
+      "welcome": "Bienvenido",
+      "redirect": "Redirigiendo…",
+      "errorTitle": "No funcionó",
+      "errorText": "Código inválido o crew no disponible.",
+      "openCrews": "Abrir crews",
+      "home": "Inicio"
+    }
+  },
+  "stats": {
+    "halloShame": "Salón de la Vergüenza",
+    "shameKing": "Rey de la Vergüenza",
+    "shames": "Vergüenzas",
+    "onFireTitle": "En mala racha",
+    "onFireSuffix": "seguidos",
+    "rivalriesTitle": "Rivalidades",
+    "headToHead": "Cara a cara",
+    "biggestBeef": "Mayor enfrentamiento",
+    "spinsLabel": "Giros",
+    "streaksTitle": "Récords de rachas",
+    "currentPrefix": "actual",
+    "emptyText": "Aún no hay giros en este crew — gira la rueda y habrá estadísticas."
+  },
+  "settings": {
+    "title": "Ajustes",
+    "appearance": "Apariencia",
+    "appearanceHint": "Elige tu tema preferido. Se guarda en este dispositivo.",
+    "themeDark": "Oscuro",
+    "themeLight": "Claro",
+    "sound": "Sonido",
+    "soundHint": "Clics mecánicos al girar y fanfarria de jackpot al ganar.",
+    "soundOn": "Activado",
+    "soundOff": "Desactivado",
+    "language": "Idioma",
+    "languageHint": "Sincronizado con tu cuenta.",
+    "account": "Cuenta",
+    "accountHint": "Permaneces conectado hasta cerrar sesión.",
+    "signOut": "Cerrar sesión"
+  },
+  "languages": {
+    "de": "Alemán",
+    "en": "Inglés",
+    "fr": "Francés",
+    "es": "Español"
+  }
+}

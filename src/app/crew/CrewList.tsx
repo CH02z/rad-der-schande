@@ -16,11 +16,13 @@ import {
 } from "lucide-react";
 import { useCrew, type CrewSummary } from "@/lib/crew-context";
 import CrewAvatar from "@/components/CrewAvatar";
+import { useT } from "@/lib/i18n";
 
 export default function CrewList() {
   const { crews, activeCrewId, setActiveCrewId, loading, refresh } = useCrew();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useT();
 
   // Querstrings ?create=1 oder ?join=1 öffnen direkt das jeweilige Inline-Form
   const [createOpen, setCreateOpen] = useState(searchParams.get("create") === "1");
@@ -127,7 +129,7 @@ export default function CrewList() {
             boxShadow: activeCrewId ? "0 0 8px var(--text-gold)" : "none",
           }}
         />
-        Aktuell: {crews.find((c) => c.id === activeCrewId)?.name ?? "Solo"}
+        {t("crew.list.currentLabel")}{" "}{crews.find((c) => c.id === activeCrewId)?.name ?? t("crew.list.solo")}
       </div>
 
       {/* Empty State */}
@@ -140,11 +142,10 @@ export default function CrewList() {
             <Users size={28} strokeWidth={2.2} />
           </div>
           <h2 className="font-display font-extrabold text-2xl text-fg mb-2">
-            Du fliegst noch solo
+            {t("crew.list.emptyTitle")}
           </h2>
           <p className="text-fg-soft text-sm mb-6 max-w-sm mx-auto">
-            Erstelle eine Crew und teile den Code mit deinen Freunden,
-            oder tritt einer bestehenden Crew bei.
+            {t("crew.list.emptyText")}
           </p>
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <button
@@ -154,7 +155,7 @@ export default function CrewList() {
               }}
               className="btn-primary text-sm py-3 px-5"
             >
-              <Plus size={16} strokeWidth={2.6} /> Crew erstellen
+              <Plus size={16} strokeWidth={2.6} /> {t("crew.list.createCta")}
             </button>
             <button
               onClick={() => {
@@ -163,7 +164,7 @@ export default function CrewList() {
               }}
               className="btn-ghost text-sm py-3 px-5"
             >
-              <KeyRound size={15} strokeWidth={2.4} /> Mit Code beitreten
+              <KeyRound size={15} strokeWidth={2.4} /> {t("crew.list.joinCta")}
             </button>
           </div>
         </div>
@@ -187,10 +188,8 @@ export default function CrewList() {
             <UserIcon size={18} />
           </div>
           <div className="flex-1 text-left">
-            <div className="font-display font-bold text-fg">Solo-Modus</div>
-            <div className="text-xs text-fg-mute">
-              Privat. Nur du siehst deine Solo-Spins.
-            </div>
+            <div className="font-display font-bold text-fg">{t("crew.list.soloCardTitle")}</div>
+            <div className="text-xs text-fg-mute">{t("crew.list.soloCardText")}</div>
           </div>
           {activeCrewId === null && (
             <Check size={18} className="text-gold-bright" strokeWidth={2.6} />
@@ -229,7 +228,7 @@ export default function CrewList() {
                     <span className="font-mono">{c.code}</span>
                     <span>·</span>
                     <span>
-                      {c.memberCount} {c.memberCount === 1 ? "Mitglied" : "Mitglieder"}
+                      {c.memberCount} {c.memberCount === 1 ? t("crew.list.membersOne") : t("crew.list.membersMany")}
                     </span>
                   </div>
                 </div>
@@ -240,7 +239,7 @@ export default function CrewList() {
                       className="text-xs font-semibold px-3 py-1.5 rounded-xl text-fg-soft hover:text-fg transition"
                       style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
                     >
-                      Aktivieren
+                      {t("crew.list.activate")}
                     </button>
                   )}
                   <Link
@@ -252,7 +251,7 @@ export default function CrewList() {
                       border: "1px solid var(--border-gold)",
                     }}
                   >
-                    Öffnen <ArrowRight size={11} strokeWidth={2.6} />
+                    {t("crew.list.open")} <ArrowRight size={11} strokeWidth={2.6} />
                   </Link>
                 </div>
               </div>
@@ -273,7 +272,7 @@ export default function CrewList() {
             className="btn-ghost py-3"
           >
             <Plus size={15} strokeWidth={2.4} />
-            Neue Crew
+            {t("crew.list.newCrew")}
           </button>
           <button
             onClick={() => {
@@ -284,7 +283,7 @@ export default function CrewList() {
             className="btn-ghost py-3"
           >
             <KeyRound size={15} strokeWidth={2.4} />
-            Beitreten
+            {t("crew.list.joinShort")}
           </button>
         </div>
       )}
@@ -302,12 +301,12 @@ export default function CrewList() {
           >
             <div className="card-casino p-5 sm:p-6 mt-1">
               <header className="mb-4">
-                <p className="eyebrow-gold">Neu</p>
+                <p className="eyebrow-gold">{t("crew.list.createSectionEyebrow")}</p>
                 <h3 className="font-display font-bold text-lg text-fg mt-1">
-                  Crew erstellen
+                  {t("crew.list.createSectionTitle")}
                 </h3>
                 <p className="text-xs text-fg-mute mt-1">
-                  Du wirst automatisch Owner. Code wird generiert.
+                  {t("crew.list.createSectionText")}
                 </p>
               </header>
               <div className="flex flex-col gap-2.5">
@@ -315,7 +314,7 @@ export default function CrewList() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                  placeholder="z.B. Die Saufclique"
+                  placeholder={t("crew.list.createPlaceholder")}
                   maxLength={40}
                   disabled={busy}
                   className="field"
@@ -325,7 +324,7 @@ export default function CrewList() {
                   disabled={busy || name.trim().length < 2}
                   className="btn-primary py-3"
                 >
-                  {busy ? "Erstelle…" : "Crew erstellen"}
+                  {busy ? t("crew.list.creating") : t("crew.list.create")}
                 </button>
               </div>
             </div>
@@ -346,12 +345,12 @@ export default function CrewList() {
           >
             <div className="card-casino p-5 sm:p-6 mt-1">
               <header className="mb-4">
-                <p className="eyebrow-gold">Code</p>
+                <p className="eyebrow-gold">{t("crew.list.joinSectionEyebrow")}</p>
                 <h3 className="font-display font-bold text-lg text-fg mt-1">
-                  Mit Code beitreten
+                  {t("crew.list.joinSectionTitle")}
                 </h3>
                 <p className="text-xs text-fg-mute mt-1">
-                  Frag den Owner deiner Crew nach dem 6-stelligen Code.
+                  {t("crew.list.joinSectionText")}
                 </p>
               </header>
               <div className="flex flex-col gap-2.5">
@@ -369,7 +368,7 @@ export default function CrewList() {
                   disabled={busy || code.trim().length !== 6}
                   className="btn-primary py-3"
                 >
-                  {busy ? "Trete bei…" : "Beitreten"}
+                  {busy ? t("crew.list.joining") : t("crew.list.join")}
                 </button>
               </div>
             </div>

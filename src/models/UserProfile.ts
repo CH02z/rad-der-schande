@@ -29,7 +29,11 @@ const UserProfileSchema = new Schema(
     preferences: {
       theme: { type: String, enum: ["dark", "light"], default: "dark" },
       muted: { type: Boolean, default: false },
-      locale: { type: String, enum: ["de", "en"], default: "de" },
+      locale: {
+        type: String,
+        enum: ["de", "en", "fr", "es"],
+        default: "de",
+      },
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

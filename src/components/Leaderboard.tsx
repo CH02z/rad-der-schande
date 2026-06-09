@@ -4,21 +4,22 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Trash2, AlertTriangle, Dices, Crown, User as UserIcon } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
+import { useT } from "@/lib/i18n";
 
 type Row = { name: string; count: number };
 type Range = "week" | "month" | "year" | "all";
-
-const RANGES: { id: Range; label: string }[] = [
-  { id: "week", label: "Woche" },
-  { id: "month", label: "Monat" },
-  { id: "year", label: "Jahr" },
-  { id: "all", label: "Alltime" },
-];
 
 const MEDAL = ["🥇", "🥈", "🥉"];
 
 export default function Leaderboard() {
   const { activeCrew, activeCrewId } = useCrew();
+  const { t } = useT();
+  const RANGES: { id: Range; label: string }[] = [
+    { id: "week", label: t("tabelle.ranges.week") },
+    { id: "month", label: t("tabelle.ranges.month") },
+    { id: "year", label: t("tabelle.ranges.year") },
+    { id: "all", label: t("tabelle.ranges.all") },
+  ];
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<Range>("all");
@@ -91,7 +92,7 @@ export default function Leaderboard() {
           {isSolo ? (
             <>
               <UserIcon size={12} strokeWidth={2.4} />
-              <span>Solo-Tabelle</span>
+              <span>{t("tabelle.soloLabel")}</span>
             </>
           ) : (
             <>
@@ -118,13 +119,13 @@ export default function Leaderboard() {
               {totalSpins}
             </span>
             <span className="text-fg-mute text-sm">
-              {totalSpins === 1 ? "Spin" : "Spins"}
+              {totalSpins === 1 ? t("tabelle.spinLabel") : t("tabelle.spinsLabel")}
             </span>
           </div>
           {losers > 0 && (
             <div className="text-right">
               <div className="text-fg-mute text-xs uppercase tracking-wider">
-                Verlierer
+                {t("tabelle.losersLabel")}
               </div>
               <div className="font-display font-bold text-lg text-fg tabular-nums">
                 {losers}
@@ -155,9 +156,7 @@ export default function Leaderboard() {
           </div>
         ) : rows.length === 0 ? (
           <div className="text-center py-10 text-fg-mute text-sm">
-            {range === "all"
-              ? "Noch keine Schande in der Datenbank. Dreh das Rad."
-              : "Keine Einträge für diesen Zeitraum."}
+            {range === "all" ? t("tabelle.emptyAll") : t("tabelle.emptyRange")}
           </div>
         ) : (
           <ol className="space-y-2">
@@ -224,8 +223,8 @@ export default function Leaderboard() {
               className="inline-flex items-center gap-1.5 text-xs font-medium text-fg-mute hover:text-shame transition"
             >
               <Trash2 size={13} />
-              Tabelle leeren
-              {!isSolo && <span className="text-fg-faint">(Owner)</span>}
+              {t("tabelle.clear")}
+              {!isSolo && <span className="text-fg-faint">{t("tabelle.ownerOnly")}</span>}
             </button>
           </div>
         )}
@@ -256,19 +255,16 @@ export default function Leaderboard() {
                 <AlertTriangle size={24} className="text-shame" />
               </div>
               <h3 className="font-display font-bold text-2xl text-fg mb-1">
-                Wirklich alles löschen?
+                {t("tabelle.confirmTitle")}
               </h3>
-              <p className="text-sm text-fg-soft mb-6">
-                Die komplette Schande-Tabelle wird unwiderruflich entfernt.
-                Alle Spin-Ergebnisse sind weg.
-              </p>
+              <p className="text-sm text-fg-soft mb-6">{t("tabelle.confirmText")}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setConfirmOpen(false)}
                   disabled={deleting}
                   className="btn-ghost flex-1"
                 >
-                  Abbrechen
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={handleDelete}
@@ -279,7 +275,7 @@ export default function Leaderboard() {
                     boxShadow: "0 8px 24px -6px rgba(255,45,85,0.5)",
                   }}
                 >
-                  {deleting ? "Lösche…" : "Endgültig löschen"}
+                  {deleting ? t("tabelle.deleting") : t("tabelle.deleteFinal")}
                 </button>
               </div>
             </motion.div>

@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCrew } from "@/lib/crew-context";
+import { useT } from "@/lib/i18n";
 
 export default function JoinClient({ code }: { code: string }) {
   const router = useRouter();
   const { refresh } = useCrew();
+  const { t } = useT();
   const [status, setStatus] = useState<"joining" | "success" | "error">("joining");
   const [error, setError] = useState<string | null>(null);
   const [crewName, setCrewName] = useState<string | null>(null);
@@ -58,9 +60,9 @@ export default function JoinClient({ code }: { code: string }) {
             >
               <Loader2 size={28} className="animate-spin" strokeWidth={2.4} />
             </div>
-            <p className="eyebrow-gold justify-center mb-3">Beitreten</p>
+            <p className="eyebrow-gold justify-center mb-3">{t("crew.join.eyebrow")}</p>
             <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-fg mb-2">
-              Code wird geprüft…
+              {t("crew.join.checking")}
             </h1>
             <p className="text-fg-soft text-sm font-mono tracking-[0.3em]">
               {code}
@@ -76,11 +78,11 @@ export default function JoinClient({ code }: { code: string }) {
             >
               🎉
             </div>
-            <p className="eyebrow-gold justify-center mb-3">Willkommen</p>
+            <p className="eyebrow-gold justify-center mb-3">{t("crew.join.welcome")}</p>
             <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-fg mb-2">
-              {crewName ?? "Crew beigetreten!"}
+              {crewName ?? t("crew.join.welcome")}
             </h1>
-            <p className="text-fg-soft text-sm">Du wirst weitergeleitet…</p>
+            <p className="text-fg-soft text-sm">{t("crew.join.redirect")}</p>
           </>
         )}
 
@@ -97,17 +99,17 @@ export default function JoinClient({ code }: { code: string }) {
               <AlertTriangle size={28} strokeWidth={2.2} />
             </div>
             <h1 className="font-display font-extrabold text-2xl text-fg mb-2">
-              Hat nicht geklappt
+              {t("crew.join.errorTitle")}
             </h1>
             <p className="text-fg-soft text-sm mb-6">
-              {error ?? "Code ungültig oder Crew nicht erreichbar."}
+              {error ?? t("crew.join.errorText")}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Link href="/crew" className="btn-primary text-sm py-2.5 px-5">
-                Crews öffnen <ArrowRight size={14} strokeWidth={2.6} />
+                {t("crew.join.openCrews")} <ArrowRight size={14} strokeWidth={2.6} />
               </Link>
               <Link href="/" className="btn-ghost text-sm py-2.5 px-5">
-                Zur Startseite
+                {t("crew.join.home")}
               </Link>
             </div>
           </>

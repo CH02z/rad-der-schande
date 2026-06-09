@@ -25,7 +25,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             $setOnInsert: {
               userId: new Types.ObjectId(user.id),
               activeCrewId: null,
-              preferences: { theme: "dark", muted: false, locale: "de" },
+              preferences: { theme: "dark", muted: false, locale: "de" as const },
               createdAt: new Date(),
             },
             $set: { updatedAt: new Date() },

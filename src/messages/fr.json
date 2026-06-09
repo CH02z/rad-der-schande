@@ -1,0 +1,275 @@
+{
+  "brand": {
+    "name": "Roue de la Honte"
+  },
+  "nav": {
+    "spin": "Tourner",
+    "tabelle": "Classement",
+    "crew": "Équipe",
+    "more": "Plus",
+    "settings": "Réglages",
+    "back": "Retour"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "leave": "Quitter",
+    "confirm": "Confirmer",
+    "continue": "Continuer",
+    "newRound": "Nouvelle manche",
+    "loading": "Chargement…",
+    "spinning": "Tourne…",
+    "you": "Toi",
+    "anon": "Anonyme",
+    "yes": "Oui",
+    "no": "Non",
+    "of": "de",
+    "share": "Partager",
+    "copy": "Copier",
+    "copied": "Copié",
+    "moreOptions": "Plus d'options"
+  },
+  "landing": {
+    "signIn": "Se connecter",
+    "hero": {
+      "eyebrow": "Style casino entre amis",
+      "titlePre": "Qui porte la",
+      "titleAccent": "Honte",
+      "subtitle": "Fais tourner la roue. Crée des équipes. Le classement de la honte n'oublie rien — celui qui perd le plus porte la couronne.",
+      "ctaPrimary": "C'est parti",
+      "ctaSecondary": "Comment ça marche",
+      "note": "Gratuit · Connexion Google · Seule ton équipe voit votre honte"
+    },
+    "features": {
+      "eyebrow": "Fonctionnalités",
+      "titlePre": "Plus qu'une simple",
+      "titleAccent": "roue de la fortune",
+      "subtitle": "Physique de casino, système d'équipe, statistiques. Tout pour que votre bande de 5 décide enfin qui paie.",
+      "physicsTitle": "Vraie physique de casino",
+      "physicsText": "Aucun gagnant pré-calculé. La roue tourne avec vélocité angulaire et friction réelles et peut s'arrêter n'importe où — sensation Vegas.",
+      "crewsTitle": "Équipes par code",
+      "crewsText": "Crée ta bande en 5 secondes, partage le code à 6 caractères via WhatsApp. Plusieurs équipes en même temps — sélecteur façon Slack.",
+      "tableTitle": "Classement de la honte",
+      "tableText": "Une table par équipe. Qui perd combien de fois ? Filtres semaine, mois, année, depuis toujours. L'owner peut réinitialiser — ou non.",
+      "modesTitle": "2 modes de jeu",
+      "modesText": "Classique : un tour, une honte. Élimination : chaque tour élimine un, le dernier porte la honte. Les deux avec statistiques complètes.",
+      "rivalsTitle": "Rivalités & séries",
+      "rivalsText": "Bruno perd 8:3 contre Lea. Face-à-face par paire, plus séries de défaites. Qui est sur la mauvaise pente ?",
+      "nicksTitle": "Surnoms par équipe",
+      "nicksText": "L'owner attribue les surnoms — Bruno Schmid devient Bro, partout dans l'équipe. L'historique reste correct car nous utilisons les IDs en interne."
+    },
+    "howto": {
+      "eyebrow": "En 3 étapes",
+      "title": "Comment ça marche",
+      "step1Title": "Connexion avec Google",
+      "step1Text": "Un clic et tu y es. Nous utilisons Google OAuth.",
+      "step2Title": "Crée une équipe",
+      "step2Text": "Tu deviens owner et reçois un code à 6 caractères. Partage-le avec ta bande.",
+      "step3Title": "Tourne et souffre",
+      "step3Text": "Les spins vont dans votre classement commun. Le perdant porte la honte."
+    },
+    "trust": {
+      "private": "Privé",
+      "privateText": "Seuls les membres invités voient le classement.",
+      "sound": "Son de casino",
+      "soundText": "Cliquetis mécaniques pendant la rotation, jackpot à la victoire.",
+      "idle": "Mode veille",
+      "idleText": "La roue vit — elle tourne doucement même sans partie."
+    },
+    "cta": {
+      "eyebrow": "Prêt pour la honte ?",
+      "titlePre": "Rassemble ta bande.",
+      "titleAccent": "Tournez la roue.",
+      "subtitle": "Connexion Google. Crée une équipe. Partage le code. 2 minutes et c'est parti.",
+      "button": "Se connecter avec Google"
+    },
+    "footer": "rad-der-schande.ch · fait avec ♥ pour les bandes de 5"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Connecte-toi avec Google pour commencer.",
+    "button": "Se connecter avec Google",
+    "footer": "Membres de l'équipe uniquement. Personne d'autre ne voit votre honte."
+  },
+  "wheel": {
+    "setup": {
+      "eyebrow": "Configuration",
+      "titlePre": "Qui porte la",
+      "titleAccent": "Honte",
+      "soloSubtitle": "Choisis le mode et ajoute des joueurs.",
+      "crewSubtitle": "Tape sur les membres pour les inclure ou exclure de cette manche.",
+      "modeSection": "01 · Mode",
+      "modeTitle": "Comment on joue ?",
+      "playersSection": "02 · Joueurs",
+      "playersTitleSolo": "Qui joue ?",
+      "playersTitleCrew": "Qui est là aujourd'hui ?",
+      "addGuest": "Ajouter un invité…",
+      "addName": "Ajouter un nom…",
+      "maxReached": "Maximum atteint",
+      "lockedElim": "Partie en cours — pas de changement",
+      "minPlayers": "Au moins 2 joueurs actifs requis.",
+      "loadingMembers": "Chargement des membres…",
+      "startGame": "Démarrer la partie"
+    },
+    "modes": {
+      "classic": "Classique",
+      "classicDesc": "Un tour, une honte.",
+      "elim": "Élimination",
+      "elimDesc": "Le dernier dans la roue perd."
+    },
+    "game": {
+      "spin": "TOURNER",
+      "back": "Config",
+      "reset": "Réinitialiser"
+    },
+    "result": {
+      "jackpot": "JACKPOT",
+      "bears": "porte la",
+      "shame": "Honte",
+      "consequencePrefix": "… et",
+      "tapToClose": "Tape pour fermer"
+    },
+    "elim": {
+      "eliminated": "Éliminé",
+      "safe": "est sauvé"
+    }
+  },
+  "tabelle": {
+    "eyebrow": "Mur de la Honte",
+    "title": "Classement de la Honte",
+    "subtitle": "Qui a perdu combien de fois.",
+    "soloLabel": "Classement solo",
+    "spinsLabel": "Tours",
+    "spinLabel": "Tour",
+    "losersLabel": "Perdants",
+    "ranges": {
+      "week": "Semaine",
+      "month": "Mois",
+      "year": "Année",
+      "all": "Tout"
+    },
+    "emptyAll": "Encore aucune honte dans la base. Fais tourner la roue.",
+    "emptyRange": "Aucune entrée pour cette période.",
+    "clear": "Vider le classement",
+    "ownerOnly": "(owner)",
+    "confirmTitle": "Tout supprimer vraiment ?",
+    "confirmText": "Tout le classement sera supprimé définitivement. Tous les résultats partis.",
+    "deleteFinal": "Supprimer définitivement",
+    "deleting": "Suppression…"
+  },
+  "crew": {
+    "list": {
+      "eyebrow": "Mur des Équipes",
+      "titlePre": "Tes",
+      "titleAccent": "Équipes",
+      "subtitle": "Change d'équipe ou créé en une nouvelle.",
+      "currentLabel": "Actuel :",
+      "solo": "Solo",
+      "emptyTitle": "Tu joues en solo",
+      "emptyText": "Crée une équipe et partage le code avec tes amis, ou rejoins une équipe existante.",
+      "createCta": "Créer une équipe",
+      "joinCta": "Rejoindre avec un code",
+      "soloCardTitle": "Mode solo",
+      "soloCardText": "Privé. Toi seul vois tes tours solo.",
+      "membersOne": "membre",
+      "membersMany": "membres",
+      "activate": "Activer",
+      "open": "Ouvrir",
+      "newCrew": "Nouvelle équipe",
+      "joinShort": "Rejoindre",
+      "createSectionEyebrow": "Nouveau",
+      "createSectionTitle": "Créer une équipe",
+      "createSectionText": "Tu seras owner. Un code est généré automatiquement.",
+      "createPlaceholder": "ex. La Bande des Soifards",
+      "creating": "Création…",
+      "create": "Créer",
+      "joinSectionEyebrow": "Code",
+      "joinSectionTitle": "Rejoindre avec un code",
+      "joinSectionText": "Demande à l'owner le code à 6 caractères.",
+      "joining": "Rejoindre…",
+      "join": "Rejoindre"
+    },
+    "detail": {
+      "back": "Équipes",
+      "activeCrew": "Équipe active",
+      "setActive": "Activer",
+      "code": "Code d'équipe",
+      "members": "Membres",
+      "settings": "Réglages d'équipe",
+      "defaultMode": "Mode par défaut",
+      "defaultModeHint": "Pré-sélectionné à l'ouverture de la roue.",
+      "consequences": "Modèles de conséquences",
+      "consequencesHint": "Affiché aléatoirement au résultat.",
+      "consequencePlaceholder": "ex. paie une tournée",
+      "dangerZone": "Attention",
+      "dangerTitle": "Quitter l'équipe",
+      "ownerDangerText": "En tant qu'owner, tu peux supprimer l'équipe ou transférer la propriété (icône couronne).",
+      "memberDangerText": "Tu quittes l'équipe. Tes tours restent dans le classement.",
+      "deleteCrew": "Supprimer l'équipe",
+      "leaveCrew": "Quitter l'équipe",
+      "deleteConfirmTitle": "Supprimer l'équipe ?",
+      "deleteConfirmText": "Tous les membres sortent, tous les tours sont supprimés. Irréversible.",
+      "leaveConfirmTitle": "Quitter l'équipe ?",
+      "leaveConfirmText": "Tu quittes. Tu peux revenir avec le code.",
+      "transferConfirmTitle": "Transférer la propriété ?",
+      "transferConfirmText": "devient nouveau owner avec tous les privilèges. Tu deviens membre normal.",
+      "transfer": "Transférer",
+      "transferring": "Transfert…",
+      "nick": "Surnom",
+      "nickPlaceholder": "Surnom"
+    },
+    "pill": {
+      "soloLabel": "Solo",
+      "newCrew": "Créer une équipe",
+      "joinCode": "Rejoindre avec un code",
+      "manage": "Gérer les équipes"
+    },
+    "join": {
+      "eyebrow": "Rejoindre",
+      "checking": "Vérification du code…",
+      "welcome": "Bienvenue",
+      "redirect": "Redirection…",
+      "errorTitle": "Ça n'a pas marché",
+      "errorText": "Code invalide ou équipe indisponible.",
+      "openCrews": "Ouvrir les équipes",
+      "home": "Accueil"
+    }
+  },
+  "stats": {
+    "halloShame": "Mur de la Honte",
+    "shameKing": "Roi de la Honte",
+    "shames": "Hontes",
+    "onFireTitle": "Sur la mauvaise pente",
+    "onFireSuffix": "de suite",
+    "rivalriesTitle": "Rivalités",
+    "headToHead": "Face-à-face",
+    "biggestBeef": "Plus gros conflit",
+    "spinsLabel": "Tours",
+    "streaksTitle": "Records de séries",
+    "currentPrefix": "actuel",
+    "emptyText": "Encore aucun tour dans cette équipe — fais tourner la roue pour des stats."
+  },
+  "settings": {
+    "title": "Réglages",
+    "appearance": "Apparence",
+    "appearanceHint": "Choisis ton thème préféré. Enregistré sur cet appareil.",
+    "themeDark": "Sombre",
+    "themeLight": "Clair",
+    "sound": "Son",
+    "soundHint": "Cliquetis mécaniques en tournant et fanfare jackpot à la victoire.",
+    "soundOn": "Activé",
+    "soundOff": "Coupé",
+    "language": "Langue",
+    "languageHint": "Synchronisé avec ton compte.",
+    "account": "Compte",
+    "accountHint": "Tu restes connecté jusqu'à la déconnexion.",
+    "signOut": "Se déconnecter"
+  },
+  "languages": {
+    "de": "Allemand",
+    "en": "Anglais",
+    "fr": "Français",
+    "es": "Espagnol"
+  }
+}
