@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { fetchPreferences } from "@/lib/preferences";
 
 export interface CrewSummary {
   id: string;
@@ -39,18 +40,19 @@ export function CrewProvider({ children }: { children: React.ReactNode }) {
   const [activeCrewId, setActiveCrewIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  // Crew-Liste immer frisch; Preferences via geteiltem Cache (dedupliziert
+  // mit Theme/Sound/i18n). force=true erzwingt frische Preferences.
+  const load = useCallback(async (force: boolean) => {
     try {
-      const [crewsRes, prefRes] = await Promise.all([
+      const [crewsRes, pref] = await Promise.all([
         fetch("/api/crews"),
-        fetch("/api/preferences"),
+        fetchPreferences(force),
       ]);
       if (crewsRes.ok) {
         const data = (await crewsRes.json()) as CrewSummary[];
         setCrews(Array.isArray(data) ? data : []);
       }
-      if (prefRes.ok) {
-        const pref = (await prefRes.json()) as { activeCrewId: string | null };
+      if (pref) {
         setActiveCrewIdState(pref.activeCrewId ?? null);
       }
     } catch {
@@ -60,9 +62,11 @@ export function CrewProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refresh = useCallback(() => load(true), [load]);
+
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void load(false);
+  }, [load]);
 
   const setActiveCrewId = useCallback(
     async (id: string | null) => {

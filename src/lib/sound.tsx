@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { fetchPreferences } from "@/lib/preferences";
 
 interface SoundCtx {
   muted: boolean;
@@ -14,14 +15,8 @@ const Ctx = createContext<SoundCtx | null>(null);
 const STORAGE_KEY = "rds-muted";
 
 async function loadFromServer(): Promise<boolean | null> {
-  try {
-    const res = await fetch("/api/preferences");
-    if (!res.ok) return null;
-    const data: { muted?: boolean } = await res.json();
-    return typeof data.muted === "boolean" ? data.muted : null;
-  } catch {
-    return null;
-  }
+  const data = await fetchPreferences();
+  return typeof data?.muted === "boolean" ? data.muted : null;
 }
 
 async function saveToServer(muted: boolean) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { fetchPreferences } from "@/lib/preferences";
 
 type Theme = "dark" | "light";
 
@@ -24,15 +25,9 @@ function applyToDOM(t: Theme) {
 }
 
 async function loadFromServer(): Promise<Theme | null> {
-  try {
-    const res = await fetch("/api/preferences");
-    if (!res.ok) return null;
-    const data: { theme?: Theme } = await res.json();
-    if (data.theme === "dark" || data.theme === "light") return data.theme;
-    return null;
-  } catch {
-    return null;
-  }
+  const data = await fetchPreferences();
+  if (data?.theme === "dark" || data?.theme === "light") return data.theme;
+  return null;
 }
 
 async function saveToServer(theme: Theme) {

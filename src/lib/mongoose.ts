@@ -20,7 +20,21 @@ export async function dbConnect() {
 
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
-    cached.promise = mongoose.connect(uri);
+    cached.promise = mongoose
+      .connect(uri, {
+        // Serverless-tuning: kleiner Pool (jede Lambda-Instanz hält eigenen),
+        // schnelles Fail bei Server-Auswahl, Commands nicht puffern.
+        maxPoolSize: 10,
+        minPoolSize: 0,
+        serverSelectionTimeoutMS: 8000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+      })
+      .catch((err) => {
+        // Fehlgeschlagene Verbindung NICHT cachen → nächster Request darf retryen.
+        cached.promise = null;
+        throw err;
+      });
   }
   cached.conn = await cached.promise;
   return cached.conn;

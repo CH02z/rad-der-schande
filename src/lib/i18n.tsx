@@ -12,6 +12,7 @@ import deMessages from "@/messages/de.json";
 import enMessages from "@/messages/en.json";
 import frMessages from "@/messages/fr.json";
 import esMessages from "@/messages/es.json";
+import { fetchPreferences } from "@/lib/preferences";
 
 export type Locale = "de" | "en" | "fr" | "es";
 export const LOCALES: Locale[] = ["de", "en", "fr", "es"];
@@ -55,14 +56,10 @@ function detectBrowserLocale(): Locale {
 }
 
 async function loadFromServer(): Promise<Locale | null> {
-  try {
-    const res = await fetch("/api/preferences");
-    if (!res.ok) return null;
-    const data = (await res.json()) as { locale?: Locale };
-    if (data.locale && (LOCALES as string[]).includes(data.locale)) {
-      return data.locale;
-    }
-  } catch {}
+  const data = await fetchPreferences();
+  if (data?.locale && (LOCALES as string[]).includes(data.locale)) {
+    return data.locale;
+  }
   return null;
 }
 

@@ -22,44 +22,44 @@ export async function resolveDisplayNames(
 
   const dedup = Array.from(new Map(userIds.map((u) => [String(u), u])).values());
 
-  // 1) Nicknames aus crewMembers (auch von ehemaligen Mitgliedern, damit
-  //    historische Spins ihren Spitznamen behalten).
-  //    Wenn ein User mehrere Memberships hat (left + rejoined), nimm die
-  //    neueste mit gesetztem Nickname.
+  // Beide Lookups sind unabhängig → parallel ausführen (spart einen Round-Trip):
+  //  1) Nicknames aus crewMembers (auch von ehemaligen Mitgliedern, damit
+  //     historische Spins ihren Spitznamen behalten). Bei mehreren Memberships
+  //     (left + rejoined) gewinnt die neueste mit gesetztem Nickname.
+  //  2) users.name / email aus der Auth.js-Collection (über den raw Driver).
+  const client = await clientPromise;
+  const [aggregated, users] = await Promise.all([
+    crewId
+      ? CrewMember.aggregate<{ _id: Types.ObjectId; nickname: string }>([
+          {
+            $match: {
+              crewId,
+              userId: { $in: dedup },
+              nickname: { $ne: null },
+            },
+          },
+          { $sort: { joinedAt: -1 } },
+          {
+            $group: {
+              _id: "$userId",
+              nickname: { $first: "$nickname" },
+            },
+          },
+        ])
+      : Promise.resolve([] as { _id: Types.ObjectId; nickname: string }[]),
+    client
+      .db()
+      .collection("users")
+      .find({ _id: { $in: dedup } })
+      .project({ _id: 1, name: 1, email: 1 })
+      .toArray(),
+  ]);
+
   const nicknameMap = new Map<string, string>();
-  if (crewId) {
-    const aggregated = await CrewMember.aggregate<{
-      _id: Types.ObjectId;
-      nickname: string;
-    }>([
-      {
-        $match: {
-          crewId,
-          userId: { $in: dedup },
-          nickname: { $ne: null },
-        },
-      },
-      { $sort: { joinedAt: -1 } },
-      {
-        $group: {
-          _id: "$userId",
-          nickname: { $first: "$nickname" },
-        },
-      },
-    ]);
-    for (const m of aggregated) {
-      nicknameMap.set(String(m._id), m.nickname);
-    }
+  for (const m of aggregated) {
+    nicknameMap.set(String(m._id), m.nickname);
   }
 
-  // 2) users.name / email aus der Auth.js-Collection (über den raw Driver)
-  const client = await clientPromise;
-  const users = await client
-    .db()
-    .collection("users")
-    .find({ _id: { $in: dedup } })
-    .project({ _id: 1, name: 1, email: 1 })
-    .toArray();
   const userMap = new Map(
     users.map((u) => [String(u._id), { name: u.name as string | undefined, email: u.email as string | undefined }])
   );
