@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
+import VersionTag from "@/components/VersionTag";
 import { ThemeToggle, SoundToggle, LocaleSelector, PushToggle } from "./SettingsClient";
 import { useT } from "@/lib/i18n";
 
@@ -141,8 +142,10 @@ export default function SettingsBody({ user, signOutAction }: Props) {
           </form>
         </section>
 
-        <p className="text-center text-xs text-fg-faint pt-4">
+        <p className="flex items-center justify-center gap-2 text-center text-xs text-fg-faint pt-4">
           rad-der-schande.ch
+          <span aria-hidden>·</span>
+          <VersionTag />
         </p>
       </div>
     </main>

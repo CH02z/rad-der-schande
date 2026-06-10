@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, User, Check, Plus, KeyRound, Settings as Gear } from "lucide-react";
@@ -12,7 +13,13 @@ import CrewAvatar from "@/components/CrewAvatar";
  * Pill im TopNav (Desktop): zeigt aktive Crew (oder Solo) + Dropdown
  * zum Wechseln. Auf Mobile via BottomNav-Tab erreichbar.
  */
-export default function CrewPill() {
+export default function CrewPill({
+  userImage,
+  userName,
+}: {
+  userImage?: string | null;
+  userName?: string | null;
+} = {}) {
   const { crews, activeCrewId, activeCrew, setActiveCrewId, loading } = useCrew();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -32,7 +39,7 @@ export default function CrewPill() {
   if (loading) {
     return (
       <div
-        className="hidden sm:inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold animate-pulse"
+        className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold animate-pulse"
         style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
       >
         <span className="w-4 h-4 rounded-full bg-fg-mute/30" />
@@ -44,7 +51,7 @@ export default function CrewPill() {
   const label = activeCrew?.name ?? "Solo";
 
   return (
-    <div ref={wrapRef} className="relative hidden sm:block">
+    <div ref={wrapRef} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
         className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3 py-1 text-sm font-semibold transition-all"
@@ -60,6 +67,14 @@ export default function CrewPill() {
             color={activeCrew.accentColor}
             size={24}
           />
+        ) : userImage ? (
+          <Image
+            src={userImage}
+            alt={userName ?? "Solo"}
+            width={24}
+            height={24}
+            className="rounded-full"
+          />
         ) : (
           <span
             className="grid place-items-center w-6 h-6 rounded-full"
@@ -68,7 +83,7 @@ export default function CrewPill() {
             <User size={13} strokeWidth={2.4} />
           </span>
         )}
-        <span className="max-w-[160px] truncate">{label}</span>
+        <span className="max-w-[40vw] sm:max-w-[160px] truncate">{label}</span>
         <ChevronDown
           size={14}
           strokeWidth={2.4}
@@ -83,7 +98,7 @@ export default function CrewPill() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.96 }}
             transition={{ duration: 0.16 }}
-            className="absolute right-0 top-[calc(100%+8px)] w-72 rounded-2xl overflow-hidden z-50"
+            className="absolute right-0 top-[calc(100%+8px)] w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl overflow-hidden z-50"
             style={{
               background: "linear-gradient(180deg, var(--panel-top), var(--panel-bottom))",
               border: "1px solid var(--border-strong)",
@@ -101,12 +116,22 @@ export default function CrewPill() {
                 }}
                 className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-fg/5 text-left transition"
               >
-                <div
-                  className="grid place-items-center w-8 h-8 rounded-lg"
-                  style={{ background: "var(--surface)", color: "var(--text-soft)" }}
-                >
-                  <User size={15} />
-                </div>
+                {userImage ? (
+                  <Image
+                    src={userImage}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className="rounded-lg"
+                  />
+                ) : (
+                  <div
+                    className="grid place-items-center w-8 h-8 rounded-lg"
+                    style={{ background: "var(--surface)", color: "var(--text-soft)" }}
+                  >
+                    <User size={15} />
+                  </div>
+                )}
                 <span className="flex-1 text-fg">Solo</span>
                 {activeCrewId === null && (
                   <Check size={16} className="text-gold-bright" strokeWidth={2.6} />

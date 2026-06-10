@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import BrandMark from "@/components/BrandMark";
 import BindingDecree from "@/components/BindingDecree";
+import VersionTag from "@/components/VersionTag";
 import { useT, LOCALES, type Locale } from "@/lib/i18n";
 
 /* === Edles Casino-Rad — Gold-Bezel mit Studs, Juwel-Hub === */
@@ -535,7 +536,11 @@ export default function Landing() {
             <Link href="/agb" className="text-fg-mute hover:text-fg-soft transition">{t("legal.nav.terms")}</Link>
             <BindingDecree variant="link" />
           </nav>
-          <p className="text-center text-xs text-fg-faint">{t("landing.footer")}</p>
+          <p className="flex flex-wrap items-center justify-center gap-2 text-center text-xs text-fg-faint">
+            <span>{t("landing.footer")}</span>
+            <span aria-hidden>·</span>
+            <VersionTag />
+          </p>
         </div>
       </footer>
     </main>

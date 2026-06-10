@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Settings, Dices, Trophy, Users } from "lucide-react";
@@ -30,9 +29,11 @@ export default function TopNav({ user }: Props) {
   return (
     <header className="max-w-5xl mx-auto mb-6 sm:mb-10">
       <div className="flex items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <BrandMark size={28} />
-          <span className="font-display font-extrabold tracking-tight text-base sm:text-xl text-fg">
+        <Link href="/" className="flex items-center gap-2.5 min-w-0">
+          <span className="shrink-0">
+            <BrandMark size={28} />
+          </span>
+          <span className="font-display font-extrabold tracking-tight text-base sm:text-xl text-fg truncate">
             Rad der <span className="gradient-shame">Schande</span>
           </span>
         </Link>
@@ -56,26 +57,17 @@ export default function TopNav({ user }: Props) {
           })}
         </nav>
 
-        {/* Desktop: Crew-Pill + User + Settings */}
-        <div className="hidden sm:flex items-center gap-2">
-          <CrewPill />
-          <Link href="/settings" className="btn-ghost" aria-label={t("nav.settings")}>
+        {/* Crew-Switcher (immer sichtbar — zeigt Solo/Crew) + Settings (Desktop) */}
+        <div className="flex items-center gap-2 shrink-0">
+          <CrewPill userImage={user?.image} userName={user?.name} />
+          <Link
+            href="/settings"
+            className="btn-ghost hidden sm:inline-flex"
+            aria-label={t("nav.settings")}
+          >
             <Settings size={16} />
           </Link>
         </div>
-
-        {/* Mobile: Avatar */}
-        {user?.image && (
-          <div className="sm:hidden">
-            <Image
-              src={user.image}
-              alt={user.name ?? ""}
-              width={32}
-              height={32}
-              className="rounded-full border border-fg/10"
-            />
-          </div>
-        )}
       </div>
     </header>
   );
