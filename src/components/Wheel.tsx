@@ -588,7 +588,11 @@ export default function Wheel() {
   }
 
   function backToSetup() {
-    if (spinning) return;
+    // Auch während des Spins erlaubt: laufenden Spin abbrechen und zurück.
+    if (spinning) {
+      setSpinning(false);
+      velRef.current = IDLE_VELOCITY;
+    }
     if (originalRoster) {
       setRoster((prev) => {
         const inSet = new Set(originalRoster.map(makeKey));
@@ -888,7 +892,6 @@ export default function Wheel() {
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <button
                 onClick={backToSetup}
-                disabled={spinning}
                 className="btn-ghost"
               >
                 <ArrowLeft size={16} />

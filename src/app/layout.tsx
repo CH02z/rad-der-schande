@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { auth } from "@/auth";
 import Providers from "@/components/Providers";
 import BottomNav from "@/components/BottomNav";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -49,7 +50,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Auth-Status server-seitig bestimmen → BottomNav erscheint nur für
+  // eingeloggte User (ausgeloggt auf der Landing/Legal: gar keine Navbar).
+  const session = await auth();
+  const authed = !!session?.user;
+
   return (
     <html lang="de" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
@@ -58,7 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans">
         <Providers>
           {children}
-          <BottomNav />
+          <BottomNav authed={authed} />
         </Providers>
         <Analytics />
         <SpeedInsights />

@@ -13,7 +13,7 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.2.2";
 
 export interface ChangelogEntry {
   version: string;
@@ -23,6 +23,18 @@ export interface ChangelogEntry {
 
 /** Neueste Version zuoberst. */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.2.2",
+    date: "2026-06-10",
+    summary:
+      "Fixes: Zurück-Button bricht jetzt auch einen laufenden Spin ab. Beitritt via Join-Link führt nach dem Login wirklich in die Crew (callbackUrl). Wording neutralisiert — das Rad entscheidet generisch über die Schande, nicht präjudiziert auf «zahlen».",
+  },
+  {
+    version: "1.2.1",
+    date: "2026-06-10",
+    summary:
+      "Fix: BottomNav (Mobile) erscheint nur noch für eingeloggte User — ausgeloggt auf Landing/Legal ist die Navbar komplett weg (Auth-Status server-seitig im Layout bestimmt).",
+  },
   {
     version: "1.2.0",
     date: "2026-06-10",

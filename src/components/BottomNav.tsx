@@ -10,10 +10,12 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export default function BottomNav() {
+export default function BottomNav({ authed = false }: { authed?: boolean }) {
   const pathname = usePathname();
   const { t } = useT();
 
+  // Nur für eingeloggte User. Ausgeloggt (Landing, Legal, Login) → keine Navbar.
+  if (!authed) return null;
   if (pathname === "/login") return null;
 
   const ITEMS = [
