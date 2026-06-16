@@ -74,7 +74,7 @@
       "private": "Privat",
       "privateText": "Nur eingeladene Crew-Mitglieder sehen die Tabelle.",
       "sound": "Casino-Sound",
-      "soundText": "Mechanische Ticks beim Drehen, Jackpot beim Gewinn.",
+      "soundText": "Casino-Hintergrundmusik, markante Ticks beim Drehen, Fanfare beim Gewinn.",
       "idle": "Idle-Modus",
       "idleText": "Das Rad lebt — dreht sich auch ohne Spin gemütlich weiter."
     },
@@ -123,10 +123,11 @@
     "game": {
       "spin": "DREHEN",
       "back": "Setup",
-      "reset": "Zurücksetzen"
+      "reset": "Zurücksetzen",
+      "dragHint": "Stoss das Rad an – oder tippe DREHEN"
     },
     "result": {
-      "jackpot": "JACKPOT",
+      "jackpot": "GEWINNER",
       "bears": "trägt die",
       "shame": "Schande",
       "consequencePrefix": "… und",
@@ -276,7 +277,7 @@
     "themeDark": "Dunkel",
     "themeLight": "Hell",
     "sound": "Sound",
-    "soundHint": "Casino-Ticks beim Drehen und Jackpot-Fanfare beim Gewinnen.",
+    "soundHint": "Casino-Hintergrundmusik im Spielmodus, markante Ticks beim Drehen, Fanfare beim Gewinn.",
     "soundOn": "An",
     "soundOff": "Aus",
     "push": "Push-Benachrichtigungen",

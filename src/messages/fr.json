@@ -74,7 +74,7 @@
       "private": "Privé",
       "privateText": "Seuls les membres invités voient le classement.",
       "sound": "Son de casino",
-      "soundText": "Cliquetis mécaniques pendant la rotation, jackpot à la victoire.",
+      "soundText": "Musique d'ambiance casino, cliquetis marqués en tournant, fanfare à la victoire.",
       "idle": "Mode veille",
       "idleText": "La roue vit — elle tourne doucement même sans partie."
     },
@@ -123,10 +123,11 @@
     "game": {
       "spin": "TOURNER",
       "back": "Config",
-      "reset": "Réinitialiser"
+      "reset": "Réinitialiser",
+      "dragHint": "Lance la roue – ou appuie sur TOURNER"
     },
     "result": {
-      "jackpot": "JACKPOT",
+      "jackpot": "GAGNANT",
       "bears": "porte la",
       "shame": "Honte",
       "consequencePrefix": "… et",
@@ -276,7 +277,7 @@
     "themeDark": "Sombre",
     "themeLight": "Clair",
     "sound": "Son",
-    "soundHint": "Cliquetis mécaniques en tournant et fanfare jackpot à la victoire.",
+    "soundHint": "Musique d'ambiance casino en mode jeu, cliquetis marqués en tournant, fanfare à la victoire.",
     "soundOn": "Activé",
     "soundOff": "Coupé",
     "push": "Notifications push",

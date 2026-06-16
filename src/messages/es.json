@@ -74,7 +74,7 @@
       "private": "Privado",
       "privateText": "Solo miembros invitados ven la tabla.",
       "sound": "Sonido de casino",
-      "soundText": "Clics mecánicos al girar, jackpot al ganar.",
+      "soundText": "Música de casino de fondo, clics marcados al girar, fanfarria al ganar.",
       "idle": "Modo reposo",
       "idleText": "La rueda vive — gira suavemente incluso sin jugar."
     },
@@ -123,10 +123,11 @@
     "game": {
       "spin": "GIRAR",
       "back": "Config",
-      "reset": "Resetear"
+      "reset": "Resetear",
+      "dragHint": "Empuja la rueda – o pulsa GIRAR"
     },
     "result": {
-      "jackpot": "JACKPOT",
+      "jackpot": "GANADOR",
       "bears": "carga con la",
       "shame": "Vergüenza",
       "consequencePrefix": "… y",
@@ -276,7 +277,7 @@
     "themeDark": "Oscuro",
     "themeLight": "Claro",
     "sound": "Sonido",
-    "soundHint": "Clics mecánicos al girar y fanfarria de jackpot al ganar.",
+    "soundHint": "Música de casino en modo juego, clics marcados al girar, fanfarria al ganar.",
     "soundOn": "Activado",
     "soundOff": "Desactivado",
     "push": "Notificaciones push",

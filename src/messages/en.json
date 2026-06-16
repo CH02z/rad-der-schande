@@ -74,7 +74,7 @@
       "private": "Private",
       "privateText": "Only invited crew members see the table.",
       "sound": "Casino sound",
-      "soundText": "Mechanical ticks while spinning, jackpot on win.",
+      "soundText": "Casino background music, punchy ticks while spinning, fanfare on win.",
       "idle": "Idle mode",
       "idleText": "The wheel lives — it keeps spinning gently even without a game."
     },
@@ -123,10 +123,11 @@
     "game": {
       "spin": "SPIN",
       "back": "Setup",
-      "reset": "Reset"
+      "reset": "Reset",
+      "dragHint": "Flick the wheel – or tap SPIN"
     },
     "result": {
-      "jackpot": "JACKPOT",
+      "jackpot": "WINNER",
       "bears": "carries the",
       "shame": "Shame",
       "consequencePrefix": "… and",
@@ -276,7 +277,7 @@
     "themeDark": "Dark",
     "themeLight": "Light",
     "sound": "Sound",
-    "soundHint": "Casino ticks while spinning and jackpot fanfare on win.",
+    "soundHint": "Casino background music in play mode, punchy ticks while spinning, fanfare on win.",
     "soundOn": "On",
     "soundOff": "Off",
     "push": "Push notifications",

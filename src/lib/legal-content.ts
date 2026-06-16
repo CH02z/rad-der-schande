@@ -1,10 +1,10 @@
 /**
  * Rechtstexte für «Rad der Schande» — Impressum, Datenschutz (revDSG/DSGVO),
- * AGB. Rechtlich massgebend ist die deutsche Fassung; EN ist eine
- * Service-Übersetzung. FR/ES fallen auf EN zurück.
+ * AGB. Rechtlich massgebend ist die deutsche Fassung; EN/FR/ES sind
+ * Service-Übersetzungen mit denselben (realen) Betreiberangaben.
  *
- * ⚠️ PLATZHALTER: [Name des Betreibers], [Strasse Nr.], [PLZ Ort] müssen vom
- * Betreiber mit den realen Angaben ersetzt werden. Kontakt-E-Mail ist gesetzt.
+ * Betreiberangaben sind in allen Sprachen gesetzt (Chris Zimmermann,
+ * Obstgartenstrasse 26, 8136 Gattikon, Schweiz; Kontakt: czi.swiss@gmail.com).
  *
  * Alle Werte stehen in Backticks → Anführungszeichen im Text sind unkritisch.
  */
@@ -212,10 +212,10 @@ const EN: Record<LegalDoc, LegalContent> = {
     sections: [
       {
         h: `Operator`,
-        p: [`[Operator name]`, `[Street No.]`, `[Postal code City], Switzerland`],
+        p: [`Chris Zimmermann`, `Obstgartenstrasse 26`, `8136 Gattikon, Switzerland`],
       },
       { h: `Contact`, p: [`E-mail: ${CONTACT_EMAIL}`, `Web: ${SITE}`] },
-      { h: `Authorised representative`, p: [`[Operator name]`] },
+      { h: `Authorised representative`, p: [`Chris Zimmermann`] },
       {
         h: `Disclaimer`,
         p: [
@@ -246,7 +246,7 @@ const EN: Record<LegalDoc, LegalContent> = {
         h: `1. Controller`,
         p: [
           `The controller responsible for data processing is:`,
-          `[Operator name], [Street No.], [Postal code City], Switzerland.`,
+          `Chris Zimmermann, Obstgartenstrasse 26, 8136 Gattikon, Switzerland.`,
           `Privacy contact: ${CONTACT_EMAIL}.`,
         ],
       },
@@ -380,11 +380,367 @@ const EN: Record<LegalDoc, LegalContent> = {
   },
 };
 
-export const LEGAL_CONTENT = { de: DE, en: EN } as const;
+/* ============================================================ FR ========= */
 
-/** Wählt die Inhaltssprache: DE für locale 'de', sonst EN (FR/ES → EN). */
+const FR: Record<LegalDoc, LegalContent> = {
+  impressum: {
+    title: `Mentions légales (Impressum)`,
+    intro: `Informations selon l'art. 3 al. 1 let. s LCD (loi suisse contre la concurrence déloyale).`,
+    sections: [
+      {
+        h: `Exploitant`,
+        p: [`Chris Zimmermann`, `Obstgartenstrasse 26`, `8136 Gattikon, Suisse`],
+      },
+      { h: `Contact`, p: [`E-mail: ${CONTACT_EMAIL}`, `Web: ${SITE}`] },
+      { h: `Personne autorisée à représenter`, p: [`Chris Zimmermann`] },
+      {
+        h: `Clause de non-responsabilité`,
+        p: [
+          `Les contenus de cette application ont été élaborés avec le plus grand soin. L'exploitant n'assume toutefois aucune garantie quant à l'exactitude, l'exhaustivité et l'actualité des contenus fournis.`,
+          `«Rad der Schande» est un outil de divertissement gratuit. Le générateur aléatoire (la roue) sert uniquement au divertissement; ses résultats ne créent aucune prétention juridiquement exécutoire entre les participants.`,
+          `Les prétentions en responsabilité à l'encontre de l'exploitant pour des dommages de nature matérielle ou immatérielle résultant de l'accès à l'application ou de son utilisation (ou non-utilisation) sont exclues dans la mesure permise par la loi.`,
+        ],
+      },
+      {
+        h: `Responsabilité pour les liens`,
+        p: [
+          `Cette application peut contenir des renvois vers des sites de tiers (p. ex. la connexion Google). L'exploitant n'a aucune influence sur leur contenu et n'en assume aucune responsabilité. Le fournisseur respectif est toujours responsable du contenu des pages liées.`,
+        ],
+      },
+      {
+        h: `Droit d'auteur`,
+        p: [
+          `Les contenus et œuvres créés par l'exploitant sont soumis au droit d'auteur suisse. La reproduction, l'édition et toute forme d'exploitation en dehors des limites du droit d'auteur requièrent le consentement écrit de l'exploitant.`,
+        ],
+      },
+    ],
+  },
+  datenschutz: {
+    title: `Politique de confidentialité`,
+    intro: `Cette déclaration informe sur le traitement des données personnelles au sens de la nouvelle loi fédérale suisse sur la protection des données (nLPD) et – dans la mesure applicable – du règlement général de l'UE sur la protection des données (RGPD).`,
+    sections: [
+      {
+        h: `1. Responsable du traitement`,
+        p: [
+          `Le responsable du traitement des données est:`,
+          `Chris Zimmermann, Obstgartenstrasse 26, 8136 Gattikon, Suisse.`,
+          `Contact pour les questions de protection des données: ${CONTACT_EMAIL}.`,
+        ],
+      },
+      {
+        h: `2. Quelles données nous traitons`,
+        p: [
+          `Données de connexion (login Google): nom, adresse e-mail et photo de profil de votre compte Google. Nous ne recevons aucun mot de passe.`,
+          `Données d'utilisation: les crews que vous créez ou rejoignez, les codes d'invitation, les surnoms ainsi que les résultats de tirage enregistrés (spins), y compris les participants, le perdant, le mode et l'horodatage.`,
+          `Données d'appareil/push: si les notifications sont activées, un abonnement push de votre navigateur (endpoint et clés).`,
+          `Réglages: langue et thème (clair/sombre), enregistrés par compte ainsi que localement dans votre navigateur.`,
+        ],
+      },
+      {
+        h: `3. Finalités et bases légales`,
+        p: [
+          `Le traitement est effectué pour vous fournir le service (connexion, crews, tableau de la honte, statistiques), pour envoyer des notifications push et pour enregistrer vos réglages.`,
+          `La base légale est l'exécution ou la fourniture du service que vous utilisez ainsi que votre consentement (p. ex. pour les notifications push), que vous pouvez révoquer à tout moment.`,
+        ],
+      },
+      {
+        h: `4. Cookies et stockage local`,
+        p: [
+          `Nous utilisons exclusivement des cookies techniquement nécessaires pour maintenir votre session de connexion (cookie de session d'Auth.js). Ils sont indispensables au fonctionnement.`,
+          `Nous enregistrons en outre des réglages (langue, thème, crew active, avis sur les cookies) localement dans votre navigateur (localStorage). Il n'y a ni suivi, ni profilage, ni publicité.`,
+        ],
+      },
+      {
+        h: `5. Hébergement et sous-traitants`,
+        p: [
+          `L'application est hébergée chez Vercel Inc. (États-Unis). Des journaux de serveur techniquement nécessaires (p. ex. adresse IP, horodatage, type de navigateur) peuvent être générés.`,
+          `Les données sont stockées dans une base de données MongoDB (MongoDB Atlas). L'authentification est assurée par Google (Google Ireland Ltd. / Google LLC).`,
+          `Pour les transferts vers des pays n'offrant pas un niveau de protection équivalent, nous nous appuyons sur des garanties appropriées (p. ex. clauses contractuelles types).`,
+        ],
+      },
+      {
+        h: `6. Transmission à des tiers`,
+        p: [
+          `Nous ne vendons pas vos données et ne les transmettons pas à des fins publicitaires. Une communication n'a lieu qu'aux sous-traitants mentionnés ci-dessus, dans la mesure nécessaire à l'exploitation, ou lorsque nous y sommes légalement tenus.`,
+          `Au sein d'une crew, vos résultats de tirage affichés et votre (sur)nom sont visibles pour les autres membres actifs de cette crew.`,
+        ],
+      },
+      {
+        h: `7. Conservation et suppression`,
+        p: [
+          `Nous ne conservons les données que le temps nécessaire aux finalités indiquées. Vous pouvez quitter des crews, vider des tableaux (si vous y êtes autorisé) et désactiver les notifications push.`,
+          `Sur demande à ${CONTACT_EMAIL}, nous supprimons votre compte et les données associées.`,
+        ],
+      },
+      {
+        h: `8. Vos droits`,
+        p: [
+          `Vous avez le droit d'accès, de rectification, de suppression et de remise de vos données, ainsi que le droit de vous opposer à certains traitements. Adressez-vous pour cela à l'adresse de contact indiquée ci-dessus.`,
+          `Vous avez en outre le droit de déposer une réclamation auprès du Préposé fédéral à la protection des données et à la transparence (PFPDT).`,
+        ],
+      },
+      {
+        h: `9. Modifications`,
+        p: [
+          `Nous pouvons adapter cette politique de confidentialité. La version publiée sur cette page fait foi.`,
+        ],
+      },
+    ],
+  },
+  agb: {
+    title: `Conditions d'utilisation`,
+    intro: `Ces conditions d'utilisation régissent l'utilisation de l'application «Rad der Schande» (ci-après le «Service»).`,
+    sections: [
+      {
+        h: `1. Champ d'application`,
+        p: [
+          `En utilisant le Service, vous acceptez ces conditions. Si elles ne s'appliquent pas à vous, veuillez ne pas utiliser le Service.`,
+        ],
+      },
+      {
+        h: `2. Description du Service`,
+        p: [
+          `Le Service est un outil de divertissement gratuit et sans publicité. Une roue de la fortune virtuelle désigne aléatoirement une personne au sein d'un groupe (qui porte la honte). Les utilisateurs peuvent former des crews privées, consigner les résultats dans un tableau commun et consulter des statistiques.`,
+        ],
+      },
+      {
+        h: `3. Compte et inscription`,
+        p: [
+          `L'utilisation nécessite une connexion via un compte Google. Vous êtes responsable de la confidentialité de vos identifiants et des activités effectuées sous votre compte.`,
+        ],
+      },
+      {
+        h: `4. Règles de conduite`,
+        p: [
+          `Vous vous engagez à ne pas utiliser le Service de manière abusive, à ne pas saisir de contenus illicites, injurieux ou portant atteinte aux droits de tiers (p. ex. comme noms ou surnoms) et à respecter les droits des tiers.`,
+          `L'exploitant peut supprimer des contenus ou bloquer des comptes qui enfreignent ces règles.`,
+        ],
+      },
+      {
+        h: `5. Aucun résultat juridiquement contraignant`,
+        p: [
+          `La roue est un pur générateur aléatoire à des fins de divertissement. Les résultats ne créent aucune obligation juridiquement exécutoire entre les participants. Ce que vous en faites entre vous relève uniquement de votre libre arbitre.`,
+          `Les éventuelles «déclarations contraignantes» au sein du Service sont à prendre au second degré et n'ont aucun effet juridique.`,
+        ],
+      },
+      {
+        h: `6. Disponibilité et garantie`,
+        p: [
+          `Le Service est fourni en l'état et sans aucune garantie. Il n'existe aucun droit à une disponibilité ininterrompue, à un fonctionnement sans erreur ou à une conservation permanente des données.`,
+        ],
+      },
+      {
+        h: `7. Responsabilité`,
+        p: [
+          `Dans la mesure permise par la loi, la responsabilité de l'exploitant pour les dommages résultant de l'utilisation ou de la non-utilisation du Service est exclue. La responsabilité pour faute intentionnelle et négligence grave demeure réservée.`,
+        ],
+      },
+      {
+        h: `8. Résiliation`,
+        p: [
+          `Vous pouvez cesser d'utiliser le Service à tout moment, quitter des crews ou demander la suppression de votre compte. L'exploitant peut interrompre le Service en tout ou en partie à tout moment.`,
+        ],
+      },
+      {
+        h: `9. Droit applicable et for`,
+        p: [
+          `Le droit suisse s'applique exclusivement, à l'exclusion des règles de conflit de lois. Le for exclusif est – dans la mesure permise par la loi – le siège de l'exploitant en Suisse.`,
+        ],
+      },
+      {
+        h: `10. Dispositions finales`,
+        p: [
+          `Si certaines dispositions devaient être invalides, la validité des autres dispositions n'en serait pas affectée. L'exploitant peut adapter ces conditions; la version publiée à un moment donné fait foi.`,
+        ],
+      },
+    ],
+  },
+};
+
+/* ============================================================ ES ========= */
+
+const ES: Record<LegalDoc, LegalContent> = {
+  impressum: {
+    title: `Aviso legal (Impressum)`,
+    intro: `Información según el art. 3 párr. 1 let. s de la Ley suiza contra la competencia desleal (LCD).`,
+    sections: [
+      {
+        h: `Operador`,
+        p: [`Chris Zimmermann`, `Obstgartenstrasse 26`, `8136 Gattikon, Suiza`],
+      },
+      { h: `Contacto`, p: [`Correo electrónico: ${CONTACT_EMAIL}`, `Web: ${SITE}`] },
+      { h: `Persona autorizada para representar`, p: [`Chris Zimmermann`] },
+      {
+        h: `Descargo de responsabilidad`,
+        p: [
+          `Los contenidos de esta aplicación se han elaborado con el mayor cuidado posible. No obstante, el operador no asume ninguna garantía sobre la exactitud, integridad y actualidad de los contenidos facilitados.`,
+          `«Rad der Schande» es una herramienta de entretenimiento gratuita. El generador aleatorio (la rueda) sirve exclusivamente para el entretenimiento; sus resultados no generan ninguna pretensión jurídicamente exigible entre los participantes.`,
+          `Quedan excluidas, en la medida en que lo permita la ley, las reclamaciones de responsabilidad contra el operador por daños de naturaleza material o inmaterial derivados del acceso a la aplicación o de su uso (o no uso).`,
+        ],
+      },
+      {
+        h: `Responsabilidad por enlaces`,
+        p: [
+          `Esta aplicación puede contener referencias a sitios web de terceros (p. ej. el inicio de sesión con Google). El operador no tiene influencia sobre su contenido y no asume ninguna responsabilidad por él. El respectivo proveedor es siempre responsable del contenido de las páginas enlazadas.`,
+        ],
+      },
+      {
+        h: `Derechos de autor`,
+        p: [
+          `Los contenidos y obras creados por el operador están sujetos a la legislación suiza sobre derechos de autor. La reproducción, edición y cualquier tipo de explotación fuera de los límites de los derechos de autor requieren el consentimiento por escrito del operador.`,
+        ],
+      },
+    ],
+  },
+  datenschutz: {
+    title: `Política de privacidad`,
+    intro: `Esta declaración informa sobre el tratamiento de datos personales en el sentido de la nueva Ley federal suiza de protección de datos (nLPD) y, en la medida aplicable, del Reglamento general de protección de datos de la UE (RGPD).`,
+    sections: [
+      {
+        h: `1. Responsable del tratamiento`,
+        p: [
+          `El responsable del tratamiento de los datos es:`,
+          `Chris Zimmermann, Obstgartenstrasse 26, 8136 Gattikon, Suiza.`,
+          `Contacto para cuestiones de protección de datos: ${CONTACT_EMAIL}.`,
+        ],
+      },
+      {
+        h: `2. Qué datos tratamos`,
+        p: [
+          `Datos de inicio de sesión (login de Google): nombre, dirección de correo electrónico y foto de perfil de tu cuenta de Google. No recibimos ninguna contraseña.`,
+          `Datos de uso: las crews que creas o a las que te unes, los códigos de invitación, los apodos, así como los resultados de giro registrados (spins), incluidos los participantes, el perdedor, el modo y la marca de tiempo.`,
+          `Datos de dispositivo/push: si activas las notificaciones, una suscripción push de tu navegador (endpoint y claves).`,
+          `Ajustes: idioma y tema (claro/oscuro), almacenados por cuenta y localmente en tu navegador.`,
+        ],
+      },
+      {
+        h: `3. Finalidades y bases jurídicas`,
+        p: [
+          `El tratamiento se realiza para prestarte el servicio (inicio de sesión, crews, tabla de la vergüenza, estadísticas), para enviar notificaciones push y para guardar tus ajustes.`,
+          `La base jurídica es la ejecución o prestación del servicio que utilizas, así como tu consentimiento (p. ej. para las notificaciones push), que puedes revocar en cualquier momento.`,
+        ],
+      },
+      {
+        h: `4. Cookies y almacenamiento local`,
+        p: [
+          `Utilizamos exclusivamente cookies técnicamente necesarias para mantener tu sesión de inicio de sesión (cookie de sesión de Auth.js). Son necesarias para el funcionamiento.`,
+          `Además, almacenamos ajustes (idioma, tema, crew activa, aviso de cookies) localmente en tu navegador (localStorage). No hay seguimiento, ni elaboración de perfiles, ni publicidad.`,
+        ],
+      },
+      {
+        h: `5. Alojamiento y encargados del tratamiento`,
+        p: [
+          `La aplicación está alojada en Vercel Inc. (EE. UU.). En este proceso pueden generarse registros de servidor técnicamente necesarios (p. ej. dirección IP, hora, tipo de navegador).`,
+          `Los datos se almacenan en una base de datos MongoDB (MongoDB Atlas). La autenticación se realiza a través de Google (Google Ireland Ltd. / Google LLC).`,
+          `Para las transferencias a países sin un nivel de protección equivalente, nos basamos en garantías adecuadas (p. ej. cláusulas contractuales tipo).`,
+        ],
+      },
+      {
+        h: `6. Comunicación a terceros`,
+        p: [
+          `No vendemos tus datos ni los compartimos con fines publicitarios. Solo se comunican a los encargados del tratamiento mencionados anteriormente, en la medida necesaria para el funcionamiento, o cuando estamos legalmente obligados a ello.`,
+          `Dentro de una crew, tus resultados de giro mostrados y tu nombre (o apodo) son visibles para los demás miembros activos de esa crew.`,
+        ],
+      },
+      {
+        h: `7. Conservación y supresión`,
+        p: [
+          `Conservamos los datos solo durante el tiempo necesario para las finalidades indicadas. Puedes abandonar crews, vaciar tablas (si estás autorizado) y desactivar las notificaciones push.`,
+          `Previa solicitud a ${CONTACT_EMAIL}, eliminaremos tu cuenta y los datos asociados.`,
+        ],
+      },
+      {
+        h: `8. Tus derechos`,
+        p: [
+          `Tienes derecho de acceso, rectificación, supresión y portabilidad de tus datos, así como a oponerte a determinados tratamientos. Para ello, dirígete a la dirección de contacto indicada anteriormente.`,
+          `Además, tienes derecho a presentar una reclamación ante el Encargado Federal de Protección de Datos y Transparencia de Suiza (EDÖB).`,
+        ],
+      },
+      {
+        h: `9. Cambios`,
+        p: [
+          `Podemos modificar esta política de privacidad. Rige la versión publicada en esta página.`,
+        ],
+      },
+    ],
+  },
+  agb: {
+    title: `Condiciones de uso`,
+    intro: `Estas condiciones de uso regulan el uso de la aplicación «Rad der Schande» (en adelante, el «Servicio»).`,
+    sections: [
+      {
+        h: `1. Ámbito de aplicación`,
+        p: [
+          `Al utilizar el Servicio, aceptas estas condiciones. Si no se aplican a ti, por favor no utilices el Servicio.`,
+        ],
+      },
+      {
+        h: `2. Descripción del Servicio`,
+        p: [
+          `El Servicio es una herramienta de entretenimiento gratuita y sin publicidad. Una rueda de la fortuna virtual selecciona aleatoriamente a una persona de un grupo (quién carga con la vergüenza). Los usuarios pueden formar crews privadas, registrar los resultados en una tabla compartida y consultar estadísticas.`,
+        ],
+      },
+      {
+        h: `3. Cuenta y registro`,
+        p: [
+          `El uso requiere iniciar sesión con una cuenta de Google. Eres responsable de mantener la confidencialidad de tus credenciales y de la actividad realizada con tu cuenta.`,
+        ],
+      },
+      {
+        h: `4. Normas de conducta`,
+        p: [
+          `Te comprometes a no utilizar el Servicio de forma abusiva, a no introducir contenidos ilícitos, ofensivos o que infrinjan derechos de terceros (p. ej. como nombres o apodos) y a respetar los derechos de terceros.`,
+          `El operador puede eliminar contenidos o bloquear cuentas que infrinjan estas normas.`,
+        ],
+      },
+      {
+        h: `5. Ningún resultado jurídicamente vinculante`,
+        p: [
+          `La rueda es un mero generador aleatorio con fines de entretenimiento. Los resultados no generan ninguna obligación jurídicamente exigible entre los participantes. Lo que hagáis con ello entre vosotros es asunto exclusivamente vuestro y voluntario.`,
+          `Las posibles «declaraciones vinculantes» dentro del Servicio se entienden con humor y no tienen ningún efecto jurídico.`,
+        ],
+      },
+      {
+        h: `6. Disponibilidad y garantía`,
+        p: [
+          `El Servicio se presta tal cual y sin garantía alguna. No existe derecho a una disponibilidad ininterrumpida, a un funcionamiento sin errores ni al almacenamiento permanente de los datos.`,
+        ],
+      },
+      {
+        h: `7. Responsabilidad`,
+        p: [
+          `En la medida en que lo permita la ley, queda excluida la responsabilidad del operador por daños derivados del uso o no uso del Servicio. No se ve afectada la responsabilidad por dolo y negligencia grave.`,
+        ],
+      },
+      {
+        h: `8. Terminación`,
+        p: [
+          `Puedes dejar de usar el Servicio en cualquier momento, abandonar crews o solicitar la supresión de tu cuenta. El operador puede suspender el Servicio total o parcialmente en cualquier momento.`,
+        ],
+      },
+      {
+        h: `9. Derecho aplicable y jurisdicción`,
+        p: [
+          `Se aplica exclusivamente el derecho suizo, con exclusión de las normas de conflicto de leyes. El fuero exclusivo es —en la medida en que lo permita la ley— la sede del operador en Suiza.`,
+        ],
+      },
+      {
+        h: `10. Disposiciones finales`,
+        p: [
+          `Si alguna disposición fuera inválida, la validez de las demás disposiciones no se verá afectada. El operador puede modificar estas condiciones; rige la versión publicada en cada momento.`,
+        ],
+      },
+    ],
+  },
+};
+
+export const LEGAL_CONTENT = { de: DE, en: EN, fr: FR, es: ES } as const;
+
+/** Wählt die Inhaltssprache pro Locale. DE ist rechtlich massgebend, die übrigen
+ *  Sprachen sind Service-Übersetzungen mit denselben Betreiberangaben. */
 export function getLegalContent(locale: string, doc: LegalDoc): LegalContent {
-  return locale === "de" ? DE[doc] : EN[doc];
+  const byLocale: Record<string, Record<LegalDoc, LegalContent>> = { de: DE, en: EN, fr: FR, es: ES };
+  return (byLocale[locale] ?? EN)[doc];
 }
 
 /** Massgeblichkeits-Hinweis nur anzeigen, wenn nicht-deutsche Fassung gezeigt wird. */

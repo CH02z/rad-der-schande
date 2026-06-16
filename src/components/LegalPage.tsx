@@ -7,10 +7,10 @@ import { useT } from "@/lib/i18n";
 import { getLegalContent, isAuthoritative, type LegalDoc } from "@/lib/legal-content";
 
 const LAST_UPDATED: Record<string, string> = {
-  de: "9. Juni 2026",
-  en: "9 June 2026",
-  fr: "9 juin 2026",
-  es: "9 de junio de 2026",
+  de: "16. Juni 2026",
+  en: "16 June 2026",
+  fr: "16 juin 2026",
+  es: "16 de junio de 2026",
 };
 
 const DOCS: LegalDoc[] = ["impressum", "datenschutz", "agb"];

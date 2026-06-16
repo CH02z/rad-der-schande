@@ -13,7 +13,7 @@
  * ───────────────────────────────────────────────────────────────────────────
  */
 
-export const APP_VERSION = "1.2.2";
+export const APP_VERSION = "1.3.0";
 
 export interface ChangelogEntry {
   version: string;
@@ -23,6 +23,12 @@ export interface ChangelogEntry {
 
 /** Neueste Version zuoberst. */
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: "1.3.0",
+    date: "2026-06-16",
+    summary:
+      "Hand-Spin: Das Rad lässt sich jetzt mit Maus/Finger anstossen und schleudern — natürliche Roulette-Physik in beide Richtungen, voll auf Mobile optimiert. Casino-Hintergrundmusik im Spielmodus plus lautere, markantere Peg-Ticks. Gewinner-Screen: «Jackpot» → «Gewinner» und sauber zentriert auf Mobile (kein schräges/abgeschnittenes Overlay mehr). Rechtstexte (Impressum/Datenschutz/AGB) samt Betreiberangaben jetzt vollständig in DE/EN/FR/ES.",
+  },
   {
     version: "1.2.2",
     date: "2026-06-10",

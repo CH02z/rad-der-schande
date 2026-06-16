@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, X, RotateCcw, Target, Swords, Check, ArrowLeft, ArrowRight,
   Users, UserPlus, RefreshCw,
 } from "lucide-react";
-import { tick, winFanfare, spinStart } from "@/lib/audio";
+import { tick, winFanfare, spinStart, startCasinoAmbience, stopCasinoAmbience } from "@/lib/audio";
 import { fireConfetti } from "@/lib/confetti";
 import { useSound } from "@/lib/sound";
 import { useCrew } from "@/lib/crew-context";
@@ -33,6 +33,13 @@ const VEL_DRAG = 0.20;
 const STOP_THRESHOLD = 0.05;
 const IDLE_VELOCITY = 0.32;
 
+// Hand-Spin (Drag/Flick): ab welcher Schleudergeschwindigkeit ein Wurf zählt
+// und die Bandbreite (rad/s), auf die der Auswurf gemappt wird. So fühlt sich
+// ein sanfter Anstoss kurz, ein kräftiger Flick lang an — wie ein echtes Rad.
+const THROW_MIN_VEL = 2.0;
+const MIN_LAUNCH_VEL = 7;
+const MAX_LAUNCH_VEL = 44;
+
 const FONT_PROBE = 100;
 const FONT_FALLBACK = 'system-ui, "Helvetica Neue", Arial, sans-serif';
 const FONT_WEIGHT = 800;
@@ -40,7 +47,7 @@ const FONT_MIN = 18;
 const FONT_MAX = 100;
 
 type Mode = "classic" | "elim";
-type Phase = "idle" | "spinning" | "stopped";
+type Phase = "idle" | "dragging" | "spinning" | "stopped";
 type View = "setup" | "game";
 
 /** Ein Teilnehmer am Rad — entweder Crew-Member (userId) oder Gast (null). */
@@ -110,6 +117,13 @@ export default function Wheel() {
   const rafRef = useRef<number | null>(null);
   const phaseRef = useRef<Phase>("idle");
 
+  // === Hand-Spin (Drag/Flick) ===
+  const pointerIdRef = useRef<number | null>(null);
+  const dragLastAngleRef = useRef(0);
+  const dragSpeedRef = useRef(0);
+  const dragMovedRef = useRef(0);
+  const dragSamplesRef = useRef<Array<{ t: number; a: number }>>([]);
+
   // === Roster-Refs (für RAF-Loop) ===
   const rosterRef = useRef<RosterEntry[]>(defaultSoloRoster());
   const modeRef = useRef<Mode>("classic");
@@ -123,6 +137,7 @@ export default function Wheel() {
   const [loadingRoster, setLoadingRoster] = useState(false);
   const [input, setInput] = useState("");
   const [spinning, setSpinning] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<RosterEntry | null>(null);
   const [resultConsequence, setResultConsequence] = useState<string | null>(null);
   const [winning, setWinning] = useState(false);
@@ -456,28 +471,37 @@ export default function Wheel() {
       const phase = phaseRef.current;
       const playingCount = rosterRef.current.filter((r) => r.included).length;
 
+      // Peg-Tick + Pointer-Kick bei jedem Segmentwechsel — für Spin UND Hand-Drag.
+      const emitSegmentTick = (speed: number) => {
+        if (playingCount <= 0) return;
+        const idx = segmentAtPointer(angleRef.current, playingCount);
+        if (lastSegRef.current !== null && idx !== lastSegRef.current) {
+          if (!mutedRef.current) tick(Math.max(0.3, Math.min(1, speed / 14)));
+          kickPointer(speed);
+        }
+        lastSegRef.current = idx;
+      };
+
       if (phase === "idle") {
         velRef.current = IDLE_VELOCITY;
         angleRef.current += IDLE_VELOCITY * dt;
+      } else if (phase === "dragging") {
+        // Winkel wird in den Pointer-Handlern direkt gesetzt; hier nur das
+        // taktile Feedback, damit es beim Drehen von Hand schon „klackert".
+        emitSegmentTick(Math.abs(dragSpeedRef.current));
       } else if (phase === "spinning") {
+        // Vorzeichenbehaftet → Hand-Spin funktioniert in beide Richtungen.
         const v = velRef.current;
-        const decel = BASE_DECEL + VEL_DRAG * v;
-        let newV = v - decel * dt;
-        if (newV < 0) newV = 0;
+        const speed = Math.abs(v);
+        const dir = Math.sign(v) || 1;
+        let newV = v - dir * (BASE_DECEL + VEL_DRAG * speed) * dt;
+        if (Math.sign(newV) !== Math.sign(v)) newV = 0; // nicht über 0 hinausschiessen
         angleRef.current += newV * dt;
         velRef.current = newV;
 
-        if (playingCount > 0) {
-          const idx = segmentAtPointer(angleRef.current, playingCount);
-          if (lastSegRef.current !== null && idx !== lastSegRef.current) {
-            const vol = Math.max(0.25, Math.min(1, v / 14));
-            if (!mutedRef.current) tick(vol);
-            kickPointer(v);
-          }
-          lastSegRef.current = idx;
-        }
+        emitSegmentTick(Math.abs(newV));
 
-        if (newV <= STOP_THRESHOLD) {
+        if (Math.abs(newV) <= STOP_THRESHOLD) {
           phaseRef.current = "stopped";
           angleRef.current = ((angleRef.current % TWO_PI) + TWO_PI) % TWO_PI;
           finishSpin();
@@ -497,19 +521,107 @@ export default function Wheel() {
     };
   }, [step]);
 
-  function spin() {
-    if (!canSpin) return;
+  // Casino-Hintergrundmusik im Spielmodus. Startet erst nach der Nutzer-Geste
+  // „Spiel starten" (AudioContext darf dann laufen) und stoppt beim Verlassen
+  // des Spielmodus, beim Stummschalten und beim Unmount.
+  useEffect(() => {
+    if (view === "game" && !muted) startCasinoAmbience();
+    else stopCasinoAmbience();
+    return () => stopCasinoAmbience();
+  }, [view, muted]);
+
+  // Gemeinsamer Spin-Start für Button (zufällige Kraft) und Hand-Flick (gemessene Kraft).
+  function launchSpin(velocity: number) {
     if (mode === "elim" && originalRoster === null) {
       setOriginalRoster(roster.filter((r) => r.included));
     }
     setSpinning(true);
     setResult(null);
     setWinning(false);
-    const playingCount = roster.filter((r) => r.included).length;
-    lastSegRef.current = segmentAtPointer(angleRef.current, playingCount);
-    velRef.current = 26 + Math.random() * 10;
+    lastSegRef.current = segmentAtPointer(
+      angleRef.current,
+      roster.filter((r) => r.included).length
+    );
+    velRef.current = velocity;
     phaseRef.current = "spinning";
     if (!muted) spinStart();
+  }
+
+  function spin() {
+    if (!canSpin) return;
+    launchSpin(26 + Math.random() * 10);
+  }
+
+  /* === Hand-Spin: das Rad mit Maus/Finger anstossen ============== */
+
+  function pointerToAngle(clientX: number, clientY: number): number | null {
+    const cvs = canvasRef.current;
+    if (!cvs) return null;
+    const rect = cvs.getBoundingClientRect();
+    return Math.atan2(
+      clientY - (rect.top + rect.height / 2),
+      clientX - (rect.left + rect.width / 2)
+    );
+  }
+
+  function onWheelPointerDown(e: ReactPointerEvent<HTMLCanvasElement>) {
+    if (!canSpin || result) return;
+    const a = pointerToAngle(e.clientX, e.clientY);
+    if (a === null) return;
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    pointerIdRef.current = e.pointerId;
+    dragLastAngleRef.current = a;
+    dragSpeedRef.current = 0;
+    dragMovedRef.current = 0;
+    dragSamplesRef.current = [{ t: performance.now(), a: angleRef.current }];
+    lastSegRef.current = segmentAtPointer(angleRef.current, includedRoster.length);
+    phaseRef.current = "dragging";
+    setIsDragging(true);
+  }
+
+  function onWheelPointerMove(e: ReactPointerEvent<HTMLCanvasElement>) {
+    if (phaseRef.current !== "dragging" || e.pointerId !== pointerIdRef.current) return;
+    const a = pointerToAngle(e.clientX, e.clientY);
+    if (a === null) return;
+    let d = a - dragLastAngleRef.current;
+    if (d > Math.PI) d -= TWO_PI; // kürzesten Weg über den ±π-Sprung nehmen
+    else if (d < -Math.PI) d += TWO_PI;
+    angleRef.current += d;
+    dragMovedRef.current += Math.abs(d);
+    dragLastAngleRef.current = a;
+
+    const now = performance.now();
+    const s = dragSamplesRef.current;
+    s.push({ t: now, a: angleRef.current });
+    while (s.length > 2 && now - s[0].t > 120) s.shift();
+    const dtS = (now - s[0].t) / 1000;
+    dragSpeedRef.current = dtS > 0 ? (angleRef.current - s[0].a) / dtS : 0;
+  }
+
+  function endDrag(e: ReactPointerEvent<HTMLCanvasElement>) {
+    if (phaseRef.current !== "dragging" || e.pointerId !== pointerIdRef.current) return;
+    pointerIdRef.current = null;
+    setIsDragging(false);
+
+    // Auswurf-Geschwindigkeit aus dem jüngsten Bewegungsfenster (~90 ms).
+    const s = dragSamplesRef.current;
+    const now = performance.now();
+    let v = 0;
+    if (s.length >= 2) {
+      let i = s.length - 1;
+      while (i > 0 && now - s[i - 1].t < 90) i--;
+      const dtS = (now - s[i].t) / 1000;
+      if (dtS > 0) v = (angleRef.current - s[i].a) / dtS;
+    }
+
+    // Echte Schleuderbewegung → Spin. Kaum bewegt / still losgelassen → Idle.
+    if (Math.abs(v) >= THROW_MIN_VEL && dragMovedRef.current > 0.12) {
+      const dir = v < 0 ? -1 : 1;
+      launchSpin(dir * Math.min(MAX_LAUNCH_VEL, Math.max(MIN_LAUNCH_VEL, Math.abs(v))));
+    } else {
+      phaseRef.current = "idle";
+      lastSegRef.current = null;
+    }
   }
 
   function toggleParticipant(key: string) {
@@ -994,19 +1106,37 @@ export default function Wheel() {
                     ref={canvasRef}
                     width={size}
                     height={size}
-                    style={{ width: size, height: size, display: "block", borderRadius: "50%" }}
+                    onPointerDown={onWheelPointerDown}
+                    onPointerMove={onWheelPointerMove}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    style={{
+                      width: size,
+                      height: size,
+                      display: "block",
+                      borderRadius: "50%",
+                      touchAction: "none",
+                      cursor: canSpin ? (isDragging ? "grabbing" : "grab") : "default",
+                    }}
                   />
                 </div>
               </div>
 
-              <button
-                onClick={spin}
-                disabled={!canSpin}
-                className="btn-primary text-xl sm:text-2xl px-14 py-5 sm:px-16 sm:py-6"
-                style={{ minWidth: 220 }}
-              >
-                {spinning ? t("common.spinning") : t("wheel.game.spin")}
-              </button>
+              <div className="flex flex-col items-center gap-3">
+                <button
+                  onClick={spin}
+                  disabled={!canSpin}
+                  className="btn-primary text-xl sm:text-2xl px-14 py-5 sm:px-16 sm:py-6"
+                  style={{ minWidth: 220 }}
+                >
+                  {spinning ? t("common.spinning") : t("wheel.game.spin")}
+                </button>
+                {!spinning && (
+                  <p className="text-xs text-fg-mute text-center max-w-[18rem]">
+                    {t("wheel.game.dragHint")}
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -1020,7 +1150,7 @@ export default function Wheel() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 grid place-items-center px-6 pointer-events-none"
+            className="fixed inset-0 z-40 grid place-items-center px-6 pointer-events-none overflow-hidden"
             style={{
               background: "radial-gradient(circle at 50% 40%, rgba(180,30,40,0.35), rgba(0,0,0,0.55))",
               backdropFilter: "blur(8px)",
@@ -1032,19 +1162,20 @@ export default function Wheel() {
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 18 }}
-              className="text-center"
+              className="text-center w-full max-w-2xl mx-auto"
             >
               <div className="text-xs font-bold uppercase tracking-[0.4em] text-shame mb-3">
                 {t("wheel.elim.eliminated")}
               </div>
               <div
-                className="font-display font-black gradient-shame leading-[0.85]"
+                className="font-display font-black gradient-shame leading-[0.85] max-w-full break-words"
                 style={{
-                  fontSize: "clamp(3.5rem, 14vw, 8rem)",
+                  fontSize: "clamp(3rem, 13vw, 8rem)",
                   filter: "drop-shadow(0 6px 30px rgba(255,45,85,0.45))",
                   textDecoration: "line-through",
                   textDecorationThickness: "0.05em",
                   textDecorationColor: "rgba(255,255,255,0.3)",
+                  overflowWrap: "anywhere",
                 }}
               >
                 {eliminated.name}
@@ -1065,7 +1196,7 @@ export default function Wheel() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.35 }}
-            className="fixed inset-0 z-50 grid place-items-center px-6"
+            className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden overscroll-contain"
             onClick={dismissResult}
             style={{
               background:
@@ -1081,87 +1212,95 @@ export default function Wheel() {
                   "radial-gradient(circle at 50% 45%, rgba(255,45,85,0.35), transparent 55%)",
               }}
             />
-            <motion.div
-              initial={{ scale: 0.7, y: 30, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.08 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative text-center max-w-3xl mx-auto"
-            >
+            {/* Scroll-/Zentrier-Wrapper: min-h-full hält die Karte mittig; bei
+                sehr hohem Inhalt (kleine Mobiles, lange Namen) wird sauber
+                gescrollt statt schräg abgeschnitten. */}
+            <div className="relative min-h-full flex items-center justify-center px-5 py-12">
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25, duration: 0.4 }}
-                className="font-bold gradient-gold tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
+                initial={{ scale: 0.7, y: 30, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.08 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-2xl mx-auto text-center"
               >
-                🎰 {t("wheel.result.jackpot")} 🎰
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15, duration: 0.8, type: "spring", stiffness: 140, damping: 14 }}
-                className="font-display font-black gradient-shame leading-[0.82] mb-6 break-words"
-                style={{
-                  fontSize: "clamp(4rem, 18vw, 11rem)",
-                  filter: "drop-shadow(0 8px 40px rgba(255,45,85,0.5))",
-                }}
-              >
-                {result.name}
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-4"
-              >
-                {t("wheel.result.bears")} <span className="gradient-shame">{t("wheel.result.shame")}</span>
-              </motion.div>
-
-              {resultConsequence && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.4 }}
+                  className="font-bold gradient-gold tracking-[0.4em] sm:tracking-[0.5em] text-sm sm:text-base mb-5 sm:mb-7"
+                >
+                  👑 {t("wheel.result.jackpot")} 👑
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.15, duration: 0.8, type: "spring", stiffness: 140, damping: 14 }}
+                  className="font-display font-black gradient-shame leading-[0.85] mb-6 max-w-full break-words"
+                  style={{
+                    fontSize: "clamp(2.75rem, 15vw, 8.5rem)",
+                    filter: "drop-shadow(0 8px 40px rgba(255,45,85,0.5))",
+                    overflowWrap: "anywhere",
+                    hyphens: "auto",
+                  }}
+                >
+                  {result.name}
+                </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.85, duration: 0.5 }}
-                  className="font-display font-bold text-base sm:text-2xl mb-10"
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="font-display font-bold text-2xl sm:text-4xl text-white/95 mb-4"
+                >
+                  {t("wheel.result.bears")} <span className="gradient-shame">{t("wheel.result.shame")}</span>
+                </motion.div>
+
+                {resultConsequence && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.85, duration: 0.5 }}
+                    className="font-display font-bold text-base sm:text-2xl mb-9 sm:mb-10"
+                    style={{
+                      color: "#FFD15C",
+                      textShadow: "0 2px 12px rgba(232,195,106,0.4)",
+                    }}
+                  >
+                    {t("wheel.result.consequencePrefix")} {resultConsequence}
+                  </motion.div>
+                )}
+
+                {!resultConsequence && <div className="mb-9 sm:mb-10" />}
+
+                <motion.button
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.85, duration: 0.4 }}
+                  onClick={dismissResult}
+                  className="inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-semibold transition-all"
                   style={{
-                    color: "#FFD15C",
-                    textShadow: "0 2px 12px rgba(232,195,106,0.4)",
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(232,195,106,0.4)",
+                    color: "#fff",
+                    backdropFilter: "blur(20px)",
                   }}
                 >
-                  {t("wheel.result.consequencePrefix")} {resultConsequence}
+                  {mode === "elim" ? t("common.newRound") : t("common.continue")}
+                </motion.button>
+
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="mt-10 flex flex-col items-center gap-2"
+                >
+                  <span className="text-xs uppercase tracking-[0.3em] text-white/40">
+                    {t("wheel.result.tapToClose")}
+                  </span>
+                  <BindingDecree variant="fineprint" />
                 </motion.div>
-              )}
-
-              {!resultConsequence && <div className="mb-10" />}
-
-              <motion.button
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.85, duration: 0.4 }}
-                onClick={dismissResult}
-                className="inline-flex items-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-semibold transition-all"
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(232,195,106,0.4)",
-                  color: "#fff",
-                  backdropFilter: "blur(20px)",
-                }}
-              >
-                {mode === "elim" ? t("common.newRound") : t("common.continue")}
-              </motion.button>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 whitespace-nowrap"
-              >
-                <span className="text-xs uppercase tracking-[0.3em] text-white/40">
-                  {t("wheel.result.tapToClose")}
-                </span>
-                <BindingDecree variant="fineprint" />
               </motion.div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

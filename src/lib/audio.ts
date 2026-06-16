@@ -42,7 +42,9 @@ function getNoiseBuffer(c: AudioContext): AudioBuffer {
 }
 
 /* ------------------------------------------------------------------
-   TICK — mechanischer Peg-Click (unverändert, klingt bereits passend)
+   TICK — mechanischer Peg-Click. Lauter & markanter: kräftigerer
+   Holz-„Tock" + schärferer High-Transient, damit er über der
+   Hintergrundmusik klar durchschlägt.
    ------------------------------------------------------------------ */
 export function tick(volume = 1) {
   const c = getCtx();
@@ -54,42 +56,44 @@ export function tick(volume = 1) {
   noise.buffer = getNoiseBuffer(c);
   const bp = c.createBiquadFilter();
   bp.type = "bandpass";
-  bp.frequency.value = 1500 + Math.random() * 600;
+  bp.frequency.value = 1700 + Math.random() * 700;
   bp.Q.value = 4;
   const hp = c.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.value = 600;
   const nGain = c.createGain();
   nGain.gain.setValueAtTime(0, now);
-  nGain.gain.linearRampToValueAtTime(0.32 * vol, now + 0.001);
-  nGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.045);
+  nGain.gain.linearRampToValueAtTime(0.52 * vol, now + 0.001);
+  nGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.05);
   noise.connect(bp).connect(hp).connect(nGain).connect(master);
   noise.start(now);
   noise.stop(now + 0.06);
 
+  // Holz-Körper — kräftiger „Tock" mit Pitch-Drop
   const body = c.createOscillator();
-  body.type = "sine";
-  const bodyF = 170 + Math.random() * 40;
+  body.type = "triangle";
+  const bodyF = 185 + Math.random() * 40;
   body.frequency.setValueAtTime(bodyF, now);
-  body.frequency.exponentialRampToValueAtTime(bodyF * 0.55, now + 0.05);
+  body.frequency.exponentialRampToValueAtTime(bodyF * 0.5, now + 0.06);
   const bGain = c.createGain();
   bGain.gain.setValueAtTime(0, now);
-  bGain.gain.linearRampToValueAtTime(0.22 * vol, now + 0.003);
-  bGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.09);
+  bGain.gain.linearRampToValueAtTime(0.42 * vol, now + 0.002);
+  bGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.11);
   body.connect(bGain).connect(master);
   body.start(now);
-  body.stop(now + 0.1);
+  body.stop(now + 0.12);
 
+  // Scharfer High-Transient — gibt dem Click seinen „Snap"
   const attack = c.createOscillator();
   attack.type = "square";
-  attack.frequency.value = 2800;
+  attack.frequency.value = 3000;
   const aGain = c.createGain();
   aGain.gain.setValueAtTime(0, now);
-  aGain.gain.linearRampToValueAtTime(0.05 * vol, now + 0.0005);
-  aGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.012);
+  aGain.gain.linearRampToValueAtTime(0.12 * vol, now + 0.0005);
+  aGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.014);
   attack.connect(aGain).connect(master);
   attack.start(now);
-  attack.stop(now + 0.015);
+  attack.stop(now + 0.016);
 }
 
 /* ------------------------------------------------------------------
@@ -329,4 +333,152 @@ export function winFanfare() {
   // 8) Final-Ding bei 2.6 s — die Auflösung
   bellHit(c, master, now + 2.55, 2093.0, 0.22, 0.7);
   bellHit(c, master, now + 2.55, 2637.0, 0.16, 0.6);  // E7
+}
+
+/* ==================================================================
+   CASINO-HINTERGRUNDMUSIK — sanftes Lounge-Bett (Maj7-Turnaround) +
+   Walking-Bass + Brush-Backbeat + zufälliges Münz-/Glöckchen-Glitzer.
+   Eigener Music-Bus unter dem Master → leiser als die Ticks. Per
+   Lookahead-Scheduler getaktet, sauber loop- und fade-bar.
+   ================================================================== */
+
+let musicGain: GainNode | null = null;
+let musicTimer: number | null = null;
+let musicPlaying = false;
+let nextBeatTime = 0;
+let beatIndex = 0;
+
+const BPM = 86;
+const BEAT = 60 / BPM;
+
+// I–vi–ii–V Turnaround in C (klassisches Lounge-Geländer), je 1 Takt.
+const PROG: Array<{ chord: number[]; bass: number }> = [
+  { chord: [261.63, 329.63, 392.0, 493.88], bass: 130.81 }, // Cmaj7
+  { chord: [220.0, 261.63, 329.63, 392.0], bass: 110.0 },   // Am7
+  { chord: [293.66, 349.23, 440.0, 523.25], bass: 146.83 }, // Dm7
+  { chord: [196.0, 246.94, 293.66, 349.23], bass: 98.0 },   // G7
+];
+
+function padVoice(c: AudioContext, dest: AudioNode, when: number, freq: number, dur: number, vol: number) {
+  const o1 = c.createOscillator();
+  o1.type = "triangle";
+  o1.frequency.value = freq;
+  o1.detune.value = -5;
+  const o2 = c.createOscillator();
+  o2.type = "triangle";
+  o2.frequency.value = freq;
+  o2.detune.value = 6;
+  const lp = c.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 1900;
+  lp.Q.value = 0.7;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.18);
+  g.gain.setValueAtTime(vol, Math.max(when + 0.2, when + dur - 0.55));
+  g.gain.exponentialRampToValueAtTime(0.0005, when + dur);
+  o1.connect(lp);
+  o2.connect(lp);
+  lp.connect(g).connect(dest);
+  o1.start(when);
+  o2.start(when);
+  o1.stop(when + dur + 0.05);
+  o2.stop(when + dur + 0.05);
+}
+
+function ambBass(c: AudioContext, dest: AudioNode, when: number, freq: number, dur: number, vol: number) {
+  const o = c.createOscillator();
+  o.type = "sine";
+  o.frequency.value = freq;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.03);
+  g.gain.exponentialRampToValueAtTime(0.0005, when + dur);
+  o.connect(g).connect(dest);
+  o.start(when);
+  o.stop(when + dur + 0.05);
+}
+
+function brush(c: AudioContext, dest: AudioNode, when: number, vol: number) {
+  const noise = c.createBufferSource();
+  noise.buffer = getNoiseBuffer(c);
+  const hp = c.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 6500;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(vol, when + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.0005, when + 0.09);
+  noise.connect(hp).connect(g).connect(dest);
+  noise.start(when);
+  noise.stop(when + 0.11);
+}
+
+function scheduleBeat(c: AudioContext, bus: AudioNode, idx: number, when: number) {
+  const { chord, bass } = PROG[Math.floor(idx / 4) % PROG.length];
+  const beatInBar = idx % 4;
+
+  if (beatInBar === 0) {
+    chord.forEach((f, i) => padVoice(c, bus, when, f, BEAT * 4 * 0.98, i === 0 ? 0.05 : 0.042));
+    ambBass(c, bus, when, bass, BEAT * 1.7, 0.2);
+  }
+  if (beatInBar === 2) {
+    ambBass(c, bus, when, bass * 1.5, BEAT * 1.4, 0.13); // Quinte → leichtes Wandern
+  }
+  if (beatInBar === 1 || beatInBar === 3) {
+    brush(c, bus, when, 0.05); // sanfter Backbeat
+  }
+
+  // Casino-Atmosphäre: vereinzeltes Münz-Glitzer / fernes Glöckchen
+  if (Math.random() < 0.12) coinTink(c, bus, when + Math.random() * BEAT * 0.5);
+  if (Math.random() < 0.05) {
+    bellHit(c, bus, when + Math.random() * BEAT * 0.4, 1800 + Math.random() * 1600, 0.05, 0.5);
+  }
+}
+
+export function startCasinoAmbience() {
+  const c = getCtx();
+  if (!c || !master) return;
+  if (musicPlaying) return;
+  musicPlaying = true;
+
+  if (!musicGain) {
+    musicGain = c.createGain();
+    musicGain.gain.value = 0;
+    musicGain.connect(master);
+  }
+  const bus = musicGain;
+  const now = c.currentTime;
+  bus.gain.cancelScheduledValues(now);
+  bus.gain.setValueAtTime(bus.gain.value, now);
+  bus.gain.linearRampToValueAtTime(0.55, now + 1.2); // sanfter Fade-In
+
+  beatIndex = 0;
+  nextBeatTime = now + 0.15;
+
+  const run = () => {
+    if (!musicPlaying || !ctx) return;
+    while (nextBeatTime < ctx.currentTime + 0.12) {
+      scheduleBeat(ctx, bus, beatIndex, nextBeatTime);
+      nextBeatTime += BEAT;
+      beatIndex++;
+    }
+  };
+  run();
+  musicTimer = window.setInterval(run, 25);
+}
+
+export function stopCasinoAmbience() {
+  if (!musicPlaying) return;
+  musicPlaying = false;
+  if (musicTimer !== null) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
+  if (ctx && musicGain) {
+    const now = ctx.currentTime;
+    musicGain.gain.cancelScheduledValues(now);
+    musicGain.gain.setValueAtTime(musicGain.gain.value, now);
+    musicGain.gain.linearRampToValueAtTime(0, now + 0.5); // sanfter Fade-Out
+  }
 }
